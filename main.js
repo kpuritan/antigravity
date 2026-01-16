@@ -88,6 +88,37 @@ document.addEventListener('DOMContentLoaded', () => {
 
     renderAuthorsInDropdown(authors);
 
+    // --- Main Grid Rendering ---
+    const renderMainGridItems = (items, containerId, iconClass) => {
+        const container = document.getElementById(containerId);
+        if (!container) return;
+        container.innerHTML = '';
+        items.forEach(item => {
+            const div = document.createElement('div');
+            div.className = 'main-grid-item';
+            div.innerHTML = `
+                <i class="${iconClass}"></i>
+                <span>${item}</span>
+            `;
+            div.addEventListener('click', () => {
+                openResourceModal(item);
+            });
+            container.appendChild(div);
+        });
+    };
+
+    // Populate main grids
+    renderMainGridItems(bibleBooks, 'bible-grid-main', 'fas fa-bible');
+    renderMainGridItems(topics, 'topic-grid-main', 'fas fa-tags');
+    renderMainGridItems(authors, 'author-grid-main', 'fas fa-user-edit');
+
+    // Show sections that were hidden
+    const sectionsToShow = ['bible', 'topic', 'author', 'bible-study', 'evangelism-booklet', 'recent-updates'];
+    sectionsToShow.forEach(id => {
+        const sec = document.getElementById(id);
+        if (sec) sec.classList.remove('section-hidden');
+    });
+
     // Search function for Author Dropdown
     const authorSearchInput = document.getElementById('author-dropdown-search');
     if (authorSearchInput) {
