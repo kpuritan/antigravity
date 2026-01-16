@@ -492,9 +492,10 @@ nav ul li:hover a i {
 }
 
 .section-title p {
-    font-size: 1.2rem;
+    font-size: 1.1rem;
     color: var(--text-light);
-    max-width: 600px;
+    white-space: nowrap;
+    /* Force one line */
 }
 
 .section-title.left {
@@ -1947,10 +1948,18 @@ footer {
         gap: 0;
     }
 
-    .section-title h2 {
+    .section-title h2,
+    .section-title p {
         white-space: normal;
-        margin-bottom: 1.5rem;
+        margin-bottom: 1rem;
+    }
+
+    .section-title h2 {
         font-size: 2rem;
+    }
+
+    .section-title p {
+        font-size: 1rem;
     }
 }
 
