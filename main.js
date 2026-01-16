@@ -830,11 +830,17 @@ document.addEventListener('DOMContentLoaded', () => {
                 modalUploadForm.style.display = 'none'; // 초기엔 닫힘
                 toggleBtn.textContent = '업로드 창 열기';
 
+                const sortAlphaBtn = document.getElementById('sort-alpha-btn');
+
                 // 시리즈가 폴더면 시리즈 인풋값을 폴더명으로 자동 세팅. 
                 // 단 성경책/주제 등은 시리즈라기보단 태그이므로 비워두거나 필요시 입력.
                 if (seriesInput && !seriesInput.value) {
                     seriesInput.value = '';
                     seriesInput.readOnly = false;
+                }
+
+                if (sortAlphaBtn) {
+                    sortAlphaBtn.style.display = 'none'; // 기본적으론 숨김 (폴더 목록에서는 안보임)
                 }
 
                 toggleBtn.onclick = () => {
@@ -954,6 +960,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
             // Render View
             const renderListView = (currentGroupedData) => {
+                const sortAlphaBtn = document.getElementById('sort-alpha-btn');
+                if (sortAlphaBtn) sortAlphaBtn.style.display = 'none';
+
                 resourceListContainer.innerHTML = '';
                 // Sort Folders by the minimum order of their items, then by name
                 const keys = Object.keys(currentGroupedData).sort((a, b) => {
@@ -1039,6 +1048,39 @@ document.addEventListener('DOMContentLoaded', () => {
             };
 
             const renderDetailView = (seriesName, posts) => {
+                const sortAlphaBtn = document.getElementById('sort-alpha-btn');
+                if (sortAlphaBtn) {
+                    sortAlphaBtn.style.display = 'inline-block';
+                    sortAlphaBtn.onclick = async () => {
+                        if (!confirm(`'${seriesName}' 폴더 내의 자료들을 가나다순으로 자동 정렬하시겠습니까?`)) return;
+
+                        const sorted = [...posts].sort((a, b) => a.title.localeCompare(b.title));
+                        const batch = db.batch();
+                        sorted.forEach((p, idx) => {
+                            batch.update(db.collection("posts").doc(p.id), { order: idx });
+                        });
+
+                        try {
+                            const originalBtnText = sortAlphaBtn.innerHTML;
+                            sortAlphaBtn.disabled = true;
+                            sortAlphaBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 정렬 중...';
+
+                            await batch.commit();
+                            alert("가나다순 정렬이 완료되었습니다.");
+
+                            // 로컬 데이터도 정렬 상태 반영 후 다시 렌더링
+                            posts.length = 0;
+                            posts.push(...sorted);
+                            renderDetailView(seriesName, posts);
+                        } catch (err) {
+                            alert("정렬 오류: " + err.message);
+                        } finally {
+                            sortAlphaBtn.disabled = false;
+                            sortAlphaBtn.innerHTML = '<i class="fas fa-sort-alpha-down"></i> 가나다순 정렬';
+                        }
+                    };
+                }
+
                 resourceListContainer.innerHTML = '';
                 resourceListContainer.classList.add('compact-view'); // 5개씩 보기 위해 콤팩트 모드 적용
 
