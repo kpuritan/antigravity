@@ -6,7 +6,7 @@ const firebaseConfig = {
     apiKey: "AIzaSyCJbOaiElCypwgtPgbwdnudn3VC737fMrs",
     authDomain: "kpuritan-home.firebaseapp.com",
     projectId: "kpuritan-home",
-    storageBucket: "kpuritan-home.appspot.com",
+    storageBucket: "kpuritan-home.firebasestorage.app",
     messagingSenderId: "1071220455502", // Project specific ID (optional usually)
     appId: "1:1071220455502:web:7f6f59b48c48a73437f8f0" // App specific ID (optional usually)
 };
