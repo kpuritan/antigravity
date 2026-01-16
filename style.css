@@ -64,34 +64,29 @@ header {
     display: flex;
     flex-direction: column;
     text-decoration: none;
-    line-height: 1;
+    line-height: 0.8;
+    /* Extremely tight to bind them together */
     flex-shrink: 0;
-}
-
-.logo-kor {
-    font-family: 'Noto Sans KR', sans-serif;
-    font-size: 0.65rem;
-    /* Slightly smaller to fit better */
-    font-weight: 700;
-    color: rgba(255, 255, 255, 0.82);
-    margin-bottom: 0px;
-    text-align: justify;
-    text-align-last: justify;
-    /* This spreads the letters to fill the width */
-    width: 100%;
-    display: block;
 }
 
 .logo-eng {
     font-family: 'Montserrat', sans-serif;
-    font-size: 2.5rem;
-    /* Slightly larger for impact */
+    font-size: 2rem;
     font-weight: 900;
     color: var(--white);
-    letter-spacing: -0.05em;
-    margin-top: -6px;
+    letter-spacing: -0.04em;
     display: block;
-    line-height: 0.9;
+}
+
+.logo-kor {
+    font-family: 'Noto Sans KR', sans-serif;
+    font-size: 1.1rem;
+    font-weight: 900;
+    color: var(--white);
+    letter-spacing: -0.02em;
+    display: block;
+    margin-top: 5px;
+    /* Tiny gap for legibility */
 }
 
 nav ul li a {
