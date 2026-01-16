@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Noto+Sans+KR:wght@300;400;500;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@700;800;900&family=Inter:wght@300;400;500;600&family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap');
 
 :root {
     --primary-color: #2a2d32;
@@ -34,8 +34,12 @@ h1,
 h2,
 h3,
 h4 {
-    font-family: 'Playfair Display', serif;
+    font-family: 'Montserrat', 'Noto Sans KR', sans-serif;
     color: var(--primary-color);
+    font-weight: 900;
+    /* Extra bold for titles */
+    text-transform: uppercase;
+    letter-spacing: -0.03em;
 }
 
 /* Header & Navigation */
@@ -57,26 +61,29 @@ header {
 }
 
 .logo {
-    font-family: 'Playfair Display', serif;
-    font-size: 1.8rem;
-    font-weight: 700;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 2.2rem;
+    font-weight: 900;
     color: var(--white);
     text-decoration: none;
-    letter-spacing: -0.01em;
+    letter-spacing: -0.05em;
     flex-shrink: 0;
 }
 
 nav ul li a {
     text-decoration: none;
-    color: rgba(255, 255, 255, 0.82);
-    font-weight: 500;
-    font-size: 0.9rem;
+    color: rgba(255, 255, 255, 0.9);
+    font-weight: 700;
+    /* Bold English / Gothic feel */
+    font-size: 0.95rem;
     padding: 1rem 0;
     transition: var(--transition);
     display: flex;
     align-items: center;
     gap: 0.3rem;
     white-space: nowrap;
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
 }
 
 nav ul li a:hover {
@@ -363,11 +370,12 @@ nav ul li:hover a i {
 
 .hero h1 {
     color: #ffffff;
-    font-size: 4.8rem;
+    font-size: 5.5rem;
     margin-bottom: 1.5rem;
-    line-height: 1.1;
-    font-weight: 600;
+    line-height: 0.95;
+    font-weight: 900;
     text-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+    letter-spacing: -0.04em;
 }
 
 .hero p {
@@ -397,13 +405,12 @@ nav ul li:hover a i {
 }
 
 .cta-btn.primary {
-    background-color: #c99c5e;
-    /* Golden tan */
+    background-color: var(--secondary-color);
     color: #ffffff;
 }
 
 .cta-btn.primary:hover {
-    background-color: #b3884d;
+    background-color: var(--primary-color);
     transform: translateY(-3px);
     box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
 }
@@ -448,20 +455,19 @@ nav ul li:hover a i {
 .section-title {
     display: grid;
     grid-template-columns: 1fr 2fr;
-    /* Double column layout like the image */
     gap: 3rem;
     margin-bottom: 5rem;
     text-align: left;
-    border-top: 1px solid #ddd;
-    padding-top: 2rem;
+    border-top: 8px solid var(--primary-color);
+    padding-top: 1.5rem;
 }
 
 .section-title h2 {
-    font-size: 2.8rem;
-    font-weight: 600;
+    font-size: 3.5rem;
+    font-weight: 900;
     text-transform: uppercase;
-    letter-spacing: 0.05em;
-    line-height: 1;
+    letter-spacing: -0.05em;
+    line-height: 0.9;
 }
 
 .section-title p {
