@@ -854,73 +854,102 @@ document.addEventListener('DOMContentLoaded', () => {
                 groupedPosts[sName].push(post);
             });
 
-            resourceListContainer.innerHTML = '';
+            // Render View
+            const renderListView = (currentGroupedData) => {
+                resourceListContainer.innerHTML = '';
+                const keys = Object.keys(currentGroupedData).sort(); // 폴더 이름순 정렬
 
-            // 1. Render Series Groups (Folders)
-            Object.keys(groupedPosts).forEach(sName => {
-                if (sName === '_none') return;
-
-                const seriesPosts = groupedPosts[sName];
-                // 회차 순으로 정렬 (오래된 순 -> 회차별로 1편, 2편 순서대로 나오게)
-                seriesPosts.sort((a, b) => (a.createdAt?.seconds || 0) - (b.createdAt?.seconds || 0));
-
-                // 대표 이미지 찾기 (첫 번째 포스트에서 추출)
-                let thumbId = '';
-                const firstPostWithVideo = seriesPosts.find(p => p.content && (p.content.includes('youtube.com') || p.content.includes('youtu.be')));
-
-                if (firstPostWithVideo) {
-                    const contentText = firstPostWithVideo.content;
-                    const urlRegex = /(https?:\/\/[^\s]+)/g;
-                    const urlsInContent = contentText.match(urlRegex) || [];
-                    urlsInContent.forEach(url => {
-                        const lowerUrl = url.toLowerCase();
-                        if (lowerUrl.includes('v=')) { thumbId = url.split('v=')[1].split('&')[0]; }
-                        else if (lowerUrl.includes('youtu.be/')) { thumbId = url.split('youtu.be/')[1].split('?')[0]; }
-                    });
+                // If there are only standalone posts (none) and no folders, show them directly
+                if (keys.length === 1 && keys[0] === '_none') {
+                    currentGroupedData['_none'].forEach(post => renderSingleResource(post, resourceListContainer));
+                    return;
                 }
 
-                const thumbUrl = thumbId
-                    ? `https://img.youtube.com/vi/${thumbId}/mqdefault.jpg`
-                    : 'https://images.unsplash.com/photo-1507738911740-02941ded416a?auto=format&fit=crop&q=80&w=400';
+                // Otherwise, show Folders
+                const grid = document.createElement('div');
+                grid.className = 'main-grid-container';
+                grid.style.padding = '0';
+                resourceListContainer.appendChild(grid);
 
-                const seriesCard = document.createElement('li');
-                seriesCard.className = 'series-folder-item';
-                seriesCard.innerHTML = `
-                    <div class="series-folder-header">
-                        <div class="series-thumbnail-wrapper">
-                            <img src="${thumbUrl}" alt="Thumbnail">
-                            <div class="series-thumbnail-overlay">
-                                <i class="fas fa-play-circle"></i>
-                                <span>${seriesPosts.length}</span>
+                keys.forEach(sName => {
+                    if (sName === '_none') return;
+
+                    const seriesPosts = currentGroupedData[sName];
+                    seriesPosts.sort((a, b) => (a.createdAt?.seconds || 0) - (b.createdAt?.seconds || 0));
+
+                    let thumbId = '';
+                    const firstPostWithVideo = seriesPosts.find(p => p.content && (p.content.includes('youtube.com') || p.content.includes('youtu.be')));
+                    if (firstPostWithVideo) {
+                        const contentText = firstPostWithVideo.content;
+                        const urls = contentText.match(/(https?:\/\/[^\s]+)/g) || [];
+                        urls.forEach(url => {
+                            if (url.includes('v=')) { thumbId = url.split('v=')[1].split('&')[0]; }
+                            else if (url.includes('youtu.be/')) { thumbId = url.split('youtu.be/')[1].split('?')[0]; }
+                        });
+                    }
+                    const thumbUrl = thumbId ? `https://img.youtube.com/vi/${thumbId}/mqdefault.jpg`
+                        : 'https://images.unsplash.com/photo-1507738911740-02941ded416a?auto=format&fit=crop&q=80&w=400';
+
+                    const folderCard = document.createElement('div');
+                    folderCard.className = 'main-grid-item';
+                    folderCard.style.textAlign = 'center';
+                    folderCard.style.padding = '1rem';
+                    folderCard.innerHTML = `
+                        <div style="width:100%; height:100px; border-radius:8px; overflow:hidden; margin-bottom:10px; position:relative;">
+                            <img src="${thumbUrl}" style="width:100%; height:100%; object-fit:cover;">
+                            <div style="position:absolute; right:10px; bottom:10px; background:rgba(0,0,0,0.7); color:white; padding:2px 8px; border-radius:4px; font-size:0.75rem;">
+                                <i class="fas fa-play"></i> ${seriesPosts.length}
                             </div>
                         </div>
-                        <div class="folder-text">
-                            <span class="series-label">재생목록 시리즈</span>
-                            <h3 class="series-name">${sName}</h3>
-                            <span class="series-count">총 ${seriesPosts.length}개의 말씀과 자료</span>
-                        </div>
-                        <i class="fas fa-chevron-down toggle-icon"></i>
-                    </div>
-                    <ul class="series-sub-list" style="display: none;"></ul>
-                `;
-
-                const subList = seriesCard.querySelector('.series-sub-list');
-                const header = seriesCard.querySelector('.series-folder-header');
-
-                header.addEventListener('click', () => {
-                    const isVisible = subList.style.display === 'block';
-                    subList.style.display = isVisible ? 'none' : 'block';
-                    seriesCard.classList.toggle('expanded', !isVisible);
+                        <h4 style="margin:0; font-size:0.95rem; color:var(--primary-color); line-height:1.2;">${sName}</h4>
+                        <p style="font-size:0.7rem; color:#888; margin-top:5px;">상세 보기 <i class="fas fa-chevron-right"></i></p>
+                    `;
+                    folderCard.onclick = () => renderDetailView(sName, seriesPosts);
+                    grid.appendChild(folderCard);
                 });
 
-                seriesPosts.forEach(post => renderSingleResource(post, subList));
-                resourceListContainer.appendChild(seriesCard);
-            });
+                // Render standalone posts if any (and not '강해설교' which are already grouped)
+                if (currentGroupedData['_none'] && categoryName !== '강해설교') {
+                    const standaloneTitle = document.createElement('h3');
+                    standaloneTitle.textContent = "개별 자료";
+                    standaloneTitle.style.margin = "2.5rem 0 1rem 0";
+                    standaloneTitle.style.fontSize = "1.1rem";
+                    standaloneTitle.style.borderBottom = "1px solid #eee";
+                    standaloneTitle.style.paddingBottom = "0.5rem";
+                    resourceListContainer.appendChild(standaloneTitle);
+                    currentGroupedData['_none'].forEach(post => renderSingleResource(post, resourceListContainer));
+                }
+            };
 
-            // 2. Render standalone posts (No series)
-            if (groupedPosts['_none']) {
-                groupedPosts['_none'].forEach(post => renderSingleResource(post, resourceListContainer));
-            }
+            const renderDetailView = (seriesName, posts) => {
+                resourceListContainer.innerHTML = '';
+
+                // Back Button
+                const backBtn = document.createElement('button');
+                backBtn.className = 'view-all-btn';
+                backBtn.style.marginBottom = '20px';
+                backBtn.innerHTML = `<i class="fas fa-arrow-left"></i> 목록으로 돌아가기 (${categoryName})`;
+                backBtn.onclick = () => {
+                    renderListView(groupedPosts);
+                };
+                resourceListContainer.appendChild(backBtn);
+
+                const seriesTitle = document.createElement('h2');
+                seriesTitle.textContent = seriesName;
+                seriesTitle.style.marginBottom = '20px';
+                seriesTitle.style.fontSize = '1.5rem';
+                seriesTitle.style.textAlign = 'center';
+                seriesTitle.style.fontFamily = "'Playfair Display', serif";
+                resourceListContainer.appendChild(seriesTitle);
+
+                // Posts in series
+                posts.forEach(post => renderSingleResource(post, resourceListContainer));
+
+                // Scroll to top of modal content
+                resourceListContainer.parentElement.scrollTop = 0;
+            };
+
+            renderListView(groupedPosts);
 
         } catch (error) {
             console.error("Error fetching documents: ", error);
