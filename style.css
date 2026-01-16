@@ -90,38 +90,20 @@ nav {
 nav ul {
     display: flex;
     list-style: none;
-    gap: 1.2rem;
-    /* 간격 최적화 */
+    gap: 1.5rem;
     justify-content: center;
-}
-
-nav ul li a {
-    text-decoration: none;
-    color: var(--text-color);
-    font-weight: 500;
-    font-size: 0.9rem;
-    /* 글자 크기 살짝 줄임 */
-    padding: 1rem 0;
-    transition: var(--transition);
-    display: flex;
-    align-items: center;
-    gap: 0.3rem;
-    white-space: nowrap;
-    /* 줄바꿈 방지 */
 }
 
 nav ul li a i {
     font-size: 0.7rem;
     transition: transform 0.3s;
+    color: inherit;
 }
 
 nav ul li:hover a i {
     transform: rotate(180deg);
 }
 
-nav ul li a:hover {
-    color: var(--secondary-color);
-}
 
 /* Dropdown / Mega Menu Styles */
 .dropdown {
@@ -324,10 +306,10 @@ nav ul li a:hover {
 }
 
 .login-trigger {
-    background: transparent;
+    background: var(--secondary-color);
     border: 1px solid var(--secondary-color);
-    color: var(--secondary-color);
-    padding: 0.5rem 1rem;
+    color: var(--white);
+    padding: 0.5rem 1.2rem;
     border-radius: 4px;
     font-weight: 600;
     font-size: 0.85rem;
@@ -339,9 +321,10 @@ nav ul li a:hover {
 }
 
 .login-trigger:hover {
-    background: var(--secondary-color);
+    background: transparent;
     color: var(--white);
 }
+
 
 /* Hero Section */
 .hero {
