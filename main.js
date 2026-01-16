@@ -248,6 +248,29 @@ document.addEventListener('DOMContentLoaded', () => {
     // Real Database Upload Logic
     const uploadForm = document.getElementById('post-upload-form');
     const recentPostsList = document.getElementById('admin-recent-posts');
+    let currentUploadTarget = null;
+
+    window.prepareUploadForCategory = (categoryName) => {
+        currentUploadTarget = categoryName;
+        const modal = document.getElementById('resource-modal');
+        if (modal) modal.classList.remove('show');
+
+        const targetInfo = document.getElementById('admin-upload-target-info');
+        const targetName = document.getElementById('admin-target-category-name');
+        if (targetInfo && targetName) {
+            targetInfo.style.display = 'block';
+            targetName.textContent = categoryName;
+        }
+
+        const adminSection = document.getElementById('admin');
+        if (adminSection) adminSection.scrollIntoView({ behavior: 'smooth' });
+    };
+
+    window.clearUploadTarget = () => {
+        currentUploadTarget = null;
+        const targetInfo = document.getElementById('admin-upload-target-info');
+        if (targetInfo) targetInfo.style.display = 'none';
+    };
 
     if (uploadForm && recentPostsList) {
         uploadForm.addEventListener('submit', async (e) => {
@@ -258,7 +281,10 @@ document.addEventListener('DOMContentLoaded', () => {
             const author = document.getElementById('post-author').value;
             const other = document.getElementById('post-other-category').value;
 
-            const tags = [bibleBook, topic, author, other].filter(t => t !== "");
+            let tags = [bibleBook, topic, author, other].filter(t => t !== "");
+            if (currentUploadTarget) {
+                if (!tags.includes(currentUploadTarget)) tags.push(currentUploadTarget);
+            }
             const title = document.getElementById('post-title').value.trim() || '제목 없음';
             const series = document.getElementById('post-series').value.trim() || '';
             const content = document.getElementById('post-content').value;
@@ -358,6 +384,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 alert(`✅ 자료가 성공적으로 업로드되었습니다!`);
                 uploadForm.reset();
+                clearUploadTarget(); // 업로드 후 타겟 초기화
                 if (progressContainer) progressContainer.style.display = 'none';
             } catch (error) {
                 console.error("Error adding document: ", error);
@@ -523,11 +550,26 @@ document.addEventListener('DOMContentLoaded', () => {
     const resourceListContainer = document.getElementById('resource-list-container');
     const resourceModalTitle = document.getElementById('resource-modal-title');
 
-    window.openResourceModal = async (categoryName) => { // Grouping logic pending
+    window.openResourceModal = async (categoryName) => {
         if (!resourceModal) return;
         resourceModal.classList.add('show');
         resourceModalTitle.textContent = `${categoryName} 자료 목록`;
         resourceListContainer.innerHTML = '<li class="no-resource-msg">자료를 불러오는 중입니다...</li>';
+
+        // Admin Upload Button in Modal
+        const adminHeader = document.getElementById('resource-modal-admin-header');
+        if (adminHeader) {
+            if (typeof isAdmin !== 'undefined' && isAdmin) {
+                adminHeader.style.display = 'block';
+                adminHeader.innerHTML = `
+                    <button class="cta-btn primary" style="padding: 10px 20px; font-size: 0.9rem;" onclick="prepareUploadForCategory('${categoryName}')">
+                        <i class="fas fa-plus-circle"></i> '${categoryName}'에 새 자료 올리기
+                    </button>
+                `;
+            } else {
+                adminHeader.style.display = 'none';
+            }
+        }
 
         // Use Mock data if in test mode
         if (typeof useMock !== 'undefined' && useMock) {

@@ -43,8 +43,8 @@
                             </div>
                         </div>
                     </li>
-                    <li><a href="#bible-study">강해설교</a></li>
-                    <li><a href="#evangelism-booklet">전도 소책자</a></li>
+                    <li><a href="javascript:void(0)" onclick="openResourceModal('강해설교')">강해설교</a></li>
+                    <li><a href="javascript:void(0)" onclick="openResourceModal('전도 소책자')">전도 소책자</a></li>
                     <li><a href="mailto:kpuritan.phb@gmail.com">출판사</a></li>
                 </ul>
             </nav>
@@ -109,9 +109,9 @@
                 <p>깊이 있는 성경 연구를 위한 가이드와 교재입니다.</p>
             </div>
             <div id="bible-study-grid-main" class="main-grid-container">
-                <div class="main-grid-item">
+                <div class="main-grid-item" onclick="openResourceModal('강해설교')">
                     <i class="fas fa-book-open"></i>
-                    <span>준비 중입니다</span>
+                    <span>전체 보기</span>
                 </div>
             </div>
         </section>
@@ -122,9 +122,9 @@
                 <p>복음을 전하기 위한 소책자 자료입니다.</p>
             </div>
             <div id="evangelism-booklet-grid-main" class="main-grid-container">
-                <div class="main-grid-item">
+                <div class="main-grid-item" onclick="openResourceModal('전도 소책자')">
                     <i class="fas fa-bullhorn"></i>
-                    <span>준비 중입니다</span>
+                    <span>전체 보기</span>
                 </div>
             </div>
         </section>
@@ -173,6 +173,13 @@
 
                 <div class="admin-grid">
                     <form id="post-upload-form" class="upload-form">
+                        <div id="admin-upload-target-info"
+                            style="display: none; background: var(--secondary-color); color: white; padding: 10px; border-radius: 8px; margin-bottom: 20px; font-weight: 600;">
+                            <i class="fas fa-folder-open"></i> 현재 <span id="admin-target-category-name"></span> 분류에 업로드
+                            중입니다.
+                            <button type="button" onclick="clearUploadTarget()"
+                                style="background: none; border: 1px solid white; color: white; padding: 2px 8px; border-radius: 4px; margin-left: 10px; cursor: pointer; font-size: 0.8rem;">취소</button>
+                        </div>
                         <div class="admin-form-tags-grid">
                             <div class="input-group">
                                 <label>성경책별 분류</label>
@@ -196,11 +203,10 @@
                                 </select>
                             </div>
                             <div class="input-group">
-                                <label>기타 분류 (교재/소책자)</label>
+                                <label>기타 분류 (최신자료 전용)</label>
                                 <select id="post-other-category">
                                     <option value="">-- 선택 안함 --</option>
-                                    <option value="강해설교">강해설교</option>
-                                    <option value="전도 소책자">전도 소책자</option>
+                                    <option value="기타">기타 자료</option>
                                 </select>
                             </div>
                         </div>
@@ -345,11 +351,10 @@
                         </select>
                     </div>
                     <div class="input-group">
-                        <label>기타 분류 (교재/소책자)</label>
+                        <label>기타 분류 (최신자료 전용)</label>
                         <select id="edit-other-category">
                             <option value="">-- 선택 안함 --</option>
-                            <option value="성경공부 교재">성경공부 교재</option>
-                            <option value="전도 소책자">전도 소책자</option>
+                            <option value="기타">기타 자료</option>
                         </select>
                     </div>
                 </div>
@@ -383,6 +388,9 @@
         <div class="modal-content resource-modal-content">
             <span class="close-btn" id="resource-close-btn">&times;</span>
             <h2 id="resource-modal-title">자료 목록</h2>
+            <div id="resource-modal-admin-header" style="display: none; margin-bottom: 20px; text-align: right;">
+                <!-- Button injected via JS when isAdmin is true -->
+            </div>
             <div class="resource-list-wrapper">
                 <ul id="resource-list-container" class="resource-list">
                     <!-- Content injected via JS -->
