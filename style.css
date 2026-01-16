@@ -40,7 +40,7 @@ h4 {
 
 /* Header & Navigation */
 header {
-    background-color: var(--white);
+    background-color: var(--primary-color);
     box-shadow: var(--shadow);
     position: sticky;
     top: 0;
@@ -49,7 +49,6 @@ header {
 
 .nav-container {
     max-width: 1400px;
-    /* 공간을 더 넓게 확보 */
     margin: 0 auto;
     display: flex;
     justify-content: space-between;
@@ -58,16 +57,30 @@ header {
 }
 
 .logo {
-    font-family: 'Playfair Display', 'Noto Sans KR', serif;
-    font-size: 1.6rem;
+    font-family: 'Playfair Display', serif;
+    font-size: 1.8rem;
     font-weight: 700;
-    color: var(--primary-color);
+    color: var(--white);
     text-decoration: none;
     letter-spacing: -0.01em;
-    white-space: nowrap;
-    /* 글자 끊김 방지 */
     flex-shrink: 0;
-    margin-right: 2rem;
+}
+
+nav ul li a {
+    text-decoration: none;
+    color: rgba(255, 255, 255, 0.82);
+    font-weight: 500;
+    font-size: 0.9rem;
+    padding: 1rem 0;
+    transition: var(--transition);
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+    white-space: nowrap;
+}
+
+nav ul li a:hover {
+    color: var(--white);
 }
 
 nav {
@@ -347,41 +360,37 @@ nav ul li a:hover {
 }
 
 .hero-content {
-    max-width: 900px;
-    text-align: center;
-    padding: 2.5rem;
+    max-width: 1200px;
+    width: 100%;
+    text-align: left;
+    /* Left align as per image */
+    padding: 2.5rem 4rem;
     z-index: 10;
-    /* 밝은 배경에서도 글자가 잘 보이도록 배경에 아주 살짝 연무 효과 */
-    background: rgba(0, 0, 0, 0.15);
-    backdrop-filter: blur(4px);
-    border-radius: 20px;
 }
 
 .hero h1 {
     color: #ffffff;
-    font-size: 5.2rem;
-    margin-bottom: 2rem;
-    line-height: 1.25;
-    font-weight: 800;
-    /* 밝은 배경에서 글자가 튀어나와 보이도록 그림자 강화 */
-    text-shadow: 0 4px 15px rgba(0, 0, 0, 0.5), 0 0 30px rgba(0, 0, 0, 0.2);
+    font-size: 4.8rem;
+    margin-bottom: 1.5rem;
+    line-height: 1.1;
+    font-weight: 600;
+    text-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
 }
 
 .hero p {
-    color: #f0f0f0;
-    font-size: 1.8rem;
-    margin-bottom: 3rem;
-    font-weight: 500;
-    max-width: 800px;
-    margin-left: auto;
-    margin-right: auto;
-    line-height: 1.6;
+    color: rgba(255, 255, 255, 0.9);
+    font-size: 1.5rem;
+    margin-bottom: 2.5rem;
+    font-weight: 400;
+    max-width: 600px;
+    line-height: 1.5;
 }
 
 .hero-btns {
     display: flex;
     gap: 1.5rem;
-    justify-content: center;
+    justify-content: flex-start;
+    /* Left align buttons */
 }
 
 .cta-btn {
@@ -443,21 +452,29 @@ nav ul li a:hover {
 }
 
 /* Category Sections */
-section {
-    max-width: 1200px;
-    margin: 4rem auto;
-    padding: 0 2rem;
-}
-
 .section-title {
-    text-align: center;
-    margin-bottom: 3rem;
-    position: relative;
+    display: grid;
+    grid-template-columns: 1fr 2fr;
+    /* Double column layout like the image */
+    gap: 3rem;
+    margin-bottom: 5rem;
+    text-align: left;
+    border-top: 1px solid #ddd;
+    padding-top: 2rem;
 }
 
 .section-title h2 {
-    font-size: 2.5rem;
-    display: inline-block;
+    font-size: 2.8rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    line-height: 1;
+}
+
+.section-title p {
+    font-size: 1.2rem;
+    color: var(--text-light);
+    max-width: 600px;
 }
 
 .section-title.left {
