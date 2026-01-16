@@ -1958,9 +1958,12 @@ footer {
     color: var(--white);
     font-size: 1.8rem;
     cursor: pointer;
-    z-index: 1001;
+    z-index: 2001;
+    /* Above nav and overlay */
     padding: 0.5rem;
     transition: var(--transition);
+    align-items: center;
+    justify-content: center;
 }
 
 @media screen and (max-width: 1024px) {
@@ -1976,17 +1979,24 @@ footer {
         position: fixed;
         top: 0;
         right: -100%;
-        width: 100%;
+        width: 80%;
+        /* Don't cover 100% to let user see some background */
+        max-width: 320px;
         height: 100vh;
         background: #2a2d32;
-        padding: 6rem 2rem;
+        padding: 6rem 1.5rem;
         transition: 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
-        z-index: 1000;
+        z-index: 2000;
         overflow-y: auto;
+        visibility: hidden;
+        pointer-events: none;
+        box-shadow: -10px 0 30px rgba(0, 0, 0, 0.3);
     }
 
     nav.active {
         right: 0;
+        visibility: visible;
+        pointer-events: all;
     }
 
     nav ul {
@@ -2176,13 +2186,14 @@ footer {
     height: 100%;
     background: rgba(0, 0, 0, 0.4);
     backdrop-filter: blur(4px);
-    z-index: 999;
-    display: none;
+    z-index: 1500;
+    /* Between header and mobile nav */
+    visibility: hidden;
     opacity: 0;
-    transition: opacity 0.3s ease;
+    transition: all 0.3s ease;
 }
 
 .nav-overlay.active {
-    display: block;
+    visibility: visible;
     opacity: 1;
 }
