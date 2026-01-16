@@ -281,46 +281,66 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
-    // 관리자용 시리즈 목록 로드
-    window.loadAdminSeries = async (category) => {
+    let adminSeriesUnsubscribe = null;
+
+    // 관리자용 시리즈 목록 로드 (실시간 동기화로 변경)
+    window.loadAdminSeries = (category) => {
         const container = document.getElementById('admin-series-list-container');
         if (!container) return;
+
+        // 기존 리스너가 있으면 해제하여 중복 방지
+        if (adminSeriesUnsubscribe) {
+            adminSeriesUnsubscribe();
+            adminSeriesUnsubscribe = null;
+        }
 
         container.innerHTML = '<div class="loading-msg">시리즈 목록을 불러오는 중...</div>';
 
         try {
-            const snapshot = await db.collection("posts").where("tags", "array-contains", category).get();
-            const seriesSet = new Set();
-            snapshot.forEach(doc => {
-                const data = doc.data();
-                if (data.series) seriesSet.add(data.series);
-            });
+            // onSnapshot을 사용하여 실시간으로 데이터 변화 감지
+            adminSeriesUnsubscribe = db.collection("posts")
+                .where("tags", "array-contains", category)
+                .onSnapshot((snapshot) => {
+                    const seriesSet = new Set();
+                    snapshot.forEach(doc => {
+                        const data = doc.data();
+                        if (data.series && data.series.trim() !== "") {
+                            seriesSet.add(data.series.trim());
+                        }
+                    });
 
-            if (seriesSet.size === 0) {
-                container.innerHTML = '<div style="grid-column: 1/-1; text-align:center; padding: 40px; color:#999;">아직 생성된 필더(시리즈)가 없습니다.</div>';
-                return;
-            }
+                    if (seriesSet.size === 0) {
+                        container.innerHTML = '<div style="grid-column: 1/-1; text-align:center; padding: 40px; color:#999;">아직 생성된 필더(시리즈)가 없습니다.<br>오른쪽 상단 버튼으로 폴더를 먼저 만들어보세요.</div>';
+                        return;
+                    }
 
-            container.innerHTML = '';
-            seriesSet.forEach(seriesName => {
-                const card = document.createElement('div');
-                card.className = 'admin-series-card';
-                card.style.cssText = 'background:#f9f9f9; padding:20px; border-radius:12px; border:1px solid #ddd; cursor:pointer; transition:all 0.3s;';
-                card.innerHTML = `
-                    <div style="display:flex; align-items:center; gap:15px;">
-                        <i class="fas fa-folder" style="font-size:2rem; color:var(--secondary-color);"></i>
-                        <div style="flex:1;">
-                            <h4 style="margin:0; font-size:1.1rem;">${seriesName}</h4>
-                            <p style="font-size:0.8rem; color:#888; margin-top:3px;">클릭하여 자료 추가/관리</p>
-                        </div>
-                        <i class="fas fa-chevron-right" style="color:#ccc;"></i>
-                    </div>
-                `;
-                card.onclick = () => openResourceModalWithSeries(category, seriesName);
-                card.onmouseover = () => { card.style.background = '#fff'; card.style.borderColor = 'var(--secondary-color)'; card.style.transform = 'translateY(-3px)'; };
-                card.onmouseout = () => { card.style.background = '#f9f9f9'; card.style.borderColor = '#ddd'; card.style.transform = 'none'; };
-                container.appendChild(card);
-            });
+                    container.innerHTML = '';
+                    // 가나다순 정렬
+                    const sortedSeries = Array.from(seriesSet).sort();
+
+                    sortedSeries.forEach(seriesName => {
+                        const card = document.createElement('div');
+                        card.className = 'admin-series-card';
+                        card.style.cssText = 'background:#f9f9f9; padding:20px; border-radius:12px; border:1px solid #ddd; cursor:pointer; transition:all 0.3s;';
+                        card.innerHTML = `
+                            <div style="display:flex; align-items:center; gap:15px;">
+                                <i class="fas fa-folder" style="font-size:2rem; color:var(--secondary-color);"></i>
+                                <div style="flex:1;">
+                                    <h4 style="margin:0; font-size:1.1rem;">${seriesName}</h4>
+                                    <p style="font-size:0.8rem; color:#888; margin-top:3px;">클릭하여 자료 추가/관리</p>
+                                </div>
+                                <i class="fas fa-chevron-right" style="color:#ccc;"></i>
+                            </div>
+                        `;
+                        card.onclick = () => openResourceModalWithSeries(category, seriesName);
+                        card.onmouseover = () => { card.style.background = '#fff'; card.style.borderColor = 'var(--secondary-color)'; card.style.transform = 'translateY(-3px)'; };
+                        card.onmouseout = () => { card.style.background = '#f9f9f9'; card.style.borderColor = '#ddd'; card.style.transform = 'none'; };
+                        container.appendChild(card);
+                    });
+                }, (err) => {
+                    console.error("실시간 시리즈 로드 에러:", err);
+                    container.innerHTML = '<div style="color:red; text-align:center; padding:20px;">목록 로딩 중 오류가 발생했습니다.</div>';
+                });
         } catch (err) {
             console.error(err);
             container.innerHTML = '목록 로딩 실패';
