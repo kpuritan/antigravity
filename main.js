@@ -833,19 +833,43 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (sName === '_none') return;
 
                 const seriesPosts = groupedPosts[sName];
+                // 회차 순으로 정렬 (오래된 순 -> 회차별로 1편, 2편 순서대로 나오게)
                 seriesPosts.sort((a, b) => (a.createdAt?.seconds || 0) - (b.createdAt?.seconds || 0));
+
+                // 대표 이미지 찾기 (첫 번째 포스트에서 추출)
+                let thumbId = '';
+                const firstPostWithVideo = seriesPosts.find(p => p.content && (p.content.includes('youtube.com') || p.content.includes('youtu.be')));
+
+                if (firstPostWithVideo) {
+                    const contentText = firstPostWithVideo.content;
+                    const urlRegex = /(https?:\/\/[^\s]+)/g;
+                    const urlsInContent = contentText.match(urlRegex) || [];
+                    urlsInContent.forEach(url => {
+                        const lowerUrl = url.toLowerCase();
+                        if (lowerUrl.includes('v=')) { thumbId = url.split('v=')[1].split('&')[0]; }
+                        else if (lowerUrl.includes('youtu.be/')) { thumbId = url.split('youtu.be/')[1].split('?')[0]; }
+                    });
+                }
+
+                const thumbUrl = thumbId
+                    ? `https://img.youtube.com/vi/${thumbId}/mqdefault.jpg`
+                    : 'https://images.unsplash.com/photo-1507738911740-02941ded416a?auto=format&fit=crop&q=80&w=400';
 
                 const seriesCard = document.createElement('li');
                 seriesCard.className = 'series-folder-item';
                 seriesCard.innerHTML = `
                     <div class="series-folder-header">
-                        <div class="folder-info">
-                            <i class="fas fa-folder folder-icon"></i>
-                            <div class="folder-text">
-                                <span class="series-label">시리즈 자료</span>
-                                <h3 class="series-name">${sName}</h3>
-                                <span class="series-count">${seriesPosts.length}개의 자료</span>
+                        <div class="series-thumbnail-wrapper">
+                            <img src="${thumbUrl}" alt="Thumbnail">
+                            <div class="series-thumbnail-overlay">
+                                <i class="fas fa-play-circle"></i>
+                                <span>${seriesPosts.length}</span>
                             </div>
+                        </div>
+                        <div class="folder-text">
+                            <span class="series-label">재생목록 시리즈</span>
+                            <h3 class="series-name">${sName}</h3>
+                            <span class="series-count">총 ${seriesPosts.length}개의 말씀과 자료</span>
                         </div>
                         <i class="fas fa-chevron-down toggle-icon"></i>
                     </div>
@@ -859,12 +883,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     const isVisible = subList.style.display === 'block';
                     subList.style.display = isVisible ? 'none' : 'block';
                     seriesCard.classList.toggle('expanded', !isVisible);
-
-                    const icon = header.querySelector('.toggle-icon');
-                    icon.className = isVisible ? 'fas fa-chevron-down toggle-icon' : 'fas fa-chevron-up toggle-icon';
-
-                    const fIcon = header.querySelector('.folder-icon');
-                    fIcon.className = isVisible ? 'fas fa-folder folder-icon' : 'fas fa-folder-open folder-icon';
                 });
 
                 seriesPosts.forEach(post => renderSingleResource(post, subList));

@@ -1655,86 +1655,175 @@ footer {
     color: #fff;
 }
 
-/* Series Folder Item Styles */
+/* Series Folder Item Styles (Premium Redesign) */
 .series-folder-item {
-    margin-bottom: 1.5rem;
-    border: 1px solid #eee;
-    border-radius: 12px;
+    margin-bottom: 2.5rem;
+    border: none;
+    border-radius: 16px;
     overflow: hidden;
     background: #fff;
-    transition: all 0.3s ease;
+    transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
     list-style: none;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
+}
+
+.series-folder-item:hover {
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.12);
 }
 
 .series-folder-header {
-    background: #fcfcfc;
+    background: #fff;
     padding: 1.5rem;
     display: flex;
-    justify-content: space-between;
+    gap: 1.5rem;
     align-items: center;
     cursor: pointer;
-    transition: background 0.2s;
+    transition: background 0.3s;
+    border-bottom: 1px solid transparent;
 }
 
-.series-folder-header:hover {
-    background: #f5f5f5;
+.series-folder-item.expanded .series-folder-header {
+    background: #fcfcfc;
+    border-bottom-color: #f0f0f0;
 }
 
-.folder-info {
-    display: flex;
-    align-items: center;
-    gap: 1.2rem;
+.series-thumbnail-wrapper {
+    width: 160px;
+    height: 90px;
+    border-radius: 10px;
+    overflow: hidden;
+    background: #1a2a44;
+    flex-shrink: 0;
+    position: relative;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
 }
 
-.folder-icon {
-    font-size: 2rem;
-    color: var(--secondary-color);
-    transition: transform 0.3s;
+.series-thumbnail-wrapper img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    opacity: 0.9;
+    transition: transform 0.5s;
 }
 
-.series-folder-item.expanded .folder-icon {
+.series-folder-item:hover .series-thumbnail-wrapper img {
     transform: scale(1.1);
 }
 
+.series-thumbnail-overlay {
+    position: absolute;
+    right: 0;
+    top: 0;
+    width: 40%;
+    height: 100%;
+    background: rgba(26, 42, 68, 0.85);
+    backdrop-filter: blur(4px);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    color: #fff;
+    font-size: 0.85rem;
+    border-left: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.series-thumbnail-overlay i {
+    font-size: 1.5rem;
+    margin-bottom: 5px;
+}
+
+.series-thumbnail-overlay span {
+    font-weight: 800;
+    letter-spacing: 1px;
+}
+
+.folder-text {
+    flex: 1;
+}
+
 .series-label {
-    font-size: 0.7rem;
+    font-size: 0.75rem;
     font-weight: 800;
     color: var(--secondary-color);
     text-transform: uppercase;
-    letter-spacing: 0.1em;
+    letter-spacing: 0.15em;
+    display: block;
+    margin-bottom: 4px;
 }
 
 .series-name {
-    font-size: 1.25rem;
-    font-weight: 700;
-    margin: 0.2rem 0;
+    font-size: 1.4rem;
+    font-weight: 800;
+    margin: 0;
     color: var(--primary-color);
+    font-family: 'Playfair Display', serif;
+    letter-spacing: -0.01em;
+    line-height: 1.2;
 }
 
 .series-count {
-    font-size: 0.85rem;
+    font-size: 0.9rem;
     color: #888;
+    margin-top: 5px;
+    display: block;
 }
 
 .toggle-icon {
-    font-size: 1rem;
-    color: #ccc;
-    transition: all 0.3s;
+    font-size: 1.2rem;
+    color: #ddd;
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    margin-left: 1rem;
 }
 
 .series-folder-item.expanded .toggle-icon {
+    transform: rotate(180deg);
     color: var(--secondary-color);
 }
 
 .series-sub-list {
-    padding: 1rem 1.5rem;
-    background: #fafafa;
-    border-top: 1px solid #f0f0f0;
+    padding: 0 1.5rem 1rem 1.5rem;
+    background: #fff;
     list-style: none;
 }
 
-.resource-item-wrapper {
-    list-style: none;
+.series-sub-list .resource-card-modern {
+    border: none;
+    border-bottom: 1px solid #f8f8f8;
+    border-radius: 0;
+    box-shadow: none;
+    margin-bottom: 0;
+    padding: 1.5rem 0;
+}
+
+.series-sub-list li:last-child .resource-card-modern {
+    border-bottom: none;
+}
+
+.series-sub-list .resource-card-modern:hover {
+    transform: none;
+    background: #fafafa;
+}
+
+.series-sub-list .resource-content-padding {
+    padding: 1rem 1.5rem;
+}
+
+.series-sub-list .resource-title-modern {
+    font-size: 1.2rem;
+}
+
+/* Responsive adjustment for Playlist */
+@media screen and (max-width: 600px) {
+    .series-folder-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+    }
+
+    .series-thumbnail-wrapper {
+        width: 100%;
+        height: 140px;
+    }
 }
 
 #edit-file-status {
