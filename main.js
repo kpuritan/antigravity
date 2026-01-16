@@ -291,22 +291,44 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             const submitBtn = uploadForm.querySelector('button[type="submit"]');
+            const progressContainer = document.getElementById('upload-progress-container');
+            const progressBar = document.getElementById('upload-progress-bar');
+            const percText = document.getElementById('upload-perc-text');
             const originalBtnText = submitBtn.innerHTML;
+
             submitBtn.disabled = true;
-            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 업로드 중...';
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 대기 중...';
 
             try {
                 let fileUrl = "";
 
                 // 파일이 있다면 Firebase Storage에 업로드
                 if (file) {
-                    const fileExtension = file.name.split('.').pop().toLowerCase();
+                    if (progressContainer) progressContainer.style.display = 'block';
                     const storageRef = storage.ref(`files/${Date.now()}_${file.name}`);
+                    const uploadTask = storageRef.put(file);
 
-                    // 업로드 모니터링 (선택사항이지만 UX 위해 추가 권장)
-                    await storageRef.put(file);
-                    fileUrl = await storageRef.getDownloadURL();
+                    fileUrl = await new Promise((resolve, reject) => {
+                        uploadTask.on('state_changed',
+                            (snapshot) => {
+                                const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+                                if (progressBar) progressBar.style.width = progress + '%';
+                                if (percText) percText.textContent = Math.round(progress) + '%';
+                                submitBtn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> 전송 중 (${Math.round(progress)}%)`;
+                            },
+                            (error) => {
+                                console.error("Storage upload error:", error);
+                                reject(error);
+                            },
+                            async () => {
+                                const url = await uploadTask.snapshot.ref.getDownloadURL();
+                                resolve(url);
+                            }
+                        );
+                    });
                 }
+
+                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 저장 중...';
 
                 // Firestore에 저장
                 await db.collection("posts").add({
@@ -323,12 +345,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 alert(`✅ 자료가 성공적으로 업로드되었습니다!`);
                 uploadForm.reset();
+                if (progressContainer) progressContainer.style.display = 'none';
             } catch (error) {
                 console.error("Error adding document: ", error);
                 alert("업로드 중 오류가 발생했습니다: " + error.message);
             } finally {
                 submitBtn.disabled = false;
                 submitBtn.innerHTML = originalBtnText;
+                if (progressContainer) progressContainer.style.display = 'none';
+                if (progressBar) progressBar.style.width = '0%';
             }
         });
 
