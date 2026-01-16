@@ -1005,11 +1005,15 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Load Public Recent Posts (Visitor View)
+    // Load Public Recent Posts (Visitor View) with Infinite Scroll
     const recentGrid = document.getElementById('recent-posts-grid');
+    const recentLoadMoreTrigger = document.getElementById('recent-load-more');
+    let lastRecentDoc = null;
+    let isRecentLoading = false;
+    let hasMoreRecent = true;
 
-    window.loadRecentPostsGrid = () => {
-        if (!recentGrid || typeof db === 'undefined') return;
+    window.loadRecentPostsGrid = async (isInitial = true) => {
+        if (!recentGrid || typeof db === 'undefined' || isRecentLoading || !hasMoreRecent && !isInitial) return;
 
         // Safe check for Mock Mode
         if (typeof useMock !== 'undefined' && useMock) {
@@ -1017,21 +1021,46 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        db.collection("posts").orderBy("createdAt", "desc").limit(6).get()
-            .then((snapshot) => {
-                if (snapshot.empty) {
-                    recentGrid.innerHTML = '<p style="text-align:center; width:100%; color:#999;">아직 등록된 자료가 없습니다.</p>';
-                    return;
-                }
-                recentGrid.innerHTML = '';
-                snapshot.forEach(doc => {
-                    const post = doc.data();
-                    const date = post.createdAt ? post.createdAt.toDate().toLocaleDateString() : '최근';
-                    const displayCategory = post.tags ? post.tags[0] : '자료';
+        isRecentLoading = true;
+        if (isInitial) {
+            recentGrid.innerHTML = '<div class="loading-msg">자료를 불러오는 중입니다...</div>';
+            lastRecentDoc = null;
+            hasMoreRecent = true;
+        }
 
-                    const div = document.createElement('div');
-                    div.className = 'recent-card-premium';
-                    div.innerHTML = `
+        if (recentLoadMoreTrigger) {
+            recentLoadMoreTrigger.style.display = 'block';
+        }
+
+        try {
+            let query = db.collection("posts").orderBy("createdAt", "desc").limit(6);
+            if (!isInitial && lastRecentDoc) {
+                query = query.startAfter(lastRecentDoc);
+            }
+
+            const snapshot = await query.get();
+
+            if (snapshot.empty) {
+                if (isInitial) {
+                    recentGrid.innerHTML = '<p style="text-align:center; width:100%; color:#999;">아직 등록된 자료가 없습니다.</p>';
+                }
+                hasMoreRecent = false;
+                if (recentLoadMoreTrigger) recentLoadMoreTrigger.style.display = 'none';
+                return;
+            }
+
+            if (isInitial) {
+                recentGrid.innerHTML = '';
+            }
+
+            snapshot.forEach(doc => {
+                const post = doc.data();
+                const date = post.createdAt ? post.createdAt.toDate().toLocaleDateString() : '최근';
+                const displayCategory = post.tags ? post.tags[0] : '자료';
+
+                const div = document.createElement('div');
+                div.className = 'recent-card-premium';
+                div.innerHTML = `
                     <div class="recent-card-inner">
                         <div class="recent-card-top">
                             <span class="recent-status-pill">NEW</span>
@@ -1046,14 +1075,35 @@ document.addEventListener('DOMContentLoaded', () => {
                         </div>
                     </div>
                 `;
-                    recentGrid.appendChild(div);
-                });
-            })
-            .catch(err => {
-                console.log("Error loading recents:", err);
-                recentGrid.innerHTML = '<p style="text-align:center; color:red;">자료 불러오기 실패</p>';
+                recentGrid.appendChild(div);
             });
+
+            lastRecentDoc = snapshot.docs[snapshot.docs.length - 1];
+
+            if (snapshot.docs.length < 6) {
+                hasMoreRecent = false;
+                if (recentLoadMoreTrigger) recentLoadMoreTrigger.style.display = 'none';
+            }
+
+        } catch (err) {
+            console.log("Error loading recents:", err);
+            if (isInitial) {
+                recentGrid.innerHTML = '<p style="text-align:center; color:red;">자료 불러오기 실패</p>';
+            }
+        } finally {
+            isRecentLoading = false;
+        }
     };
+
+    // Set up Infinite Scroll Observer
+    if (recentLoadMoreTrigger) {
+        const observer = new IntersectionObserver((entries) => {
+            if (entries[0].isIntersecting && hasMoreRecent && !isRecentLoading) {
+                window.loadRecentPostsGrid(false);
+            }
+        }, { threshold: 0.1 });
+        observer.observe(recentLoadMoreTrigger);
+    }
 
     // Initial Load
     loadRecentPostsGrid();
@@ -1204,9 +1254,10 @@ document.addEventListener('DOMContentLoaded', () => {
         resourceListContainer.innerHTML = '<li class="no-resource-msg">최신 자료를 불러오는 중입니다...</li>';
 
         try {
+            // "다 보이게" requested by user - remove strict limit or increase it significantly
             const snapshot = await db.collection("posts")
                 .orderBy("createdAt", "desc")
-                .limit(30)
+                .limit(200) // Increase significantly to show "all" as requested
                 .get();
 
             if (snapshot.empty) {
@@ -1214,7 +1265,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
 
-            // reuse render logic (simplified for this call)
             resourceListContainer.innerHTML = '';
             snapshot.forEach(doc => {
                 const post = { id: doc.id, ...doc.data() };
@@ -1222,6 +1272,7 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         } catch (e) {
             console.error(e);
+            resourceListContainer.innerHTML = '<li class="no-resource-msg">자료를 불러오는 중에 오류가 발생했습니다.</li>';
         }
     };
 }); // End of main DOMContentLoaded
