@@ -42,7 +42,16 @@
                     </li>
                     <li><a href="javascript:void(0)" onclick="openResourceModal('강해설교')">강해설교</a></li>
                     <li><a href="javascript:void(0)" onclick="openResourceModal('전도 소책자')">전도 소책자</a></li>
-                    <li><a href="mailto:kpuritan.phb@gmail.com">출판사</a></li>
+                    <li class="dropdown">
+                        <a href="javascript:void(0)">출판사 <i class="fas fa-chevron-down"></i></a>
+                        <div class="dropdown-content" id="publisher-dropdown">
+                            <ul class="dropdown-list">
+                                <li><a href="javascript:void(0)" onclick="openResourceModal('도서 목록')">도서 목록</a></li>
+                                <li><a href="javascript:void(0)" onclick="openResourceModal('온라인 서점')">온라인 서점</a></li>
+                                <li><a href="javascript:void(0)" onclick="openResourceModal('도서 구매')">도서 구매</a></li>
+                            </ul>
+                        </div>
+                    </li>
                 </ul>
             </nav>
             <div class="header-right">
@@ -491,6 +500,8 @@
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-storage-compat.js"></script>
 
+    <!-- PortOne SDK for actual payments -->
+    <script src="https://cdn.iamport.kr/v1/iamport.js"></script>
     <script src="data.js"></script>
     <script src="main.js"></script>
 </body>

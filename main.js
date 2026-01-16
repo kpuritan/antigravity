@@ -1189,18 +1189,62 @@ document.addEventListener('DOMContentLoaded', () => {
                 <i class="fas ${icon}"></i> ${label}</a>`;
         }
 
-        let adminButtons = '';
-        if (isAdmin) {
-            adminButtons = `
-                <div class="resource-admin-actions">
-                    <button onclick="openEditModal('${post.id}')" class="action-btn edit-small" title="수정"><i class="fas fa-edit"></i></button>
-                    <button onclick="deletePost('${post.id}')" class="action-btn delete-small" title="삭제"><i class="fas fa-trash"></i></button>
-                </div>
-            `;
+        const bookTags = ['도서 목록', '온라인 서점', '도서 구매', '도서구매'];
+        const isBookstore = post.tags && post.tags.some(tag => bookTags.includes(tag));
+        let priceHtml = '';
+        let buyButtonHtml = '';
+
+        if (isBookstore) {
+            const priceMatch = contentText.match(/(\d{1,3}(,\d{3})*원)/);
+            const priceStr = priceMatch ? priceMatch[0] : '가격 문의';
+            const priceNum = priceMatch ? parseInt(priceMatch[0].replace(/[^0-9]/g, '')) : 0;
+
+            priceHtml = `<div class="book-price" style="font-size: 1.2rem; font-weight: 700; color: var(--secondary-color); margin-top: 10px;">${priceStr}</div>`;
+
+            if (priceNum > 0) {
+                buyButtonHtml = `
+                    <button class="premium-btn" style="background: var(--secondary-color); color: white; border: none; width: 100%; margin-top: 15px; padding: 12px;" onclick="window.requestPay('${post.title}', ${priceNum})">
+                        <i class="fas fa-shopping-cart"></i> 바로 구매하기
+                    </button>
+                `;
+            } else {
+                buyButtonHtml = `
+                    <button class="premium-btn" style="background: var(--text-light); color: white; border: none; width: 100%; margin-top: 15px; padding: 12px;" onclick="window.open('mailto:kpuritan.phb@gmail.com?subject=구매 문의: ${post.title}', '_blank')">
+                        <i class="fas fa-envelope"></i> 구매 문의하기
+                    </button>
+                `;
+            }
         }
 
+        // PortOne Payment Function
+        window.requestPay = (title, amount) => {
+            if (!window.IMP) return alert("결제 모듈을 불러오는 중입니다. 잠시 후 타시 시도해주세요.");
+            const IMP = window.IMP;
+            IMP.init("imp67011510"); // 예시 가맹점 식별코드 (실제 발급 필요)
+
+            if (!confirm(`'${title}'을(를) ${amount.toLocaleString()}원에 구매하시겠습니까?`)) return;
+
+            IMP.request_pay({
+                pg: "html5_inicis",
+                pay_method: "card",
+                merchant_uid: `mid_${new Date().getTime()}`,
+                name: title,
+                amount: amount,
+                buyer_email: "customer@example.com",
+                buyer_name: "구매자",
+                buyer_tel: "010-0000-0000",
+            }, function (rsp) {
+                if (rsp.success) {
+                    alert('결제가 성공적으로 완료되었습니다! 감사합니다.');
+                    // 실제 환경에서는 여기서 서버(Firebase)에 결제 정보를 저장합니다.
+                } else {
+                    alert('결제에 실패하였습니다. 사유: ' + rsp.error_msg);
+                }
+            });
+        };
+
         li.innerHTML = `
-            <div class="resource-card-modern" style="margin-bottom: 20px;">
+            <div class="resource-card-modern ${isBookstore ? 'book-card' : ''}" style="margin-bottom: 20px;">
                 ${youtubeEmbedHtml}
                 <div class="resource-content-padding">
                     <div class="resource-header-modern">
@@ -1218,7 +1262,8 @@ document.addEventListener('DOMContentLoaded', () => {
                         ${adminButtons}
                     </div>
                     <div class="resource-body-modern">${linkedContent.trim() || '<span style="color:#ccc; font-style:italic;">상세 내용 없음</span>'}</div>
-                    ${fileLinkHtml}
+                    ${priceHtml}
+                    ${isBookstore ? buyButtonHtml : fileLinkHtml}
                 </div>
             </div>`;
         container.appendChild(li);
