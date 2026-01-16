@@ -385,6 +385,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 alert(`✅ 자료가 성공적으로 업로드되었습니다!`);
                 uploadForm.reset();
                 clearUploadTarget(); // 업로드 후 타겟 초기화
+                if (window.loadRecentPostsGrid) window.loadRecentPostsGrid(); // 최신자료 목록 갱신
                 if (progressContainer) progressContainer.style.display = 'none';
             } catch (error) {
                 console.error("Error adding document: ", error);
@@ -745,49 +746,56 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Load Public Recent Posts (Visitor View)
     const recentGrid = document.getElementById('recent-posts-grid');
-    if (recentGrid && typeof db !== 'undefined') {
+
+    window.loadRecentPostsGrid = () => {
+        if (!recentGrid || typeof db === 'undefined') return;
+
         // Safe check for Mock Mode
         if (typeof useMock !== 'undefined' && useMock) {
             recentGrid.innerHTML = '<p style="text-align:center;">[테스트 모드] 서버 연결 대기 중...</p>';
-        } else {
-            db.collection("posts").orderBy("createdAt", "desc").limit(6).get()
-                .then((snapshot) => {
-                    if (snapshot.empty) {
-                        recentGrid.innerHTML = '<p style="text-align:center; width:100%; color:#999;">아직 등록된 자료가 없습니다.</p>';
-                        return;
-                    }
-                    recentGrid.innerHTML = '';
-                    snapshot.forEach(doc => {
-                        const post = doc.data();
-                        const date = post.createdAt ? post.createdAt.toDate().toLocaleDateString() : '최근';
-                        const displayCategory = post.tags ? post.tags[0] : '자료';
-
-                        const div = document.createElement('div');
-                        div.className = 'recent-card-premium';
-                        div.innerHTML = `
-                        <div class="recent-card-inner">
-                            <div class="recent-card-top">
-                                <span class="recent-status-pill">NEW</span>
-                                <span class="recent-category-tag">${displayCategory}</span>
-                            </div>
-                            <h3 class="recent-title-premium">${post.title}</h3>
-                            <div class="recent-card-footer">
-                                <span class="recent-date-premium"><i class="far fa-calendar-alt"></i> ${date}</span>
-                                <button class="recent-link-btn" onclick="openResourceModal('${displayCategory}')">
-                                    상세보기 <i class="fas fa-chevron-right"></i>
-                                </button>
-                            </div>
-                        </div>
-                    `;
-                        recentGrid.appendChild(div);
-                    });
-                })
-                .catch(err => {
-                    console.log("Error loading recents:", err);
-                    recentGrid.innerHTML = '<p style="text-align:center; color:red;">자료 불러오기 실패</p>';
-                });
+            return;
         }
-    }
+
+        db.collection("posts").orderBy("createdAt", "desc").limit(6).get()
+            .then((snapshot) => {
+                if (snapshot.empty) {
+                    recentGrid.innerHTML = '<p style="text-align:center; width:100%; color:#999;">아직 등록된 자료가 없습니다.</p>';
+                    return;
+                }
+                recentGrid.innerHTML = '';
+                snapshot.forEach(doc => {
+                    const post = doc.data();
+                    const date = post.createdAt ? post.createdAt.toDate().toLocaleDateString() : '최근';
+                    const displayCategory = post.tags ? post.tags[0] : '자료';
+
+                    const div = document.createElement('div');
+                    div.className = 'recent-card-premium';
+                    div.innerHTML = `
+                    <div class="recent-card-inner">
+                        <div class="recent-card-top">
+                            <span class="recent-status-pill">NEW</span>
+                            <span class="recent-category-tag">${displayCategory}</span>
+                        </div>
+                        <h3 class="recent-title-premium">${post.title}</h3>
+                        <div class="recent-card-footer">
+                            <span class="recent-date-premium"><i class="far fa-calendar-alt"></i> ${date}</span>
+                            <button class="recent-link-btn" onclick="openResourceModal('${displayCategory}')">
+                                상세보기 <i class="fas fa-chevron-right"></i>
+                            </button>
+                        </div>
+                    </div>
+                `;
+                    recentGrid.appendChild(div);
+                });
+            })
+            .catch(err => {
+                console.log("Error loading recents:", err);
+                recentGrid.innerHTML = '<p style="text-align:center; color:red;">자료 불러오기 실패</p>';
+            });
+    };
+
+    // Initial Load
+    loadRecentPostsGrid();
 
     // Real Search Logic
     const searchInput = document.querySelector('.search-bar input');
