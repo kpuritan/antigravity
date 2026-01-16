@@ -290,12 +290,20 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
 
+            const submitBtn = uploadForm.querySelector('button[type="submit"]');
+            const originalBtnText = submitBtn.innerHTML;
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 업로드 중...';
+
             try {
                 let fileUrl = "";
 
                 // 파일이 있다면 Firebase Storage에 업로드
                 if (file) {
+                    const fileExtension = file.name.split('.').pop().toLowerCase();
                     const storageRef = storage.ref(`files/${Date.now()}_${file.name}`);
+
+                    // 업로드 모니터링 (선택사항이지만 UX 위해 추가 권장)
                     await storageRef.put(file);
                     fileUrl = await storageRef.getDownloadURL();
                 }
@@ -313,25 +321,14 @@ document.addEventListener('DOMContentLoaded', () => {
                     createdAt: firebase.firestore.FieldValue.serverTimestamp()
                 });
 
-                alert(`✅ 자료가 업로드되었습니다.`);
+                alert(`✅ 자료가 성공적으로 업로드되었습니다!`);
                 uploadForm.reset();
             } catch (error) {
                 console.error("Error adding document: ", error);
-
-                // Fallback to Mock if actual upload fails
-                alert("서버 연결에 실패하여 로컬 테스트 모드로 저장합니다.\n(에러: " + error.message + ")");
-
-                const li = document.createElement('li');
-                li.className = 'post-item';
-                const date = new Date().toLocaleString();
-                li.innerHTML = `
-                    <strong>[${tags.join(', ')}]</strong> ${title} 
-                     <span style="color:red; font-size:0.8em;">(로컬 저장)</span>
-                    <br> <small>${date}</small>
-                `;
-                if (recentPostsList.querySelector('.empty-msg')) recentPostsList.innerHTML = '';
-                recentPostsList.prepend(li);
-                uploadForm.reset();
+                alert("업로드 중 오류가 발생했습니다: " + error.message);
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalBtnText;
             }
         });
 
@@ -434,6 +431,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
 
+            const submitBtn = editForm.querySelector('button[type="submit"]');
+            const originalBtnText = submitBtn.innerHTML;
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 수정 중...';
+
             try {
                 let updateData = {
                     bibleBook,
@@ -458,6 +460,9 @@ document.addEventListener('DOMContentLoaded', () => {
             } catch (error) {
                 console.error("Update error:", error);
                 alert("수정 실패: " + error.message);
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalBtnText;
             }
         });
     }
