@@ -130,9 +130,14 @@
         </section>
 
         <section id="recent-updates" class="section-hidden">
-            <div class="section-title">
-                <h2>최신 업데이트 자료</h2>
-                <p>최근 등록된 설교와 자료들을 확인해보세요.</p>
+            <div class="section-title modern-flex">
+                <div class="title-text-group">
+                    <h2>최신 업데이트 자료</h2>
+                    <p>최근 등록된 설교와 자료들을 확인해보세요.</p>
+                </div>
+                <button class="view-all-btn" onclick="openAllRecentModal()">
+                    전체보기 <i class="fas fa-list-ul"></i>
+                </button>
             </div>
             <div id="recent-posts-grid" class="recent-grid-container">
                 <div class="loading-msg">자료를 불러오는 중입니다...</div>

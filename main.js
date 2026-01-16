@@ -523,41 +523,56 @@ document.addEventListener('DOMContentLoaded', () => {
                 li.className = 'resource-item';
 
                 const date = post.createdAt ? post.createdAt.toDate().toLocaleDateString() : '날짜 없음';
-
-                // Content detection (Youtube vs Text)
                 let youtubeEmbedHtml = '';
                 let contentText = post.content || '';
 
-                // Extract YouTube ID
-                const youtubeRegex = /(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/playlist\?list=)([a-zA-Z0-9_-]+)/g;
-                const youtubeMatch = contentText.match(youtubeRegex);
+                // URL 감지용 헬퍼
+                const urlRegex = /(https?:\/\/[^\s]+)/g;
+                const urlsInContent = contentText.match(urlRegex) || [];
 
-                if (youtubeMatch) {
-                    youtubeMatch.forEach(url => {
+                // PDF 및 클릭용 링크 결정
+                let primaryLink = post.fileUrl || (urlsInContent.length > 0 ? urlsInContent[0] : '#');
+                let isPdf = primaryLink.toLowerCase().includes('.pdf');
+
+                // 유튜브 임베드 생성
+                if (contentText.toLowerCase().includes('youtube.com') || contentText.toLowerCase().includes('youtu.be')) {
+                    urlsInContent.forEach(url => {
+                        const lowerUrl = url.toLowerCase();
                         let embedUrl = '';
-                        if (url.includes('list=')) {
+                        if (lowerUrl.includes('list=')) {
                             const listId = url.split('list=')[1].split('&')[0];
                             embedUrl = `https://www.youtube.com/embed/videoseries?list=${listId}`;
-                        } else {
-                            const videoId = url.includes('v=') ? url.split('v=')[1].split('&')[0] : url.split('/').pop().split('?')[0];
+                        } else if (lowerUrl.includes('v=')) {
+                            const videoId = url.split('v=')[1].split('&')[0];
+                            embedUrl = `https://www.youtube.com/embed/${videoId}`;
+                        } else if (lowerUrl.includes('youtu.be/')) {
+                            const videoId = url.split('youtu.be/')[1].split('?')[0];
                             embedUrl = `https://www.youtube.com/embed/${videoId}`;
                         }
-                        youtubeEmbedHtml += `
-                            <div class="youtube-embed-container">
-                                <iframe src="${embedUrl}" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
-                            </div>`;
+
+                        if (embedUrl) {
+                            youtubeEmbedHtml += `
+                                <div class="youtube-embed-container" style="border-bottom: 1px solid #eee;">
+                                    <iframe src="${embedUrl}" frameborder="0" allowfullscreen></iframe>
+                                </div>`;
+                        }
                     });
                 }
 
-                // Convert URLs to clickable links (excluding what we just embedded if needed, or just link them all)
-                const linkedContent = contentText.replace(/(https?:\/\/[^\s]+)/g, '<a href="$1" target="_blank">$1</a>');
+                // 텍스트 내 링크 변환
+                const linkedContent = contentText.replace(urlRegex, '<a href="$1" target="_blank" class="text-link">$1</a>');
 
-                let fileLink = '';
+                // 파일 다운로드 버튼 (PDF일 경우 디자인 차별화)
+                let fileLinkHtml = '';
                 if (post.fileUrl) {
-                    fileLink = `<a href="${post.fileUrl}" target="_blank" class="resource-link"><i class="fas fa-file-download"></i> 첨부파일 다운로드</a>`;
+                    const icon = isPdf ? 'fa-file-pdf' : 'fa-file-download';
+                    const label = isPdf ? 'PDF 파일 보기' : '첨부파일 다운로드';
+                    const color = isPdf ? '#e74c3c' : 'var(--secondary-color)';
+                    fileLinkHtml = `<a href="${post.fileUrl}" target="_blank" class="resource-link premium-btn" style="border-color:${color}; color:${color};">
+                        <i class="fas ${icon}"></i> ${label}</a>`;
                 }
 
-                // Add Admin Buttons if logged in
+                // 관리자 버튼
                 let adminButtons = '';
                 if (isAdmin) {
                     adminButtons = `
@@ -577,11 +592,17 @@ document.addEventListener('DOMContentLoaded', () => {
                                     <span class="resource-type-badge">${post.tags && post.tags[0] ? post.tags[0] : '자료'}</span>
                                     <span class="resource-date-modern">${date}</span>
                                 </div>
-                                <h4 class="resource-title-modern">${post.title}</h4>
+                                <h4 class="resource-title-modern">
+                                    <a href="${primaryLink}" target="${primaryLink !== '#' ? '_blank' : '_self'}" class="title-clickable">
+                                        ${isPdf ? '<i class="fas fa-file-pdf" style="color:#e74c3c; margin-right:5px;"></i>' : ''}
+                                        ${post.title}
+                                        ${primaryLink !== '#' ? '<i class="fas fa-external-link-alt" style="font-size:0.7em; margin-left:8px; opacity:0.3;"></i>' : ''}
+                                    </a>
+                                </h4>
                                 ${adminButtons}
                             </div>
-                            <div class="resource-body-modern">${linkedContent}</div>
-                            ${fileLink}
+                            <div class="resource-body-modern">${linkedContent.trim() || '<span style="color:#ccc; font-style:italic;">상세 내용 없음</span>'}</div>
+                            ${fileLinkHtml}
                         </div>
                     </div>
                 `;
@@ -821,7 +842,66 @@ document.addEventListener('DOMContentLoaded', () => {
         document.body.removeEventListener('keydown', unlockAudio);
     };
 
-    document.body.addEventListener('click', unlockAudio);
-    document.body.addEventListener('touchstart', unlockAudio);
-    document.body.addEventListener('keydown', unlockAudio);
-});
+    // --- Global View Functions ---
+    window.openAllRecentModal = async () => {
+        if (!resourceModal) return;
+        resourceModal.classList.add('show');
+        resourceModalTitle.textContent = `최신 업데이트 전체 목록`;
+        resourceListContainer.innerHTML = '<li class="no-resource-msg">최신 자료를 불러오는 중입니다...</li>';
+
+        try {
+            const snapshot = await db.collection("posts")
+                .orderBy("createdAt", "desc")
+                .limit(30)
+                .get();
+
+            if (snapshot.empty) {
+                resourceListContainer.innerHTML = '<li class="no-resource-msg">최신 자료가 없습니다.</li>';
+                return;
+            }
+
+            // reuse render logic (simplified for this call)
+            resourceListContainer.innerHTML = '';
+            snapshot.forEach(doc => {
+                const post = doc.data();
+                // (Rendering logic copied or factored out would be better, but for simplicity here...)
+                const date = post.createdAt ? post.createdAt.toDate().toLocaleDateString() : '날짜 없음';
+
+                // ... (simplified render for global view) ...
+                const li = document.createElement('li');
+                li.className = 'resource-item-clean';
+
+                // Check for youtube/file to make title clickable
+                let firstUrl = '#';
+                if (post.fileUrl) firstUrl = post.fileUrl;
+                else if (post.content) {
+                    const m = post.content.match(/(https?:\/\/[^\s]+)/);
+                    if (m) firstUrl = m[0];
+                }
+
+                li.innerHTML = `
+                    <div class="resource-card-modern">
+                         <div class="resource-content-padding">
+                            <div class="resource-header-modern">
+                                <span class="resource-type-badge">${post.tags ? post.tags[0] : '자료'}</span>
+                                <h4 class="resource-title-modern">
+                                    <a href="${firstUrl}" target="${firstUrl !== '#' ? '_blank' : '_self'}" style="text-decoration:none; color:inherit;">
+                                        ${post.title}
+                                    </a>
+                                </h4>
+                                <span class="resource-date-modern">${date}</span>
+                            </div>
+                         </div>
+                    </div>
+                `;
+                li.addEventListener('click', () => {
+                    // Open the specific modal for this category or detail
+                    openResourceModal(post.tags ? post.tags[0] : '자료');
+                });
+                resourceListContainer.appendChild(li);
+            });
+        } catch (e) {
+            console.error(e);
+        }
+    };
+}); // End of main DOMContentLoaded
