@@ -878,25 +878,33 @@ document.addEventListener('DOMContentLoaded', () => {
                     seriesPosts.sort((a, b) => (a.createdAt?.seconds || 0) - (b.createdAt?.seconds || 0));
 
                     let thumbId = '';
-                    const firstPostWithVideo = seriesPosts.find(p => p.content && (p.content.includes('youtube.com') || p.content.includes('youtu.be')));
-                    if (firstPostWithVideo) {
-                        const contentText = firstPostWithVideo.content;
+                    seriesPosts.forEach(post => {
+                        if (thumbId) return;
+                        const contentText = post.content || '';
                         const urls = contentText.match(/(https?:\/\/[^\s]+)/g) || [];
                         urls.forEach(url => {
-                            if (url.includes('v=')) { thumbId = url.split('v=')[1].split('&')[0]; }
-                            else if (url.includes('youtu.be/')) { thumbId = url.split('youtu.be/')[1].split('?')[0]; }
+                            if (thumbId) return;
+                            // More robust regex for YouTube ID extraction
+                            const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=|shorts\/)([^#\&\?]*).*/;
+                            const match = url.match(regExp);
+                            if (match && match[2].length === 11) {
+                                thumbId = match[2];
+                            }
                         });
-                    }
+                    });
+
                     const thumbUrl = thumbId ? `https://img.youtube.com/vi/${thumbId}/mqdefault.jpg`
-                        : 'https://images.unsplash.com/photo-1507738911740-02941ded416a?auto=format&fit=crop&q=80&w=400';
+                        : 'https://images.unsplash.com/photo-1585829365234-78905bc76269?auto=format&fit=crop&q=80&w=400';
 
                     const folderCard = document.createElement('div');
                     folderCard.className = 'main-grid-item';
                     folderCard.style.textAlign = 'center';
                     folderCard.style.padding = '1rem';
                     folderCard.innerHTML = `
-                        <div style="width:100%; height:100px; border-radius:8px; overflow:hidden; margin-bottom:10px; position:relative;">
-                            <img src="${thumbUrl}" style="width:100%; height:100%; object-fit:cover;">
+                        <div style="width:100%; height:100px; border-radius:8px; overflow:hidden; margin-bottom:10px; position:relative; background:#f0f0f0;">
+                            <img src="${thumbUrl}" 
+                                 onerror="this.src='https://images.unsplash.com/photo-1585829365234-78905bc76269?auto=format&fit=crop&q=80&w=400'; this.onerror=null;"
+                                 style="width:100%; height:100%; object-fit:cover;">
                             <div style="position:absolute; right:10px; bottom:10px; background:rgba(0,0,0,0.7); color:white; padding:2px 8px; border-radius:4px; font-size:0.75rem;">
                                 <i class="fas fa-play"></i> ${seriesPosts.length}
                             </div>
