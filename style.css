@@ -97,7 +97,8 @@ nav {
 nav ul {
     display: flex;
     list-style: none;
-    gap: 1.5rem;
+    gap: 2rem;
+    /* Increased spacing by 30%+ */
     justify-content: center;
 }
 
