@@ -43,7 +43,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    const bibleDropdown = document.getElementById('bible-dropdown');
     const topicDropdown = document.getElementById('topic-dropdown');
     const authorDropdownGrid = document.getElementById('author-dropdown-grid');
 
@@ -68,7 +67,6 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     // Populate dropdowns
-    renderMegaMenuItems(bibleBooks, bibleDropdown);
     renderMegaMenuItems(topics, topicDropdown);
 
     // Render for Author Dropdown (Special case for search)
@@ -108,12 +106,11 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     // Populate main grids
-    renderMainGridItems(bibleBooks, 'bible-grid-main', 'fas fa-bible');
     renderMainGridItems(topics, 'topic-grid-main', 'fas fa-tags');
     renderMainGridItems(authors, 'author-grid-main', 'fas fa-user-edit');
 
     // Show sections that were hidden
-    const sectionsToShow = ['bible', 'topic', 'author', 'bible-study', 'evangelism-booklet', 'recent-updates'];
+    const sectionsToShow = ['topic', 'author', 'bible-study', 'evangelism-booklet', 'recent-updates'];
     sectionsToShow.forEach(id => {
         const sec = document.getElementById(id);
         if (sec) sec.classList.remove('section-hidden');
@@ -269,10 +266,8 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     };
 
-    populateSelect('post-bible-book', bibleBooks);
     populateSelect('post-topic', topics);
     populateSelect('post-author', authors);
-    populateSelect('edit-bible-book', bibleBooks);
     populateSelect('edit-topic', topics);
     populateSelect('edit-author', authors);
 
@@ -424,12 +419,11 @@ document.addEventListener('DOMContentLoaded', () => {
         uploadForm.addEventListener('submit', async (e) => {
             e.preventDefault();
 
-            const bibleBook = document.getElementById('post-bible-book').value;
             const topic = document.getElementById('post-topic').value;
             const author = document.getElementById('post-author').value;
             const other = document.getElementById('post-other-category').value;
 
-            let tags = [bibleBook, topic, author, other].filter(t => t !== "");
+            let tags = [topic, author, other].filter(t => t !== "");
             if (currentUploadTarget) {
                 if (!tags.includes(currentUploadTarget)) tags.push(currentUploadTarget);
             }
@@ -536,7 +530,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 정보 저장 중...';
 
                 const postData = {
-                    bibleBook,
                     topic,
                     author,
                     otherCategory: other,
@@ -627,7 +620,6 @@ document.addEventListener('DOMContentLoaded', () => {
             const post = doc.data();
 
             document.getElementById('edit-post-id').value = id;
-            document.getElementById('edit-bible-book').value = post.bibleBook || "";
             document.getElementById('edit-topic').value = post.topic || "";
             document.getElementById('edit-author').value = post.author || "";
             document.getElementById('edit-other-category').value = post.otherCategory || "";
@@ -659,11 +651,10 @@ document.addEventListener('DOMContentLoaded', () => {
             e.preventDefault();
             const id = document.getElementById('edit-post-id').value;
 
-            const bibleBook = document.getElementById('edit-bible-book').value;
             const topic = document.getElementById('edit-topic').value;
             const author = document.getElementById('edit-author').value;
             const other = document.getElementById('edit-other-category').value;
-            const tags = [bibleBook, topic, author, other].filter(t => t !== "");
+            const tags = [topic, author, other].filter(t => t !== "");
 
             const title = document.getElementById('edit-title').value.trim();
             const series = document.getElementById('edit-series').value.trim() || "";
@@ -683,7 +674,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
             try {
                 let updateData = {
-                    bibleBook,
                     topic,
                     author,
                     otherCategory: other,
@@ -1029,15 +1019,12 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         if (recentLoadMoreTrigger) {
-            recentLoadMoreTrigger.style.display = 'block';
+            recentLoadMoreTrigger.style.display = 'none';
         }
 
         try {
-            let query = db.collection("posts").orderBy("createdAt", "desc").limit(6);
-            if (!isInitial && lastRecentDoc) {
-                query = query.startAfter(lastRecentDoc);
-            }
-
+            // 메인 페이지에는 최상위 4개만 항상 표시
+            let query = db.collection("posts").orderBy("createdAt", "desc").limit(4);
             const snapshot = await query.get();
 
             if (snapshot.empty) {
@@ -1045,7 +1032,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     recentGrid.innerHTML = '<p style="text-align:center; width:100%; color:#999;">아직 등록된 자료가 없습니다.</p>';
                 }
                 hasMoreRecent = false;
-                if (recentLoadMoreTrigger) recentLoadMoreTrigger.style.display = 'none';
                 return;
             }
 
@@ -1078,12 +1064,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 recentGrid.appendChild(div);
             });
 
-            lastRecentDoc = snapshot.docs[snapshot.docs.length - 1];
-
-            if (snapshot.docs.length < 6) {
-                hasMoreRecent = false;
-                if (recentLoadMoreTrigger) recentLoadMoreTrigger.style.display = 'none';
-            }
+            hasMoreRecent = false;
 
         } catch (err) {
             console.log("Error loading recents:", err);
@@ -1095,15 +1076,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
-    // Set up Infinite Scroll Observer
-    if (recentLoadMoreTrigger) {
-        const observer = new IntersectionObserver((entries) => {
-            if (entries[0].isIntersecting && hasMoreRecent && !isRecentLoading) {
-                window.loadRecentPostsGrid(false);
-            }
-        }, { threshold: 0.1 });
-        observer.observe(recentLoadMoreTrigger);
-    }
+    // Set up Infinite Scroll Observer removed to keep main page clean (limit 4)
 
     // Initial Load
     loadRecentPostsGrid();
@@ -1120,8 +1093,6 @@ document.addEventListener('DOMContentLoaded', () => {
         resourceListContainer.innerHTML = '<li class="no-resource-msg">검색 중입니다...</li>';
 
         try {
-            // Firestore simple prefix search on 'title'
-            // Note: This is case-sensitive and prefix-only.
             const snapshot = await db.collection("posts")
                 .where('title', '>=', query)
                 .where('title', '<=', query + '\uf8ff')
@@ -1150,12 +1121,40 @@ document.addEventListener('DOMContentLoaded', () => {
                 performSearch(searchInput.value.trim());
             }
         });
-        // Also allow clicking search icon if wanted
         const searchIcon = document.querySelector('.search-icon');
         if (searchIcon) {
             searchIcon.addEventListener('click', () => performSearch(searchInput.value.trim()));
         }
     }
+
+    // --- Global View Functions (Moved here for scope) ---
+    window.openAllRecentModal = async () => {
+        if (!resourceModal) return;
+        resourceModal.classList.add('show');
+        resourceModalTitle.textContent = `최신 업데이트 전체 목록`;
+        resourceListContainer.innerHTML = '<li class="no-resource-msg">최신 자료를 불러오는 중입니다...</li>';
+
+        try {
+            const snapshot = await db.collection("posts")
+                .orderBy("createdAt", "desc")
+                .limit(200)
+                .get();
+
+            if (snapshot.empty) {
+                resourceListContainer.innerHTML = '<li class="no-resource-msg">최신 자료가 없습니다.</li>';
+                return;
+            }
+
+            resourceListContainer.innerHTML = '';
+            snapshot.forEach(doc => {
+                const post = { id: doc.id, ...doc.data() };
+                renderSingleResource(post, resourceListContainer);
+            });
+        } catch (e) {
+            console.error(e);
+            resourceListContainer.innerHTML = '<li class="no-resource-msg">자료를 불러오는 중에 오류가 발생했습니다.</li>';
+        }
+    };
 
 }); // End of main DOMContentLoaded
 
@@ -1246,33 +1245,6 @@ document.addEventListener('DOMContentLoaded', () => {
         document.body.removeEventListener('keydown', unlockAudio);
     };
 
-    // --- Global View Functions ---
-    window.openAllRecentModal = async () => {
-        if (!resourceModal) return;
-        resourceModal.classList.add('show');
-        resourceModalTitle.textContent = `최신 업데이트 전체 목록`;
-        resourceListContainer.innerHTML = '<li class="no-resource-msg">최신 자료를 불러오는 중입니다...</li>';
-
-        try {
-            // "다 보이게" requested by user - remove strict limit or increase it significantly
-            const snapshot = await db.collection("posts")
-                .orderBy("createdAt", "desc")
-                .limit(200) // Increase significantly to show "all" as requested
-                .get();
-
-            if (snapshot.empty) {
-                resourceListContainer.innerHTML = '<li class="no-resource-msg">최신 자료가 없습니다.</li>';
-                return;
-            }
-
-            resourceListContainer.innerHTML = '';
-            snapshot.forEach(doc => {
-                const post = { id: doc.id, ...doc.data() };
-                renderSingleResource(post, resourceListContainer);
-            });
-        } catch (e) {
-            console.error(e);
-            resourceListContainer.innerHTML = '<li class="no-resource-msg">자료를 불러오는 중에 오류가 발생했습니다.</li>';
-        }
-    };
+    // --- Global View Functions (Moved to main scope above) ---
 }); // End of main DOMContentLoaded
+

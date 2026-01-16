@@ -20,12 +20,7 @@
                 <ul>
                     <li><a href="#about">소개</a></li>
                     <li><a href="#recent-updates">최신 자료</a></li>
-                    <li class="dropdown">
-                        <a href="#bible">성경책별 자료 <i class="fas fa-chevron-down"></i></a>
-                        <div class="dropdown-content mega-menu" id="bible-dropdown">
-                            <!-- Bible books injected here -->
-                        </div>
-                    </li>
+
                     <li class="dropdown">
                         <a href="#topic">주제별 자료 <i class="fas fa-chevron-down"></i></a>
                         <div class="dropdown-content mega-menu" id="topic-dropdown">
@@ -73,15 +68,7 @@
 
 
 
-        <section id="bible" class="section-hidden">
-            <div class="section-title">
-                <h2>성경책별 자료</h2>
-                <p>총 66권의 성경별로 분류된 청교도 및 개혁주의 자료를 만나보세요.</p>
-            </div>
-            <div id="bible-grid-main" class="main-grid-container">
-                <!-- Injected via JS -->
-            </div>
-        </section>
+
 
         <section id="topic" class="section-hidden">
             <div class="section-title">
@@ -226,13 +213,7 @@
                         </div>
 
                         <div class="admin-form-tags-grid">
-                            <div class="input-group">
-                                <label>성경책별 분류</label>
-                                <select id="post-bible-book">
-                                    <option value="">-- 선택 안함 --</option>
-                                    <!-- Injected via JS -->
-                                </select>
-                            </div>
+
                             <div class="input-group">
                                 <label>주제별 분류</label>
                                 <select id="post-topic">
@@ -420,13 +401,7 @@
             <form id="edit-form" class="upload-form">
                 <input type="hidden" id="edit-post-id">
                 <div class="admin-form-tags-grid">
-                    <div class="input-group">
-                        <label>성경책별 분류</label>
-                        <select id="edit-bible-book">
-                            <option value="">-- 선택 안함 --</option>
-                            <!-- Injected via JS -->
-                        </select>
-                    </div>
+
                     <div class="input-group">
                         <label>주제별 분류</label>
                         <select id="edit-topic">
