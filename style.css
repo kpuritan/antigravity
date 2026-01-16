@@ -1398,22 +1398,22 @@ footer {
    ========================================= */
 .resource-list.compact-view {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(175px, 1fr));
     gap: 1rem;
 }
 
 .compact-view .resource-card-modern {
     margin-bottom: 0;
-    font-size: 0.9rem;
+    font-size: 0.85rem;
 }
 
 .compact-view .resource-content-padding {
-    padding: 1.2rem;
+    padding: 1rem;
 }
 
 .compact-view .resource-title-modern {
-    font-size: 1.1rem;
-    margin-bottom: 0.3rem;
+    font-size: 0.95rem;
+    margin-bottom: 0.2rem;
     display: -webkit-box;
     -webkit-line-clamp: 1;
     line-clamp: 1;

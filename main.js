@@ -923,13 +923,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const renderDetailView = (seriesName, posts) => {
                 resourceListContainer.innerHTML = '';
+                resourceListContainer.classList.add('compact-view'); // 5개씩 보기 위해 콤팩트 모드 적용
 
                 // Back Button
                 const backBtn = document.createElement('button');
                 backBtn.className = 'view-all-btn';
                 backBtn.style.marginBottom = '20px';
+                backBtn.style.gridColumn = '1 / -1'; // 그리드 전체 너비 차지
                 backBtn.innerHTML = `<i class="fas fa-arrow-left"></i> 목록으로 돌아가기 (${categoryName})`;
                 backBtn.onclick = () => {
+                    resourceListContainer.classList.remove('compact-view');
                     renderListView(groupedPosts);
                 };
                 resourceListContainer.appendChild(backBtn);
@@ -940,6 +943,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 seriesTitle.style.fontSize = '1.5rem';
                 seriesTitle.style.textAlign = 'center';
                 seriesTitle.style.fontFamily = "'Playfair Display', serif";
+                seriesTitle.style.gridColumn = '1 / -1'; // 그리드 전체 너비 차지
                 resourceListContainer.appendChild(seriesTitle);
 
                 // Posts in series
