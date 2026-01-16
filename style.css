@@ -1519,14 +1519,16 @@ footer {
     }
 }
 
-.section-title.modern-flex {
+.section-title-content {
     display: flex;
     justify-content: space-between;
     align-items: flex-end;
-    text-align: left;
-    margin-bottom: 3.5rem;
-    border-bottom: 2px solid #f8f8f8;
-    padding-bottom: 1.5rem;
+    width: 100%;
+}
+
+.section-title.modern-flex {
+    /* Keep for compatibility if needed, but the main structure now uses grid */
+    display: grid;
 }
 
 .view-all-btn {
