@@ -48,7 +48,8 @@ header {
     box-shadow: var(--shadow);
     position: sticky;
     top: 0;
-    z-index: 1000;
+    z-index: 2100;
+    /* Increased to be above nav-overlay (1500) */
     transition: var(--transition);
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
@@ -1938,9 +1939,20 @@ footer {
     }
 
     nav ul {
+        display: flex !important;
+        /* Force flex on mobile */
         flex-direction: column;
         align-items: center;
-        gap: 2.5rem;
+        justify-content: center;
+        gap: 2rem;
+        padding-top: 2rem;
+    }
+
+    nav ul li a {
+        color: #ffffff !important;
+        font-size: 1.25rem;
+        display: block;
+        padding: 0.8rem;
     }
 
     nav ul li {
