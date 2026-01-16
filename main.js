@@ -251,21 +251,105 @@ document.addEventListener('DOMContentLoaded', () => {
     window.switchAdminTab = (tabName) => {
         const portalCards = document.querySelectorAll('.admin-portal-card');
         portalCards.forEach(card => {
+            card.classList.remove('active');
             card.style.border = '2px solid #eee';
             card.style.boxShadow = 'none';
         });
 
-        const activeCard = event ? event.currentTarget : document.getElementById('tab-general');
+        // 탭 상태 업데이트
+        const targetTabId = `tab-${tabName}`;
+        const activeCard = document.getElementById(targetTabId);
         if (activeCard) {
+            activeCard.classList.add('active');
             activeCard.style.border = `2px solid var(--primary-color)`;
             activeCard.style.boxShadow = '0 10px 20px rgba(0,0,0,0.05)';
         }
 
-        // 일반 자료 섹션 표시 여부 조절
-        const generalSection = document.getElementById('admin-general-section');
-        if (generalSection) {
-            generalSection.style.display = (tabName === 'general') ? 'grid' : 'none';
+        // 섹션 표시 전환
+        document.querySelectorAll('.admin-tab-content').forEach(section => {
+            section.style.display = 'none';
+        });
+
+        const targetSection = document.getElementById(`admin-${tabName}-section`);
+        if (targetSection) {
+            targetSection.style.display = (tabName === 'general') ? 'grid' : 'block';
         }
+
+        // 강해설교 탭 선택 시 시리즈 목록 로드
+        if (tabName === 'bible-study') {
+            loadAdminSeries('강해설교');
+        }
+    };
+
+    // 관리자용 시리즈 목록 로드
+    window.loadAdminSeries = async (category) => {
+        const container = document.getElementById('admin-series-list-container');
+        if (!container) return;
+
+        container.innerHTML = '<div class="loading-msg">시리즈 목록을 불러오는 중...</div>';
+
+        try {
+            const snapshot = await db.collection("posts").where("tags", "array-contains", category).get();
+            const seriesSet = new Set();
+            snapshot.forEach(doc => {
+                const data = doc.data();
+                if (data.series) seriesSet.add(data.series);
+            });
+
+            if (seriesSet.size === 0) {
+                container.innerHTML = '<div style="grid-column: 1/-1; text-align:center; padding: 40px; color:#999;">아직 생성된 필더(시리즈)가 없습니다.</div>';
+                return;
+            }
+
+            container.innerHTML = '';
+            seriesSet.forEach(seriesName => {
+                const card = document.createElement('div');
+                card.className = 'admin-series-card';
+                card.style.cssText = 'background:#f9f9f9; padding:20px; border-radius:12px; border:1px solid #ddd; cursor:pointer; transition:all 0.3s;';
+                card.innerHTML = `
+                    <div style="display:flex; align-items:center; gap:15px;">
+                        <i class="fas fa-folder" style="font-size:2rem; color:var(--secondary-color);"></i>
+                        <div style="flex:1;">
+                            <h4 style="margin:0; font-size:1.1rem;">${seriesName}</h4>
+                            <p style="font-size:0.8rem; color:#888; margin-top:3px;">클릭하여 자료 추가/관리</p>
+                        </div>
+                        <i class="fas fa-chevron-right" style="color:#ccc;"></i>
+                    </div>
+                `;
+                card.onclick = () => openResourceModalWithSeries(category, seriesName);
+                card.onmouseover = () => { card.style.background = '#fff'; card.style.borderColor = 'var(--secondary-color)'; card.style.transform = 'translateY(-3px)'; };
+                card.onmouseout = () => { card.style.background = '#f9f9f9'; card.style.borderColor = '#ddd'; card.style.transform = 'none'; };
+                container.appendChild(card);
+            });
+        } catch (err) {
+            console.error(err);
+            container.innerHTML = '목록 로딩 실패';
+        }
+    };
+
+    window.createNewSeriesPrompt = (category) => {
+        const name = prompt("새롭게 만드실 시리즈(폴더) 이름을 입력하세요.\n예: 사도행전 강해 시리즈");
+        if (name && name.trim()) {
+            // 폴더를 '생성'한다는 것은 해당 시리즈명으로 첫 자료를 올릴 준비를 하는 것
+            openResourceModalWithSeries(category, name.trim());
+            setTimeout(() => {
+                const uploadBtn = document.getElementById('toggle-modal-upload');
+                if (uploadBtn) uploadBtn.click();
+            }, 500);
+        }
+    };
+
+    // 특정 시리즈가 선택된 상태로 모달 열기
+    window.openResourceModalWithSeries = (category, seriesName) => {
+        window.openResourceModal(category);
+        // 모달이 열린 후 인풋 세팅을 위해 약간의 지연
+        setTimeout(() => {
+            const seriesInput = document.getElementById('modal-post-series');
+            if (seriesInput) {
+                seriesInput.value = seriesName;
+                seriesInput.readOnly = true; // 폴더 내 업로드 시 이름 고정
+            }
+        }, 300);
     };
     let currentUploadTarget = null;
 
@@ -584,7 +668,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 // 시리즈가 폴더면 시리즈 인풋값을 폴더명으로 자동 세팅. 
                 // 단 성경책/주제 등은 시리즈라기보단 태그이므로 비워두거나 필요시 입력.
-                if (seriesInput) seriesInput.value = '';
+                if (seriesInput && !seriesInput.value) {
+                    seriesInput.value = '';
+                    seriesInput.readOnly = false;
+                }
 
                 toggleBtn.onclick = () => {
                     const isHidden = modalUploadForm.style.display === 'none';

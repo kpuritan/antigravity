@@ -196,7 +196,8 @@
                     </div>
                 </div>
 
-                <div class="admin-grid" id="admin-general-section">
+                <!-- 1. 일반 자료 섹션 -->
+                <div class="admin-grid admin-tab-content" id="admin-general-section">
                     <form id="post-upload-form" class="upload-form"
                         style="background: #fff; border: 1px solid #eee; box-shadow: 0 10px 30px rgba(0,0,0,0.05);">
                         <div
@@ -241,14 +242,6 @@
                             <input type="text" id="post-title" placeholder="자료 제목을 입력하세요" required>
                         </div>
 
-                        <!-- 시리즈 필드는 기본 대시보드에서 숨김 (폴더 내 업로드에서만 사용) -->
-                        <div id="series-field-group" style="display: none;">
-                            <div class="input-group">
-                                <label>시리즈/연재 이름 (폴더명)</label>
-                                <input type="text" id="post-series" placeholder="예: 사도행전 강해 시리즈">
-                            </div>
-                        </div>
-
                         <div class="input-group">
                             <label>내용 (또는 유튜브 링크)</label>
                             <textarea id="post-content" rows="6" placeholder="내용을 입력하거나 유튜브 주소를 넣어주세요"></textarea>
@@ -274,17 +267,71 @@
                                     </div>
                                 </div>
                             </div>
-                            <button type="submit" class="cta-btn primary">자료 게시하기</button>
                         </div>
+                        <button type="submit" class="cta-btn primary">자료 게시하기</button>
                     </form>
+                </div>
 
-                    <div class="admin-status">
-                        <h3>최근 업로드 현황</h3>
-                        <ul id="admin-recent-posts">
-                            <li class="empty-msg">아직 업로드된 자료가 없습니다.</li>
-                        </ul>
+                <!-- 2. 강해설교 시리즈 관리 섹션 -->
+                <div class="admin-tab-content" id="admin-bible-study-section" style="display: none;">
+                    <div
+                        style="background: #fff; padding: 30px; border-radius: 15px; border: 1px solid #eee; box-shadow: 0 10px 30px rgba(0,0,0,0.05);">
+                        <div
+                            style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; border-bottom: 1px solid #eee; padding-bottom: 20px;">
+                            <div>
+                                <h3 style="margin:0; color: var(--primary-color);"><i class="fas fa-scroll"></i> 강해설교
+                                    시리즈 관리</h3>
+                                <p style="font-size: 0.9rem; color: #777; margin-top: 5px;">시리즈 폴더를 생성하고 설교 자료를 체계적으로
+                                    관리하세요.</p>
+                            </div>
+                            <button class="cta-btn primary" onclick="createNewSeriesPrompt('강해설교')"
+                                style="padding: 12px 25px;">
+                                <i class="fas fa-folder-plus"></i> 새 시리즈(폴더) 만들기
+                            </button>
+                        </div>
+
+                        <div id="admin-series-list-container" class="series-management-grid"
+                            style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px;">
+                            <!-- 시리즈 폴더 카드들이 여기에 생성됨 -->
+                            <div class="loading-msg">시리즈 목록을 불러오는 중...</div>
+                        </div>
                     </div>
                 </div>
+
+                <!-- 3. 전도 소책자 관리 섹션 -->
+                <div class="admin-tab-content" id="admin-booklet-section" style="display: none;">
+                    <div
+                        style="background: #fff; padding: 30px; border-radius: 15px; border: 1px solid #eee; box-shadow: 0 10px 30px rgba(0,0,0,0.05);">
+                        <div
+                            style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
+                            <h3 style="margin:0; color: #e67e22;"><i class="fas fa-bullhorn"></i> 전도 소책자 관리</h3>
+                            <button class="cta-btn primary" onclick="openResourceModal('전도 소책자')"
+                                style="background: #e67e22; border-color: #e67e22;">
+                                <i class="fas fa-plus-circle"></i> 소책자 목록 보기/편집
+                            </button>
+                        </div>
+                        <div id="admin-booklet-list-container">
+                            <p style="text-align:center; color:#999; padding: 40px;">소책자 카드를 클릭하여 관리하거나 새 소책자를 추가하세요.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="admin-status">
+                    <h3>최근 업로드 현황</h3>
+                    <ul id="admin-recent-posts">
+                        <li class="empty-msg">아직 업로드된 자료가 없습니다.</li>
+                    </ul>
+                </div>
+                </form>
+
+                <div class="admin-status">
+                    <h3>최근 업로드 현황</h3>
+                    <ul id="admin-recent-posts">
+                        <li class="empty-msg">아직 업로드된 자료가 없습니다.</li>
+                    </ul>
+                </div>
+            </div>
             </div>
         </section>
     </main>
