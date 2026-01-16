@@ -14,6 +14,7 @@ const firebaseConfig = {
 // Initialize Firebase
 let useMock = false;
 let db, storage;
+let isAdmin = false; // Add global isAdmin variable
 
 try {
     const app = firebase.initializeApp(firebaseConfig);
