@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>한국 청교도 연구소 | Korea Puritan Institute</title>
+    <meta name="description" content="청교도 신학과 개혁주의 신념을 연구하고 성경적인 자료를 제공하는 한국 청교도 연구소입니다.">
+    <link rel="stylesheet" href="style.css">
+    <!-- Font Awesome for Search Icon -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+
+<body>
+
+    <header>
+        <div class="nav-container">
+            <a href="#" class="logo">한국 청교도 연구소</a>
+            <nav>
+                <ul>
+                    <li><a href="#about">소개</a></li>
+                    <li><a href="#recent-updates">최신 자료</a></li>
+                    <li class="dropdown">
+                        <a href="#bible">성경책별 자료 <i class="fas fa-chevron-down"></i></a>
+                        <div class="dropdown-content mega-menu" id="bible-dropdown">
+                            <!-- Bible books injected here -->
+                        </div>
+                    </li>
+                    <li class="dropdown">
+                        <a href="#topic">주제별 자료 <i class="fas fa-chevron-down"></i></a>
+                        <div class="dropdown-content mega-menu" id="topic-dropdown">
+                            <!-- Topics injected here -->
+                        </div>
+                    </li>
+                    <li class="dropdown">
+                        <a href="#author">저자별 자료 <i class="fas fa-chevron-down"></i></a>
+                        <div class="dropdown-content mega-menu" id="author-dropdown">
+                            <div class="author-search-container">
+                                <input type="text" id="author-dropdown-search" placeholder="저자 이름 검색...">
+                            </div>
+                            <div class="author-grid-dropdown" id="author-dropdown-grid">
+                                <!-- Authors injected here -->
+                            </div>
+                        </div>
+                    </li>
+                    <li><a href="#bible-study">성경공부 교재</a></li>
+                    <li><a href="#evangelism-booklet">전도 소책자</a></li>
+                    <li><a href="mailto:kpuritan.phb@gmail.com">출판사</a></li>
+                </ul>
+            </nav>
+            <div class="header-right">
+                <div class="search-bar">
+                    <i class="fas fa-search search-icon"></i>
+                    <input type="text" placeholder="검색어를 입력하세요...">
+                </div>
+                <button id="login-open-btn" class="login-trigger"><i class="fas fa-user-lock"></i> 관리자</button>
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <section class="hero">
+            <div class="hero-content">
+                <h1>진리의 유산을 잇는 <br>한국 청교도 연구소</h1>
+                <p>청교도 신학과 개혁주의 신앙의 깊이를 현대에 전하며<br>성경의 진리를 연구하고 보급합니다.</p>
+                <div class="hero-btns">
+                    <a href="#about" class="cta-btn secondary">연구소 소개</a>
+                </div>
+            </div>
+        </section>
+
+        <!-- About Section Moved to Modal -->
+
+
+
+        <section id="bible" class="section-hidden">
+            <div class="section-title">
+                <h2>성경책별 자료</h2>
+                <p>총 66권의 성경별로 분류된 청교도 및 개혁주의 자료를 만나보세요.</p>
+            </div>
+            <div id="bible-grid-main" class="main-grid-container">
+                <!-- Injected via JS -->
+            </div>
+        </section>
+
+        <section id="topic" class="section-hidden">
+            <div class="section-title">
+                <h2>주제별 자료</h2>
+                <p>다양한 신학적, 실천적 주제에 따른 깊이 있는 아카이브입니다.</p>
+            </div>
+            <div id="topic-grid-main" class="main-grid-container">
+                <!-- Injected via JS -->
+            </div>
+        </section>
+
+        <section id="author" class="section-hidden">
+            <div class="section-title">
+                <h2>저자별 자료</h2>
+                <p>시대와 역사가 보증하는 신앙의 선배들이 남긴 유산을 확인하세요.</p>
+            </div>
+            <div id="author-grid-main" class="main-grid-container">
+                <!-- Injected via JS -->
+            </div>
+        </section>
+
+        <section id="bible-study" class="section-hidden">
+            <div class="section-title">
+                <h2>성경공부 교재</h2>
+                <p>깊이 있는 성경 연구를 위한 가이드와 교재입니다.</p>
+            </div>
+            <div id="bible-study-grid-main" class="main-grid-container">
+                <div class="main-grid-item">
+                    <i class="fas fa-book-open"></i>
+                    <span>준비 중입니다</span>
+                </div>
+            </div>
+        </section>
+
+        <section id="evangelism-booklet" class="section-hidden">
+            <div class="section-title">
+                <h2>전도 소책자</h2>
+                <p>복음을 전하기 위한 소책자 자료입니다.</p>
+            </div>
+            <div id="evangelism-booklet-grid-main" class="main-grid-container">
+                <div class="main-grid-item">
+                    <i class="fas fa-bullhorn"></i>
+                    <span>준비 중입니다</span>
+                </div>
+            </div>
+        </section>
+
+        <section id="recent-updates" class="section-hidden">
+            <div class="section-title">
+                <h2>최신 업데이트 자료</h2>
+                <p>최근 등록된 설교와 자료들을 확인해보세요.</p>
+            </div>
+            <div id="recent-posts-grid" class="recent-grid-container">
+                <div class="loading-msg">자료를 불러오는 중입니다...</div>
+            </div>
+        </section>
+
+        <section id="inquiry">
+            <div class="inquiry-container">
+                <div class="section-title">
+                    <h2>문의와 연구소 세미나 소식 받기</h2>
+                    <p>연구소 활동이나 세미나 소식에 대해 궁금한 점이 있으시면 남겨주세요. 뉴스레터 신청도 가능합니다.</p>
+                </div>
+                <form class="inquiry-form">
+                    <div class="form-group">
+                        <input type="text" placeholder="이름" required>
+                        <input type="email" placeholder="이메일" required>
+                    </div>
+                    <input type="text" placeholder="제목" required>
+                    <textarea placeholder="메시지 내용을 입력하세요" rows="5" required></textarea>
+                    <button type="submit">보내기</button>
+                </form>
+            </div>
+        </section>
+
+        <!-- Admin Dashboard (Initially Hidden) -->
+        <section id="admin-dashboard" class="admin-only section-hidden">
+            <div class="admin-container">
+                <div class="section-title left">
+                    <h2>자료 관리 대시보드</h2>
+                    <p>새로운 자료(글, 동영상, 파일)를 카테고리에 맞춰 업로드하세요.</p>
+                    <p id="firebase-status" style="font-size: 0.9em; margin-top: 0.5rem;">연결 상태 확인 중...</p>
+                </div>
+
+                <div class="admin-grid">
+                    <form id="post-upload-form" class="upload-form">
+                        <div class="admin-form-tags-grid">
+                            <div class="input-group">
+                                <label>성경책별 분류</label>
+                                <select id="post-bible-book">
+                                    <option value="">-- 선택 안함 --</option>
+                                    <!-- Injected via JS -->
+                                </select>
+                            </div>
+                            <div class="input-group">
+                                <label>주제별 분류</label>
+                                <select id="post-topic">
+                                    <option value="">-- 선택 안함 --</option>
+                                    <!-- Injected via JS -->
+                                </select>
+                            </div>
+                            <div class="input-group">
+                                <label>저자별 분류</label>
+                                <select id="post-author">
+                                    <option value="">-- 선택 안함 --</option>
+                                    <!-- Injected via JS -->
+                                </select>
+                            </div>
+                            <div class="input-group">
+                                <label>기타 분류 (교재/소책자)</label>
+                                <select id="post-other-category">
+                                    <option value="">-- 선택 안함 --</option>
+                                    <option value="성경공부 교재">성경공부 교재</option>
+                                    <option value="전도 소책자">전도 소책자</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="input-group">
+                            <label>제목</label>
+                            <input type="text" id="post-title" placeholder="자료 제목을 입력하세요">
+                        </div>
+
+                        <div class="input-group">
+                            <label>내용 (또는 유튜브 링크)</label>
+                            <textarea id="post-content" rows="6" placeholder="내용을 입력하거나 유튜브 주소를 넣어주세요"></textarea>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="input-group">
+                                <label>파일 첨부</label>
+                                <input type="file" id="post-file">
+                            </div>
+                            <button type="submit" class="cta-btn primary">자료 게시하기</button>
+                        </div>
+                    </form>
+
+                    <div class="admin-status">
+                        <h3>최근 업로드 현황</h3>
+                        <ul id="admin-recent-posts">
+                            <li class="empty-msg">아직 업로드된 자료가 없습니다.</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    </footer>
+
+    <!-- Login Modal -->
+    <div id="login-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn" id="login-close-btn">&times;</span>
+            <h2>관리자 로그인</h2>
+            <p>연구소 운영을 위한 관리자 계정으로 로그인해주세요.</p>
+            <form id="login-form">
+                <div class="input-group">
+                    <label for="admin-id">아이디</label>
+                    <input type="text" id="admin-id" placeholder="ID" required>
+                </div>
+                <div class="input-group">
+                    <label for="admin-pw">비밀번호</label>
+                    <input type="password" id="admin-pw" placeholder="Password" required>
+                </div>
+                <button type="submit" class="login-submit">로그인</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- About Modal -->
+    <div id="about-modal" class="modal">
+        <div class="modal-content about-modal-content">
+            <span class="close-btn" id="about-close-btn">&times;</span>
+            <div class="about-container modal-style">
+                <div class="about-text">
+                    <div class="section-title left">
+                        <h2>연구소 소개</h2>
+                    </div>
+                    <p>한국 청교도 연구소는 성경의 절대적 권위와 하나님의 주권을 중심으로 한 개혁주의 신앙 전통 위에서, 청교도들의 신학과 경건, 그리고 목회적 유산을 연구하고 소개하기 위해
+                        설립되었습니다.</p>
+                    <p>청교도들은 단순한 과거의 신학자들이 아니라, 말씀에 의해 형성된 삶을 추구했던 신앙의 증인들이었습니다. 그들은 교리와 삶, 신학과 경건, 공적 예배와 개인의 신앙을 분리하지
+                        않았으며, 오직 하나님의 영광(Soli Deo Gloria)을 목적으로 교회와 성도의 삶을 개혁하고자 했습니다.</p>
+                    <p>본 연구소는 청교도들의 설교, 신학 저작, 경건 문헌들을 번역·소개하고, 그 신학적 깊이와 목회적 통찰을 오늘의 한국 교회와 성도들에게 바르게 전달하고자 합니다. 우리는
+                        청교도 신학이 단지 학문적 연구의 대상이 아니라, 오늘날에도 교회를 새롭게 하고 성도를 거룩으로 이끄는 살아 있는 유산임을 확신합니다.</p>
+                    <p>한국 청교도 연구소는 웨스트민스터 신앙고백과 대·소요리문답으로 대표되는 개혁주의 신앙 고백 전통을 존중하며, 성경 중심적 설교, 언약 신학, 구원의 은혜 교리, 성화와 경건의
+                        균형을 강조합니다. 이를 통해 감정이나 경험에 치우치지 않으면서도, 차갑지 않은 성경적이고 깊이 있는 신앙을 추구합니다.</p>
+
+                    <div class="about-goals-container">
+                        <h4>연구소의 지향점</h4>
+                        <ul class="about-goals">
+                            <li><i class="fas fa-check"></i> 설교자들이 성경을 더 깊이 이해하고 바르게 해석하도록 돕습니다.</li>
+                            <li><i class="fas fa-check"></i> 성도들이 일상의 삶 속에서 하나님 앞에 경건하게 살아가도록 격려합니다.</li>
+                            <li><i class="fas fa-check"></i> 한국 교회가 말씀과 교리에 굳게 서서 개혁주의 신앙의 뿌리를 회복하도록 섬깁니다.</li>
+                        </ul>
+                    </div>
+
+                    <p>우리는 새로운 것을 만들어내기보다, 이미 하나님께서 교회를 위해 허락하신 신실한 신앙의 유산을 다시 발견하고 충실히 계승하는 일에 헌신하고자 합니다. 한국 청교도 연구소는
+                        오직 성경으로 돌아가고, 성경이 가르치는 바른 교리와 거룩한 삶을 회복하기를 소망합니다.</p>
+                </div>
+                <div class="about-image">
+                    <img src="https://images.unsplash.com/photo-1544640808-32ca72ac7f67?auto=format&fit=crop&q=80&w=800"
+                        alt="KPuritan Research">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Modal -->
+    <div id="edit-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn" id="edit-close-btn">&times;</span>
+            <h2>자료 수정</h2>
+            <form id="edit-form" class="upload-form">
+                <input type="hidden" id="edit-post-id">
+                <div class="admin-form-tags-grid">
+                    <div class="input-group">
+                        <label>성경책별 분류</label>
+                        <select id="edit-bible-book">
+                            <option value="">-- 선택 안함 --</option>
+                            <!-- Injected via JS -->
+                        </select>
+                    </div>
+                    <div class="input-group">
+                        <label>주제별 분류</label>
+                        <select id="edit-topic">
+                            <option value="">-- 선택 안함 --</option>
+                            <!-- Injected via JS -->
+                        </select>
+                    </div>
+                    <div class="input-group">
+                        <label>저자별 분류</label>
+                        <select id="edit-author">
+                            <option value="">-- 선택 안함 --</option>
+                            <!-- Injected via JS -->
+                        </select>
+                    </div>
+                    <div class="input-group">
+                        <label>기타 분류 (교재/소책자)</label>
+                        <select id="edit-other-category">
+                            <option value="">-- 선택 안함 --</option>
+                            <option value="성경공부 교재">성경공부 교재</option>
+                            <option value="전도 소책자">전도 소책자</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="input-group">
+                    <label>제목</label>
+                    <input type="text" id="edit-title" placeholder="자료 제목을 입력하세요">
+                </div>
+                <div class="input-group">
+                    <label>내용 (또는 유튜브 링크)</label>
+                    <textarea id="edit-content" rows="6" placeholder="내용을 입력하거나 유튜브 주소를 넣어주세요"></textarea>
+                </div>
+                <div class="form-row">
+                    <div class="input-group">
+                        <label>파일 교체 (선택사항)</label>
+                        <input type="file" id="edit-file">
+                        <p id="edit-file-status" style="font-size: 0.8em; color: var(--text-light); margin-top: 5px;">
+                        </p>
+                    </div>
+                    <button type="submit" class="cta-btn primary">수정 완료</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Resource List Modal -->
+    <div id="resource-modal" class="modal">
+        <div class="modal-content resource-modal-content">
+            <span class="close-btn" id="resource-close-btn">&times;</span>
+            <h2 id="resource-modal-title">자료 목록</h2>
+            <div class="resource-list-wrapper">
+                <ul id="resource-list-container" class="resource-list">
+                    <!-- Content injected via JS -->
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- Music Player Container -->
+    <div class="bgm-player" id="bgm-player">
+        <button id="bgm-toggle-btn" class="bgm-control">
+            <span class="music-icon"><i class="fas fa-music"></i></span>
+            <span class="music-text">배경음악 On/Off</span>
+        </button>
+        <div id="yt-player-container" style="display: none;"></div>
+    </div>
+
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-storage-compat.js"></script>
+
+    <script src="data.js"></script>
+    <script src="main.js"></script>
+</body>
+
+</html>
