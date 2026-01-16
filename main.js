@@ -110,7 +110,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // renderMainGridItems(authors, 'author-grid-main', 'fas fa-user-edit');
 
     // Show sections that were hidden
-    const sectionsToShow = ['bible-study', 'evangelism-booklet', 'recent-updates'];
+    const sectionsToShow = ['recent-updates'];
     sectionsToShow.forEach(id => {
         const sec = document.getElementById(id);
         if (sec) sec.classList.remove('section-hidden');
