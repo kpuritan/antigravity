@@ -330,8 +330,14 @@ document.addEventListener('DOMContentLoaded', () => {
                     const seriesDataMap = {};
                     snapshot.forEach(doc => {
                         const data = doc.data();
-                        if (data.series && data.series.trim() !== "") {
-                            const sName = data.series.trim();
+                        let sName = (data.series && data.series.trim() !== "") ? data.series.trim() : null;
+
+                        // 강해설교인데 시리즈가 없으면 '기타 강해설교'로 취급하여 폴더 노출
+                        if (category === '강해설교' && !sName) {
+                            sName = '기타 강해설교';
+                        }
+
+                        if (sName) {
                             const order = data.order || 0;
                             if (!seriesDataMap[sName]) {
                                 seriesDataMap[sName] = { minOrder: order };
@@ -419,16 +425,23 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!confirm(`'${oldName}'에 포함된 모든 자료의 폴더명이 '${newName}'으로 변경됩니다. 진행할까요?`)) return;
 
         try {
-            const snapshot = await db.collection("posts")
-                .where("tags", "array-contains", category)
-                .where("series", "==", oldName)
-                .get();
+            let query = db.collection("posts").where("tags", "array-contains", category);
 
-            const batch = db.batch();
-            snapshot.forEach(doc => {
-                batch.update(doc.ref, { series: newName.trim() });
-            });
-            await batch.commit();
+            // '기타 강해설교'인 경우 시리즈가 비어있는 모든 게시물 포함
+            if (oldName === '기타 강해설교') {
+                const snapshot1 = await query.where("series", "==", "").get();
+                const snapshot2 = await query.where("series", "==", "기타 강해설교").get();
+
+                const batch = db.batch();
+                snapshot1.forEach(doc => batch.update(doc.ref, { series: newName.trim() }));
+                snapshot2.forEach(doc => batch.update(doc.ref, { series: newName.trim() }));
+                await batch.commit();
+            } else {
+                const snapshot = await query.where("series", "==", oldName).get();
+                const batch = db.batch();
+                snapshot.forEach(doc => batch.update(doc.ref, { series: newName.trim() }));
+                await batch.commit();
+            }
             alert("폴더 이름이 성공적으로 변경되었습니다.");
         } catch (err) {
             alert("변경 실패: " + err.message);
@@ -439,16 +452,22 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!confirm(`'${seriesName}' 폴더 내의 모든 자료가 삭제됩니다. 정말 삭제하시겠습니까?`)) return;
 
         try {
-            const snapshot = await db.collection("posts")
-                .where("tags", "array-contains", category)
-                .where("series", "==", seriesName)
-                .get();
+            let query = db.collection("posts").where("tags", "array-contains", category);
 
-            const batch = db.batch();
-            snapshot.forEach(doc => {
-                batch.delete(doc.ref);
-            });
-            await batch.commit();
+            if (seriesName === '기타 강해설교') {
+                const snapshot1 = await query.where("series", "==", "").get();
+                const snapshot2 = await query.where("series", "==", "기타 강해설교").get();
+
+                const batch = db.batch();
+                snapshot1.forEach(doc => batch.delete(doc.ref));
+                snapshot2.forEach(doc => batch.delete(doc.ref));
+                await batch.commit();
+            } else {
+                const snapshot = await query.where("series", "==", seriesName).get();
+                const batch = db.batch();
+                snapshot.forEach(doc => batch.delete(doc.ref));
+                await batch.commit();
+            }
             alert("폴더와 내부 자료가 모두 삭제되었습니다.");
         } catch (err) {
             alert("삭제 실패: " + err.message);
