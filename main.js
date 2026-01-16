@@ -527,7 +527,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 // Content detection (Youtube vs Text)
                 let contentHtml = '';
                 if (post.content) {
-                    contentHtml = `<div class="resource-body">${post.content}</div>`;
+                    // Convert URLs to clickable links
+                    const linkedContent = post.content.replace(/(https?:\/\/[^\s]+)/g, '<a href="$1" target="_blank">$1</a>');
+                    contentHtml = `<div class="resource-body">${linkedContent}</div>`;
                 }
 
                 let fileLink = '';
