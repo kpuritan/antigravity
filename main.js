@@ -1188,6 +1188,15 @@ document.addEventListener('DOMContentLoaded', () => {
             fileLinkHtml = `<a href="${post.fileUrl}" target="_blank" class="resource-link premium-btn" style="border-color:${color}; color:${color}; margin-top:10px;">
                 <i class="fas ${icon}"></i> ${label}</a>`;
         }
+        let adminButtons = '';
+        if (isAdmin) {
+            adminButtons = `
+                <div class="resource-admin-actions">
+                    <button onclick="openEditModal('${post.id}')" class="action-btn edit-small" title="수정"><i class="fas fa-edit"></i></button>
+                    <button onclick="deletePost('${post.id}')" class="action-btn delete-small" title="삭제"><i class="fas fa-trash"></i></button>
+                </div>
+            `;
+        }
 
         const bookTags = ['도서 목록', '온라인 서점', '도서 구매', '도서구매'];
         const isBookstore = post.tags && post.tags.some(tag => bookTags.includes(tag));
