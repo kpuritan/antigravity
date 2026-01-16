@@ -332,9 +332,9 @@ document.addEventListener('DOMContentLoaded', () => {
                         const data = doc.data();
                         let sName = (data.series && data.series.trim() !== "") ? data.series.trim() : null;
 
-                        // 강해설교인데 시리즈가 없으면 '기타 강해설교'로 취급하여 폴더 노출
+                        // 강해설교인데 시리즈가 없으면 '기타 단편 설교'로 취급하여 폴더 노출
                         if (category === '강해설교' && !sName) {
-                            sName = '기타 강해설교';
+                            sName = '기타 단편 설교';
                         }
 
                         if (sName) {
@@ -427,14 +427,16 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
             let query = db.collection("posts").where("tags", "array-contains", category);
 
-            // '기타 강해설교'인 경우 시리즈가 비어있는 모든 게시물 포함
-            if (oldName === '기타 강해설교') {
+            // '기타 단편 설교'인 경우 시리즈가 비어있는 모든 게시물 포함
+            if (oldName === '기타 단편 설교' || oldName === '기타 강해설교') {
                 const snapshot1 = await query.where("series", "==", "").get();
-                const snapshot2 = await query.where("series", "==", "기타 강해설교").get();
+                const snapshot2 = await query.where("series", "==", "기타 단편 설교").get();
+                const snapshot3 = await query.where("series", "==", "기타 강해설교").get();
 
                 const batch = db.batch();
                 snapshot1.forEach(doc => batch.update(doc.ref, { series: newName.trim() }));
                 snapshot2.forEach(doc => batch.update(doc.ref, { series: newName.trim() }));
+                snapshot3.forEach(doc => batch.update(doc.ref, { series: newName.trim() }));
                 await batch.commit();
             } else {
                 const snapshot = await query.where("series", "==", oldName).get();
@@ -454,13 +456,15 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
             let query = db.collection("posts").where("tags", "array-contains", category);
 
-            if (seriesName === '기타 강해설교') {
+            if (seriesName === '기타 단편 설교' || seriesName === '기타 강해설교') {
                 const snapshot1 = await query.where("series", "==", "").get();
-                const snapshot2 = await query.where("series", "==", "기타 강해설교").get();
+                const snapshot2 = await query.where("series", "==", "기타 단편 설교").get();
+                const snapshot3 = await query.where("series", "==", "기타 강해설교").get();
 
                 const batch = db.batch();
                 snapshot1.forEach(doc => batch.delete(doc.ref));
                 snapshot2.forEach(doc => batch.delete(doc.ref));
+                snapshot3.forEach(doc => batch.delete(doc.ref));
                 await batch.commit();
             } else {
                 const snapshot = await query.where("series", "==", seriesName).get();
@@ -932,9 +936,9 @@ document.addEventListener('DOMContentLoaded', () => {
             posts.forEach(post => {
                 let sName = (post.series && post.series.trim()) ? post.series.trim() : '_none';
 
-                // 강해설교의 경우 시리즈가 없으면 '기타 강해설교' 폴더로 자동 분류하여 폴더만 보이게 함
+                // 강해설교의 경우 시리즈가 없으면 '기타 단편 설교' 폴더로 자동 분류하여 폴더만 보이게 함
                 if (categoryName === '강해설교' && sName === '_none') {
-                    sName = '기타 강해설교';
+                    sName = '기타 단편 설교';
                 }
 
                 if (!groupedPosts[sName]) groupedPosts[sName] = [];
