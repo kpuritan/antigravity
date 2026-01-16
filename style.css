@@ -1390,6 +1390,65 @@ footer {
 }
 
 /* Recent Updates Section Header Upgrade */
+/* =========================================
+   Compact View for "View All" (Forest View)
+   ========================================= */
+.resource-list.compact-view {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1rem;
+}
+
+.compact-view .resource-card-modern {
+    margin-bottom: 0;
+    font-size: 0.9rem;
+}
+
+.compact-view .resource-content-padding {
+    padding: 1.2rem;
+}
+
+.compact-view .resource-title-modern {
+    font-size: 1.1rem;
+    margin-bottom: 0.3rem;
+    display: -webkit-box;
+    -webkit-line-clamp: 1;
+    line-clamp: 1;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.compact-view .resource-body-modern {
+    font-size: 0.85rem;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    margin-bottom: 1rem;
+    height: 3rem;
+    /* 고정 높이로 정렬 */
+}
+
+.compact-view .resource-header-modern {
+    margin-bottom: 0.8rem;
+}
+
+.compact-view .youtube-embed-container {
+    padding-bottom: 45%;
+}
+
+.compact-view .resource-link {
+    padding: 0.4rem 0.8rem;
+    font-size: 0.8rem;
+}
+
+@media screen and (max-width: 600px) {
+    .resource-list.compact-view {
+        grid-template-columns: 1fr;
+    }
+}
+
 .section-title.modern-flex {
     display: flex;
     justify-content: space-between;

@@ -106,11 +106,11 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     // Populate main grids
-    renderMainGridItems(topics, 'topic-grid-main', 'fas fa-tags');
-    renderMainGridItems(authors, 'author-grid-main', 'fas fa-user-edit');
+    // renderMainGridItems(topics, 'topic-grid-main', 'fas fa-tags');
+    // renderMainGridItems(authors, 'author-grid-main', 'fas fa-user-edit');
 
     // Show sections that were hidden
-    const sectionsToShow = ['topic', 'author', 'bible-study', 'evangelism-booklet', 'recent-updates'];
+    const sectionsToShow = ['bible-study', 'evangelism-booklet', 'recent-updates'];
     sectionsToShow.forEach(id => {
         const sec = document.getElementById(id);
         if (sec) sec.classList.remove('section-hidden');
@@ -721,6 +721,7 @@ document.addEventListener('DOMContentLoaded', () => {
     window.openResourceModal = async (categoryName) => {
         if (!resourceModal) return;
         resourceModal.classList.add('show');
+        resourceListContainer.classList.remove('compact-view'); // 기본 목록은 크게
         resourceModalTitle.textContent = `${categoryName} 자료 목록`;
         resourceListContainer.innerHTML = '<li class="no-resource-msg">자료를 불러오는 중입니다...</li>';
 
@@ -1023,8 +1024,8 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         try {
-            // 메인 페이지에는 최상위 4개만 항상 표시
-            let query = db.collection("posts").orderBy("createdAt", "desc").limit(4);
+            // 메인 페이지에는 최상위 6개만 항상 표시
+            let query = db.collection("posts").orderBy("createdAt", "desc").limit(6);
             const snapshot = await query.get();
 
             if (snapshot.empty) {
@@ -1133,6 +1134,7 @@ document.addEventListener('DOMContentLoaded', () => {
         resourceModal.classList.add('show');
         resourceModalTitle.textContent = `최신 업데이트 전체 목록`;
         resourceListContainer.innerHTML = '<li class="no-resource-msg">최신 자료를 불러오는 중입니다...</li>';
+        resourceListContainer.classList.add('compact-view'); // 숲을 볼 수 있게 콤팩트하게 표시
 
         try {
             const snapshot = await db.collection("posts")
@@ -1154,6 +1156,67 @@ document.addEventListener('DOMContentLoaded', () => {
             console.error(e);
             resourceListContainer.innerHTML = '<li class="no-resource-msg">자료를 불러오는 중에 오류가 발생했습니다.</li>';
         }
+    };
+
+    window.openAllTopicsModal = () => {
+        if (!resourceModal) return;
+        resourceModal.classList.add('show');
+        resourceListContainer.classList.remove('compact-view');
+        resourceModalTitle.textContent = `전체 주제 목록`;
+        resourceListContainer.innerHTML = '<div class="main-grid-container" id="modal-topic-grid"></div>';
+        const grid = document.getElementById('modal-topic-grid');
+
+        topics.forEach(item => {
+            const div = document.createElement('div');
+            div.className = 'main-grid-item';
+            div.innerHTML = `
+                <i class="fas fa-tags"></i>
+                <span>${item}</span>
+            `;
+            div.addEventListener('click', () => {
+                openResourceModal(item);
+            });
+            grid.appendChild(div);
+        });
+    };
+
+    window.openAllAuthorsModal = () => {
+        if (!resourceModal) return;
+        resourceModal.classList.add('show');
+        resourceListContainer.classList.remove('compact-view');
+        resourceModalTitle.textContent = `전체 저자 목록`;
+        resourceListContainer.innerHTML = `
+            <div class="author-search-container" style="margin-bottom: 2rem;">
+                <input type="text" id="modal-author-search" placeholder="저자 이름 검색..." style="width: 100%; padding: 1rem; border-radius: 8px; border: 1px solid #ddd;">
+            </div>
+            <div class="main-grid-container" id="modal-author-grid"></div>
+        `;
+        const grid = document.getElementById('modal-author-grid');
+        const searchInput = document.getElementById('modal-author-search');
+
+        const renderGrid = (list) => {
+            grid.innerHTML = '';
+            list.forEach(item => {
+                const div = document.createElement('div');
+                div.className = 'main-grid-item';
+                div.innerHTML = `
+                    <i class="fas fa-user-edit"></i>
+                    <span>${item}</span>
+                `;
+                div.addEventListener('click', () => {
+                    openResourceModal(item);
+                });
+                grid.appendChild(div);
+            });
+        };
+
+        renderGrid(authors);
+
+        searchInput.addEventListener('input', (e) => {
+            const val = e.target.value.toLowerCase();
+            const filtered = authors.filter(a => a.toLowerCase().includes(val));
+            renderGrid(filtered);
+        });
     };
 
 }); // End of main DOMContentLoaded
