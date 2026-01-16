@@ -86,6 +86,63 @@ document.addEventListener('DOMContentLoaded', () => {
 
     renderAuthorsInDropdown(authors);
 
+    // --- Mobile Menu Toggle ---
+    const mobileMenuToggle = document.querySelector('.mobile-menu-toggle');
+    const nav = document.querySelector('nav');
+    const navOverlay = document.querySelector('.nav-overlay');
+
+    if (mobileMenuToggle && nav && navOverlay) {
+        mobileMenuToggle.addEventListener('click', (e) => {
+            e.stopPropagation();
+            nav.classList.toggle('active');
+            navOverlay.classList.toggle('active');
+            const icon = mobileMenuToggle.querySelector('i');
+            if (nav.classList.contains('active')) {
+                icon.classList.replace('fa-bars', 'fa-times');
+            } else {
+                icon.classList.replace('fa-times', 'fa-bars');
+            }
+        });
+
+        // Close menu when clicking outside or overlay
+        const closeMenu = () => {
+            nav.classList.remove('active');
+            navOverlay.classList.remove('active');
+            mobileMenuToggle.querySelector('i').classList.replace('fa-times', 'fa-bars');
+        };
+
+        navOverlay.addEventListener('click', closeMenu);
+        document.addEventListener('click', (e) => {
+            if (!nav.contains(e.target) && !mobileMenuToggle.contains(e.target)) {
+                closeMenu();
+            }
+        });
+
+        // Toggle dropdowns on mobile
+        document.querySelectorAll('.dropdown > a').forEach(dropdownMain => {
+            dropdownMain.addEventListener('click', (e) => {
+                if (window.innerWidth <= 1024) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    const parent = dropdownMain.parentElement;
+                    parent.classList.toggle('active');
+                }
+            });
+        });
+    }
+
+    // --- Header Scroll Effect ---
+    window.addEventListener('scroll', () => {
+        const header = document.querySelector('header');
+        if (header) {
+            if (window.scrollY > 50) {
+                header.classList.add('scrolled');
+            } else {
+                header.classList.remove('scrolled');
+            }
+        }
+    });
+
     // --- Main Grid Rendering ---
     const renderMainGridItems = (items, containerId, iconClass) => {
         const container = document.getElementById(containerId);
