@@ -843,7 +843,13 @@ document.addEventListener('DOMContentLoaded', () => {
             // Group items by series
             const groupedPosts = {};
             posts.forEach(post => {
-                const sName = (post.series && post.series.trim()) ? post.series.trim() : '_none';
+                let sName = (post.series && post.series.trim()) ? post.series.trim() : '_none';
+
+                // 강해설교의 경우 시리즈가 없으면 '기타 강해설교' 폴더로 자동 분류하여 폴더만 보이게 함
+                if (categoryName === '강해설교' && sName === '_none') {
+                    sName = '기타 강해설교';
+                }
+
                 if (!groupedPosts[sName]) groupedPosts[sName] = [];
                 groupedPosts[sName].push(post);
             });
