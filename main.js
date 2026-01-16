@@ -327,22 +327,33 @@ document.addEventListener('DOMContentLoaded', () => {
             adminSeriesUnsubscribe = db.collection("posts")
                 .where("tags", "array-contains", category)
                 .onSnapshot((snapshot) => {
-                    const seriesSet = new Set();
+                    const seriesDataMap = {};
                     snapshot.forEach(doc => {
                         const data = doc.data();
                         if (data.series && data.series.trim() !== "") {
-                            seriesSet.add(data.series.trim());
+                            const sName = data.series.trim();
+                            const order = data.order || 0;
+                            if (!seriesDataMap[sName]) {
+                                seriesDataMap[sName] = { minOrder: order };
+                            } else {
+                                seriesDataMap[sName].minOrder = Math.min(seriesDataMap[sName].minOrder, order);
+                            }
                         }
                     });
 
-                    if (seriesSet.size === 0) {
+                    if (Object.keys(seriesDataMap).length === 0) {
                         container.innerHTML = '<div style="grid-column: 1/-1; text-align:center; padding: 40px; color:#999;">아직 생성된 필더(시리즈)가 없습니다.<br>오른쪽 상단 버튼으로 폴더를 먼저 만들어보세요.</div>';
                         return;
                     }
 
                     container.innerHTML = '';
-                    // 가나다순 정렬
-                    const sortedSeries = Array.from(seriesSet).sort();
+                    // 정렬 순서 우선, 그 다음 가나다순 정렬
+                    const sortedSeries = Object.keys(seriesDataMap).sort((a, b) => {
+                        if (seriesDataMap[a].minOrder !== seriesDataMap[b].minOrder) {
+                            return seriesDataMap[a].minOrder - seriesDataMap[b].minOrder;
+                        }
+                        return a.localeCompare(b);
+                    });
 
                     sortedSeries.forEach(seriesName => {
                         const card = document.createElement('div');
@@ -351,14 +362,17 @@ document.addEventListener('DOMContentLoaded', () => {
                         card.innerHTML = `
                             <div style="display:flex; align-items:center; gap:15px;">
                                 <i class="fas fa-folder" style="font-size:2rem; color:var(--secondary-color);"></i>
-                                <div style="flex:1;">
+                                <div style="flex:1;" onclick="openResourceModalWithSeries('${category}', '${seriesName}')">
                                     <h4 style="margin:0; font-size:1.1rem;">${seriesName}</h4>
                                     <p style="font-size:0.8rem; color:#888; margin-top:3px;">클릭하여 자료 추가/관리</p>
                                 </div>
-                                <i class="fas fa-chevron-right" style="color:#ccc;"></i>
+                                <div class="series-actions" style="display:flex; gap:10px;">
+                                    <button onclick="renameSeriesPrompt('${category}', '${seriesName}')" style="background:none; border:none; color:#666; cursor:pointer; padding:5px;"><i class="fas fa-edit"></i></button>
+                                    <button onclick="deleteSeriesPrompt('${category}', '${seriesName}')" style="background:none; border:none; color:#e74c3c; cursor:pointer; padding:5px;"><i class="fas fa-trash"></i></button>
+                                </div>
                             </div>
                         `;
-                        card.onclick = () => openResourceModalWithSeries(category, seriesName);
+                        // Remove top-level card.onclick to avoid conflicts with buttons
                         card.onmouseover = () => { card.style.background = '#fff'; card.style.borderColor = 'var(--secondary-color)'; card.style.transform = 'translateY(-3px)'; };
                         card.onmouseout = () => { card.style.background = '#f9f9f9'; card.style.borderColor = '#ddd'; card.style.transform = 'none'; };
                         container.appendChild(card);
@@ -397,6 +411,50 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }, 300);
     };
+
+    window.renameSeriesPrompt = async (category, oldName) => {
+        const newName = prompt(`'${oldName}' 폴더의 이름을 무엇으로 변경할까요?`, oldName);
+        if (!newName || newName.trim() === "" || newName === oldName) return;
+
+        if (!confirm(`'${oldName}'에 포함된 모든 자료의 폴더명이 '${newName}'으로 변경됩니다. 진행할까요?`)) return;
+
+        try {
+            const snapshot = await db.collection("posts")
+                .where("tags", "array-contains", category)
+                .where("series", "==", oldName)
+                .get();
+
+            const batch = db.batch();
+            snapshot.forEach(doc => {
+                batch.update(doc.ref, { series: newName.trim() });
+            });
+            await batch.commit();
+            alert("폴더 이름이 성공적으로 변경되었습니다.");
+        } catch (err) {
+            alert("변경 실패: " + err.message);
+        }
+    };
+
+    window.deleteSeriesPrompt = async (category, seriesName) => {
+        if (!confirm(`'${seriesName}' 폴더 내의 모든 자료가 삭제됩니다. 정말 삭제하시겠습니까?`)) return;
+
+        try {
+            const snapshot = await db.collection("posts")
+                .where("tags", "array-contains", category)
+                .where("series", "==", seriesName)
+                .get();
+
+            const batch = db.batch();
+            snapshot.forEach(doc => {
+                batch.delete(doc.ref);
+            });
+            await batch.commit();
+            alert("폴더와 내부 자료가 모두 삭제되었습니다.");
+        } catch (err) {
+            alert("삭제 실패: " + err.message);
+        }
+    };
+
     let currentUploadTarget = null;
 
     window.prepareUploadForCategory = (categoryName) => {
@@ -429,6 +487,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             const title = document.getElementById('post-title').value.trim() || '제목 없음';
             const series = document.getElementById('post-series').value.trim() || '';
+            const order = parseInt(document.getElementById('post-order').value) || 0;
             const content = document.getElementById('post-content').value;
             const fileInput = document.getElementById('post-file');
             const file = fileInput.files[0];
@@ -536,6 +595,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     tags,
                     title,
                     series,
+                    order,
                     content,
                     fileUrl,
                     createdAt: firebase.firestore.FieldValue.serverTimestamp()
@@ -626,6 +686,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             document.getElementById('edit-title').value = post.title;
             document.getElementById('edit-series').value = post.series || "";
+            document.getElementById('edit-order').value = post.order || 0;
             document.getElementById('edit-content').value = post.content || '';
             document.getElementById('edit-file-status').textContent = post.fileUrl ? "기존 파일이 있습니다 (교체 시 새로 선택)" : "첨부된 파일 없음";
 
@@ -658,6 +719,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const title = document.getElementById('edit-title').value.trim();
             const series = document.getElementById('edit-series').value.trim() || "";
+            const order = parseInt(document.getElementById('edit-order').value) || 0;
             const content = document.getElementById('edit-content').value;
             const fileInput = document.getElementById('edit-file');
             const file = fileInput.files[0];
@@ -680,6 +742,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     tags,
                     title,
                     series,
+                    order,
                     content,
                     updatedAt: firebase.firestore.FieldValue.serverTimestamp()
                 };
@@ -755,6 +818,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     e.preventDefault();
                     const title = document.getElementById('modal-post-title').value.trim();
                     const series = document.getElementById('modal-post-series').value.trim();
+                    const order = parseInt(document.getElementById('modal-post-order').value) || 0;
                     const content = document.getElementById('modal-post-content').value;
                     const fileInput = document.getElementById('modal-post-file');
                     const file = fileInput.files[0];
@@ -783,7 +847,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         }
 
                         await db.collection("posts").add({
-                            title, series, content, fileUrl,
+                            title, series, order, content, fileUrl,
                             tags: [categoryName],
                             createdAt: firebase.firestore.FieldValue.serverTimestamp()
                         });
@@ -837,8 +901,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 posts.push({ id: doc.id, ...doc.data() });
             });
 
-            // Sort by date desc (Javascript Sort)
-            posts.sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0));
+            // Sort by manual order first, then date desc
+            posts.sort((a, b) => {
+                const orderDiff = (a.order || 0) - (b.order || 0);
+                if (orderDiff !== 0) return orderDiff;
+                return (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0);
+            });
 
             // Group items by series
             const groupedPosts = {};
@@ -857,7 +925,13 @@ document.addEventListener('DOMContentLoaded', () => {
             // Render View
             const renderListView = (currentGroupedData) => {
                 resourceListContainer.innerHTML = '';
-                const keys = Object.keys(currentGroupedData).sort(); // 폴더 이름순 정렬
+                // Sort Folders by the minimum order of their items, then by name
+                const keys = Object.keys(currentGroupedData).sort((a, b) => {
+                    const minOrderA = Math.min(...currentGroupedData[a].map(p => p.order || 0));
+                    const minOrderB = Math.min(...currentGroupedData[b].map(p => p.order || 0));
+                    if (minOrderA !== minOrderB) return minOrderA - minOrderB;
+                    return a.localeCompare(b);
+                });
 
                 // If there are only standalone posts (none) and no folders, show them directly
                 if (keys.length === 1 && keys[0] === '_none') {
@@ -875,7 +949,12 @@ document.addEventListener('DOMContentLoaded', () => {
                     if (sName === '_none') return;
 
                     const seriesPosts = currentGroupedData[sName];
-                    seriesPosts.sort((a, b) => (a.createdAt?.seconds || 0) - (b.createdAt?.seconds || 0));
+                    // Sort items inside folder: order asc, then date desc
+                    seriesPosts.sort((a, b) => {
+                        const orderDiff = (a.order || 0) - (b.order || 0);
+                        if (orderDiff !== 0) return orderDiff;
+                        return (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0);
+                    });
 
                     let thumbId = '';
                     seriesPosts.forEach(post => {
