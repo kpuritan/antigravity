@@ -260,6 +260,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const tags = [bibleBook, topic, author, other].filter(t => t !== "");
             const title = document.getElementById('post-title').value.trim() || '제목 없음';
+            const series = document.getElementById('post-series').value.trim() || '';
             const content = document.getElementById('post-content').value;
             const fileInput = document.getElementById('post-file');
             const file = fileInput.files[0];
@@ -311,37 +312,49 @@ document.addEventListener('DOMContentLoaded', () => {
                     fileUrl = await new Promise((resolve, reject) => {
                         uploadTask.on('state_changed',
                             (snapshot) => {
-                                const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+                                const progress = (snapshot.totalBytes > 0)
+                                    ? (snapshot.bytesTransferred / snapshot.totalBytes) * 100
+                                    : 0;
+
                                 if (progressBar) progressBar.style.width = progress + '%';
                                 if (percText) percText.textContent = Math.round(progress) + '%';
                                 submitBtn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> 전송 중 (${Math.round(progress)}%)`;
+                                console.log(`📊 업로드 진행률: ${Math.round(progress)}% (${snapshot.bytesTransferred}/${snapshot.totalBytes})`);
                             },
                             (error) => {
-                                console.error("Storage upload error:", error);
+                                console.error("❌ Storage 업로드 에러 상세:", error);
                                 reject(error);
                             },
                             async () => {
-                                const url = await uploadTask.snapshot.ref.getDownloadURL();
-                                resolve(url);
+                                try {
+                                    console.log('✅ 파일 업로드 완료, URL 추출 중...');
+                                    const url = await uploadTask.snapshot.ref.getDownloadURL();
+                                    resolve(url);
+                                } catch (err) {
+                                    console.error("❌ URL 추출 에러:", err);
+                                    reject(err);
+                                }
                             }
                         );
                     });
                 }
 
-                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 저장 중...';
-
                 // Firestore에 저장
-                await db.collection("posts").add({
+                const postData = {
                     bibleBook,
                     topic,
                     author,
                     otherCategory: other,
                     tags,
                     title,
+                    series, // 누락된 시리즈 필드 추가
                     content,
                     fileUrl,
                     createdAt: firebase.firestore.FieldValue.serverTimestamp()
-                });
+                };
+
+                console.log('📝 Firestore 저장 데이터:', postData);
+                await db.collection("posts").add(postData);
 
                 alert(`✅ 자료가 성공적으로 업로드되었습니다!`);
                 uploadForm.reset();
@@ -415,6 +428,7 @@ document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('edit-other-category').value = post.otherCategory || "";
 
             document.getElementById('edit-title').value = post.title;
+            document.getElementById('edit-series').value = post.series || "";
             document.getElementById('edit-content').value = post.content || '';
             document.getElementById('edit-file-status').textContent = post.fileUrl ? "기존 파일이 있습니다 (교체 시 새로 선택)" : "첨부된 파일 없음";
 
@@ -447,6 +461,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const tags = [bibleBook, topic, author, other].filter(t => t !== "");
 
             const title = document.getElementById('edit-title').value.trim();
+            const series = document.getElementById('edit-series').value.trim() || "";
             const content = document.getElementById('edit-content').value;
             const fileInput = document.getElementById('edit-file');
             const file = fileInput.files[0];
@@ -469,6 +484,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     otherCategory: other,
                     tags,
                     title,
+                    series,
                     content,
                     updatedAt: firebase.firestore.FieldValue.serverTimestamp()
                 };
@@ -507,7 +523,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const resourceListContainer = document.getElementById('resource-list-container');
     const resourceModalTitle = document.getElementById('resource-modal-title');
 
-    window.openResourceModal = async (categoryName) => {
+    window.openResourceModal = async (categoryName) => { // Grouping logic pending
         if (!resourceModal) return;
         resourceModal.classList.add('show');
         resourceModalTitle.textContent = `${categoryName} 자료 목록`;
@@ -547,103 +563,137 @@ document.addEventListener('DOMContentLoaded', () => {
             // Sort by date desc (Javascript Sort)
             posts.sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0));
 
-            resourceListContainer.innerHTML = '';
+            // Group items by series
+            const groupedPosts = {};
             posts.forEach(post => {
-                const li = document.createElement('li');
-                li.className = 'resource-item';
-
-                const date = post.createdAt ? post.createdAt.toDate().toLocaleDateString() : '날짜 없음';
-                let youtubeEmbedHtml = '';
-                let contentText = post.content || '';
-
-                // URL 감지용 헬퍼
-                const urlRegex = /(https?:\/\/[^\s]+)/g;
-                const urlsInContent = contentText.match(urlRegex) || [];
-
-                // PDF 및 클릭용 링크 결정
-                let primaryLink = post.fileUrl || (urlsInContent.length > 0 ? urlsInContent[0] : '#');
-                let isPdf = primaryLink.toLowerCase().includes('.pdf');
-
-                // 유튜브 임베드 생성
-                if (contentText.toLowerCase().includes('youtube.com') || contentText.toLowerCase().includes('youtu.be')) {
-                    urlsInContent.forEach(url => {
-                        const lowerUrl = url.toLowerCase();
-                        let embedUrl = '';
-                        if (lowerUrl.includes('list=')) {
-                            const listId = url.split('list=')[1].split('&')[0];
-                            embedUrl = `https://www.youtube.com/embed/videoseries?list=${listId}`;
-                        } else if (lowerUrl.includes('v=')) {
-                            const videoId = url.split('v=')[1].split('&')[0];
-                            embedUrl = `https://www.youtube.com/embed/${videoId}`;
-                        } else if (lowerUrl.includes('youtu.be/')) {
-                            const videoId = url.split('youtu.be/')[1].split('?')[0];
-                            embedUrl = `https://www.youtube.com/embed/${videoId}`;
-                        }
-
-                        if (embedUrl) {
-                            youtubeEmbedHtml += `
-                                <div class="youtube-embed-container" style="border-bottom: 1px solid #eee;">
-                                    <iframe src="${embedUrl}" frameborder="0" allowfullscreen></iframe>
-                                </div>`;
-                        }
-                    });
-                }
-
-                // 텍스트 내 링크 변환
-                const linkedContent = contentText.replace(urlRegex, '<a href="$1" target="_blank" class="text-link">$1</a>');
-
-                // 파일 다운로드 버튼 (PDF일 경우 디자인 차별화)
-                let fileLinkHtml = '';
-                if (post.fileUrl) {
-                    const icon = isPdf ? 'fa-file-pdf' : 'fa-file-download';
-                    const label = isPdf ? 'PDF 파일 보기' : '첨부파일 다운로드';
-                    const color = isPdf ? '#e74c3c' : 'var(--secondary-color)';
-                    fileLinkHtml = `<a href="${post.fileUrl}" target="_blank" class="resource-link premium-btn" style="border-color:${color}; color:${color};">
-                        <i class="fas ${icon}"></i> ${label}</a>`;
-                }
-
-                // 관리자 버튼
-                let adminButtons = '';
-                if (isAdmin) {
-                    adminButtons = `
-                        <div class="resource-admin-actions">
-                            <button onclick="openEditModal('${post.id}')" class="action-btn edit-small" title="수정"><i class="fas fa-edit"></i></button>
-                            <button onclick="deletePost('${post.id}')" class="action-btn delete-small" title="삭제"><i class="fas fa-trash"></i></button>
-                        </div>
-                    `;
-                }
-
-                li.innerHTML = `
-                    <div class="resource-card-modern">
-                        ${youtubeEmbedHtml}
-                        <div class="resource-content-padding">
-                            <div class="resource-header-modern">
-                                <div class="resource-tag-row">
-                                    <span class="resource-type-badge">${post.tags && post.tags[0] ? post.tags[0] : '자료'}</span>
-                                    <span class="resource-date-modern">${date}</span>
-                                </div>
-                                <h4 class="resource-title-modern">
-                                    <a href="${primaryLink}" target="${primaryLink !== '#' ? '_blank' : '_self'}" class="title-clickable">
-                                        ${isPdf ? '<i class="fas fa-file-pdf" style="color:#e74c3c; margin-right:5px;"></i>' : ''}
-                                        ${post.title}
-                                        ${primaryLink !== '#' ? '<i class="fas fa-external-link-alt" style="font-size:0.7em; margin-left:8px; opacity:0.3;"></i>' : ''}
-                                    </a>
-                                </h4>
-                                ${adminButtons}
-                            </div>
-                            <div class="resource-body-modern">${linkedContent.trim() || '<span style="color:#ccc; font-style:italic;">상세 내용 없음</span>'}</div>
-                            ${fileLinkHtml}
-                        </div>
-                    </div>
-                `;
-                resourceListContainer.appendChild(li);
+                const sName = (post.series && post.series.trim()) ? post.series.trim() : '_none';
+                if (!groupedPosts[sName]) groupedPosts[sName] = [];
+                groupedPosts[sName].push(post);
             });
+
+            resourceListContainer.innerHTML = '';
+
+            // 1. Render Series Groups (Folders)
+            Object.keys(groupedPosts).forEach(sName => {
+                if (sName === '_none') return;
+
+                const seriesPosts = groupedPosts[sName];
+                seriesPosts.sort((a, b) => (a.createdAt?.seconds || 0) - (b.createdAt?.seconds || 0));
+
+                const seriesCard = document.createElement('li');
+                seriesCard.className = 'series-folder-item';
+                seriesCard.innerHTML = `
+                    <div class="series-folder-header">
+                        <div class="folder-info">
+                            <i class="fas fa-folder folder-icon"></i>
+                            <div class="folder-text">
+                                <span class="series-label">시리즈 자료</span>
+                                <h3 class="series-name">${sName}</h3>
+                                <span class="series-count">${seriesPosts.length}개의 자료</span>
+                            </div>
+                        </div>
+                        <i class="fas fa-chevron-down toggle-icon"></i>
+                    </div>
+                    <ul class="series-sub-list" style="display: none;"></ul>
+                `;
+
+                const subList = seriesCard.querySelector('.series-sub-list');
+                const header = seriesCard.querySelector('.series-folder-header');
+
+                header.addEventListener('click', () => {
+                    const isVisible = subList.style.display === 'block';
+                    subList.style.display = isVisible ? 'none' : 'block';
+                    seriesCard.classList.toggle('expanded', !isVisible);
+
+                    const icon = header.querySelector('.toggle-icon');
+                    icon.className = isVisible ? 'fas fa-chevron-down toggle-icon' : 'fas fa-chevron-up toggle-icon';
+
+                    const fIcon = header.querySelector('.folder-icon');
+                    fIcon.className = isVisible ? 'fas fa-folder folder-icon' : 'fas fa-folder-open folder-icon';
+                });
+
+                seriesPosts.forEach(post => renderSingleResource(post, subList));
+                resourceListContainer.appendChild(seriesCard);
+            });
+
+            // 2. Render standalone posts (No series)
+            if (groupedPosts['_none']) {
+                groupedPosts['_none'].forEach(post => renderSingleResource(post, resourceListContainer));
+            }
 
         } catch (error) {
             console.error("Error fetching documents: ", error);
             resourceListContainer.innerHTML = `<li class="no-resource-msg">자료를 불러오는 중 오류가 발생했습니다.<br>(${error.message})</li>`;
         }
     };
+
+    function renderSingleResource(post, container) {
+        const li = document.createElement('li');
+        li.className = 'resource-item-wrapper';
+
+        const date = post.createdAt ? post.createdAt.toDate().toLocaleDateString() : '날짜 없음';
+        let youtubeEmbedHtml = '';
+        let contentText = post.content || '';
+        const urlRegex = /(https?:\/\/[^\s]+)/g;
+        const urlsInContent = contentText.match(urlRegex) || [];
+        let primaryLink = post.fileUrl || (urlsInContent.length > 0 ? urlsInContent[0] : '#');
+        let isPdf = primaryLink.toLowerCase().includes('.pdf');
+
+        if (contentText.toLowerCase().includes('youtube.com') || contentText.toLowerCase().includes('youtu.be')) {
+            urlsInContent.forEach(url => {
+                let embedUrl = '';
+                const lowerUrl = url.toLowerCase();
+                if (lowerUrl.includes('list=')) { embedUrl = `https://www.youtube.com/embed/videoseries?list=${url.split('list=')[1].split('&')[0]}`; }
+                else if (lowerUrl.includes('v=')) { embedUrl = `https://www.youtube.com/embed/${url.split('v=')[1].split('&')[0]}`; }
+                else if (lowerUrl.includes('youtu.be/')) { embedUrl = `https://www.youtube.com/embed/${url.split('youtu.be/')[1].split('?')[0]}`; }
+                if (embedUrl) { youtubeEmbedHtml += `<div class="youtube-embed-container" style="border-bottom: 1px solid #eee;"><iframe src="${embedUrl}" frameborder="0" allowfullscreen></iframe></div>`; }
+            });
+        }
+
+        const linkedContent = contentText.replace(urlRegex, '<a href="$1" target="_blank" class="text-link">$1</a>');
+        let fileLinkHtml = '';
+        if (post.fileUrl) {
+            const icon = isPdf ? 'fa-file-pdf' : 'fa-file-download';
+            const label = isPdf ? 'PDF 파일 보기' : '첨부파일 다운로드';
+            const color = isPdf ? '#e74c3c' : 'var(--secondary-color)';
+            fileLinkHtml = `<a href="${post.fileUrl}" target="_blank" class="resource-link premium-btn" style="border-color:${color}; color:${color}; margin-top:10px;">
+                <i class="fas ${icon}"></i> ${label}</a>`;
+        }
+
+        let adminButtons = '';
+        if (isAdmin) {
+            adminButtons = `
+                <div class="resource-admin-actions">
+                    <button onclick="openEditModal('${post.id}')" class="action-btn edit-small" title="수정"><i class="fas fa-edit"></i></button>
+                    <button onclick="deletePost('${post.id}')" class="action-btn delete-small" title="삭제"><i class="fas fa-trash"></i></button>
+                </div>
+            `;
+        }
+
+        li.innerHTML = `
+            <div class="resource-card-modern" style="margin-bottom: 20px;">
+                ${youtubeEmbedHtml}
+                <div class="resource-content-padding">
+                    <div class="resource-header-modern">
+                        <div class="resource-tag-row">
+                            <span class="resource-type-badge">${post.tags && post.tags[0] ? post.tags[0] : '자료'}</span>
+                            <span class="resource-date-modern">${date}</span>
+                        </div>
+                        <h4 class="resource-title-modern">
+                            <a href="${primaryLink}" target="${primaryLink !== '#' ? '_blank' : '_self'}" class="title-clickable">
+                                ${isPdf ? '<i class="fas fa-file-pdf" style="color:#e74c3c; margin-right:5px;"></i>' : ''}
+                                ${post.title}
+                                ${primaryLink !== '#' ? '<i class="fas fa-external-link-alt" style="font-size:0.7em; margin-left:8px; opacity:0.3;"></i>' : ''}
+                            </a>
+                        </h4>
+                        ${adminButtons}
+                    </div>
+                    <div class="resource-body-modern">${linkedContent.trim() || '<span style="color:#ccc; font-style:italic;">상세 내용 없음</span>'}</div>
+                    ${fileLinkHtml}
+                </div>
+            </div>`;
+        container.appendChild(li);
+    }
 
     if (resourceCloseBtn && resourceModal) {
         resourceCloseBtn.addEventListener('click', () => {
@@ -723,45 +773,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
             resourceListContainer.innerHTML = '';
             snapshot.forEach(doc => {
-                const post = doc.data();
-                const li = document.createElement('li');
-                li.className = 'resource-item';
-
-                const date = post.createdAt ? post.createdAt.toDate().toLocaleDateString() : '날짜 없음';
-
-                let contentHtml = '';
-                if (post.content) {
-                    contentHtml = `<div class="resource-body">${post.content}</div>`;
-                }
-
-                let fileLink = '';
-                if (post.fileUrl) {
-                    fileLink = `<a href="${post.fileUrl}" target="_blank" class="resource-link"><i class="fas fa-file-download"></i> 첨부파일 다운로드</a>`;
-                }
-
-                // Add Admin Buttons if logged in
-                let adminButtons = '';
-                if (isAdmin) {
-                    adminButtons = `
-                        <div class="resource-admin-actions">
-                            <button onclick="openEditModal('${doc.id}')" class="action-btn edit-small">수정</button>
-                            <button onclick="deletePost('${doc.id}')" class="action-btn delete-small">삭제</button>
-                        </div>
-                    `;
-                }
-
-                li.innerHTML = `
-                    <div class="resource-header">
-                        <div class="resource-header-info">
-                            <span class="resource-title">${post.title}</span>
-                            <span class="resource-date">${date}</span>
-                        </div>
-                        ${adminButtons}
-                    </div>
-                    ${contentHtml}
-                    ${fileLink}
-                `;
-                resourceListContainer.appendChild(li);
+                const post = { id: doc.id, ...doc.data() };
+                renderSingleResource(post, resourceListContainer);
             });
 
         } catch (error) {
@@ -893,42 +906,8 @@ document.addEventListener('DOMContentLoaded', () => {
             // reuse render logic (simplified for this call)
             resourceListContainer.innerHTML = '';
             snapshot.forEach(doc => {
-                const post = doc.data();
-                // (Rendering logic copied or factored out would be better, but for simplicity here...)
-                const date = post.createdAt ? post.createdAt.toDate().toLocaleDateString() : '날짜 없음';
-
-                // ... (simplified render for global view) ...
-                const li = document.createElement('li');
-                li.className = 'resource-item-clean';
-
-                // Check for youtube/file to make title clickable
-                let firstUrl = '#';
-                if (post.fileUrl) firstUrl = post.fileUrl;
-                else if (post.content) {
-                    const m = post.content.match(/(https?:\/\/[^\s]+)/);
-                    if (m) firstUrl = m[0];
-                }
-
-                li.innerHTML = `
-                    <div class="resource-card-modern">
-                         <div class="resource-content-padding">
-                            <div class="resource-header-modern">
-                                <span class="resource-type-badge">${post.tags ? post.tags[0] : '자료'}</span>
-                                <h4 class="resource-title-modern">
-                                    <a href="${firstUrl}" target="${firstUrl !== '#' ? '_blank' : '_self'}" style="text-decoration:none; color:inherit;">
-                                        ${post.title}
-                                    </a>
-                                </h4>
-                                <span class="resource-date-modern">${date}</span>
-                            </div>
-                         </div>
-                    </div>
-                `;
-                li.addEventListener('click', () => {
-                    // Open the specific modal for this category or detail
-                    openResourceModal(post.tags ? post.tags[0] : '자료');
-                });
-                resourceListContainer.appendChild(li);
+                const post = { id: doc.id, ...doc.data() };
+                renderSingleResource(post, resourceListContainer);
             });
         } catch (e) {
             console.error(e);

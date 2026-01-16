@@ -1647,6 +1647,88 @@ footer {
     color: #fff;
 }
 
+/* Series Folder Item Styles */
+.series-folder-item {
+    margin-bottom: 1.5rem;
+    border: 1px solid #eee;
+    border-radius: 12px;
+    overflow: hidden;
+    background: #fff;
+    transition: all 0.3s ease;
+    list-style: none;
+}
+
+.series-folder-header {
+    background: #fcfcfc;
+    padding: 1.5rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.series-folder-header:hover {
+    background: #f5f5f5;
+}
+
+.folder-info {
+    display: flex;
+    align-items: center;
+    gap: 1.2rem;
+}
+
+.folder-icon {
+    font-size: 2rem;
+    color: var(--secondary-color);
+    transition: transform 0.3s;
+}
+
+.series-folder-item.expanded .folder-icon {
+    transform: scale(1.1);
+}
+
+.series-label {
+    font-size: 0.7rem;
+    font-weight: 800;
+    color: var(--secondary-color);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+}
+
+.series-name {
+    font-size: 1.25rem;
+    font-weight: 700;
+    margin: 0.2rem 0;
+    color: var(--primary-color);
+}
+
+.series-count {
+    font-size: 0.85rem;
+    color: #888;
+}
+
+.toggle-icon {
+    font-size: 1rem;
+    color: #ccc;
+    transition: all 0.3s;
+}
+
+.series-folder-item.expanded .toggle-icon {
+    color: var(--secondary-color);
+}
+
+.series-sub-list {
+    padding: 1rem 1.5rem;
+    background: #fafafa;
+    border-top: 1px solid #f0f0f0;
+    list-style: none;
+}
+
+.resource-item-wrapper {
+    list-style: none;
+}
+
 #edit-file-status {
     margin-bottom: 5px;
 }
