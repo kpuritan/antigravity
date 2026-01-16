@@ -525,12 +525,32 @@ document.addEventListener('DOMContentLoaded', () => {
                 const date = post.createdAt ? post.createdAt.toDate().toLocaleDateString() : '날짜 없음';
 
                 // Content detection (Youtube vs Text)
-                let contentHtml = '';
-                if (post.content) {
-                    // Convert URLs to clickable links
-                    const linkedContent = post.content.replace(/(https?:\/\/[^\s]+)/g, '<a href="$1" target="_blank">$1</a>');
-                    contentHtml = `<div class="resource-body">${linkedContent}</div>`;
+                let youtubeEmbedHtml = '';
+                let contentText = post.content || '';
+
+                // Extract YouTube ID
+                const youtubeRegex = /(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/playlist\?list=)([a-zA-Z0-9_-]+)/g;
+                const youtubeMatch = contentText.match(youtubeRegex);
+
+                if (youtubeMatch) {
+                    youtubeMatch.forEach(url => {
+                        let embedUrl = '';
+                        if (url.includes('list=')) {
+                            const listId = url.split('list=')[1].split('&')[0];
+                            embedUrl = `https://www.youtube.com/embed/videoseries?list=${listId}`;
+                        } else {
+                            const videoId = url.includes('v=') ? url.split('v=')[1].split('&')[0] : url.split('/').pop().split('?')[0];
+                            embedUrl = `https://www.youtube.com/embed/${videoId}`;
+                        }
+                        youtubeEmbedHtml += `
+                            <div class="youtube-embed-container">
+                                <iframe src="${embedUrl}" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+                            </div>`;
+                    });
                 }
+
+                // Convert URLs to clickable links (excluding what we just embedded if needed, or just link them all)
+                const linkedContent = contentText.replace(/(https?:\/\/[^\s]+)/g, '<a href="$1" target="_blank">$1</a>');
 
                 let fileLink = '';
                 if (post.fileUrl) {
@@ -542,22 +562,28 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (isAdmin) {
                     adminButtons = `
                         <div class="resource-admin-actions">
-                            <button onclick="openEditModal('${post.id}')" class="action-btn edit-small">수정</button>
-                            <button onclick="deletePost('${post.id}')" class="action-btn delete-small">삭제</button>
+                            <button onclick="openEditModal('${post.id}')" class="action-btn edit-small" title="수정"><i class="fas fa-edit"></i></button>
+                            <button onclick="deletePost('${post.id}')" class="action-btn delete-small" title="삭제"><i class="fas fa-trash"></i></button>
                         </div>
                     `;
                 }
 
                 li.innerHTML = `
-                    <div class="resource-header">
-                        <div class="resource-header-info">
-                             <span class="resource-title">${post.title}</span>
-                             <span class="resource-date">${date}</span>
+                    <div class="resource-card-modern">
+                        ${youtubeEmbedHtml}
+                        <div class="resource-content-padding">
+                            <div class="resource-header-modern">
+                                <div class="resource-tag-row">
+                                    <span class="resource-type-badge">${post.tags && post.tags[0] ? post.tags[0] : '자료'}</span>
+                                    <span class="resource-date-modern">${date}</span>
+                                </div>
+                                <h4 class="resource-title-modern">${post.title}</h4>
+                                ${adminButtons}
+                            </div>
+                            <div class="resource-body-modern">${linkedContent}</div>
+                            ${fileLink}
                         </div>
-                        ${adminButtons}
                     </div>
-                    ${contentHtml}
-                    ${fileLink}
                 `;
                 resourceListContainer.appendChild(li);
             });
@@ -594,16 +620,21 @@ document.addEventListener('DOMContentLoaded', () => {
                         const displayCategory = post.tags ? post.tags[0] : '자료';
 
                         const div = document.createElement('div');
-                        div.className = 'recent-card';
+                        div.className = 'recent-card-premium';
                         div.innerHTML = `
-                        <div class="recent-card-header">
-                            <span class="recent-badge">${displayCategory}</span>
-                            <span class="recent-date">${date}</span>
+                        <div class="recent-card-inner">
+                            <div class="recent-card-top">
+                                <span class="recent-status-pill">NEW</span>
+                                <span class="recent-category-tag">${displayCategory}</span>
+                            </div>
+                            <h3 class="recent-title-premium">${post.title}</h3>
+                            <div class="recent-card-footer">
+                                <span class="recent-date-premium"><i class="far fa-calendar-alt"></i> ${date}</span>
+                                <button class="recent-link-btn" onclick="openResourceModal('${displayCategory}')">
+                                    상세보기 <i class="fas fa-chevron-right"></i>
+                                </button>
+                            </div>
                         </div>
-                        <h3 class="recent-title">${post.title}</h3>
-                        <button class="recent-btn" onclick="openResourceModal('${displayCategory}')">
-                            <i class="fas fa-arrow-right"></i> 자료 보기
-                        </button>
                     `;
                         recentGrid.appendChild(div);
                     });

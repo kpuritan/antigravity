@@ -1294,79 +1294,203 @@ footer {
     padding: 2rem;
 }
 
-/* Recent Updates Section Styles */
+/* =========================================
+   Premium UI Enhancements
+   ========================================= */
+
+/* YouTube Embed Style */
+.youtube-embed-container {
+    position: relative;
+    padding-bottom: 56.25%;
+    /* 16:9 Aspect Ratio */
+    height: 0;
+    overflow: hidden;
+    border-radius: 8px 8px 0 0;
+    margin-bottom: 0;
+    background: #000;
+}
+
+.youtube-embed-container iframe {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+}
+
+/* Modern Resource Card in Modal */
+.resource-card-modern {
+    background: #fff;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+    border: 1px solid #f0f0f0;
+    margin-bottom: 2rem;
+    transition: transform 0.3s ease;
+}
+
+.resource-card-modern:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+}
+
+.resource-content-padding {
+    padding: 2rem;
+}
+
+.resource-header-modern {
+    margin-bottom: 1.5rem;
+    position: relative;
+}
+
+.resource-tag-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.8rem;
+}
+
+.resource-type-badge {
+    background: var(--bg-warm);
+    color: var(--secondary-color);
+    padding: 0.3rem 0.8rem;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    font-weight: 700;
+}
+
+.resource-date-modern {
+    font-size: 0.85rem;
+    color: #aaa;
+}
+
+.resource-title-modern {
+    font-size: 1.4rem;
+    color: var(--primary-color);
+    line-height: 1.4;
+    margin-bottom: 0.5rem;
+    font-family: 'Playfair Display', serif;
+}
+
+.resource-body-modern {
+    font-size: 1.05rem;
+    color: #555;
+    line-height: 1.7;
+    margin-bottom: 1.5rem;
+    white-space: pre-wrap;
+    word-break: break-all;
+}
+
+/* Recent Updates Grid Container */
 .recent-grid-container {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    gap: 1.5rem;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 2rem;
     max-width: 1200px;
     margin: 0 auto;
 }
 
-.recent-card {
+/* Premium Recent Update Cards */
+.recent-card-premium {
+    perspective: 1000px;
+}
+
+.recent-card-inner {
     background: #fff;
-    border: 1px solid #e0e0e0;
-    border-radius: 8px;
-    padding: 1.5rem;
-    transition: var(--transition);
+    border-radius: 16px;
+    padding: 2rem;
+    height: 100%;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.03);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+    border: 1px solid rgba(201, 156, 94, 0.1);
+    transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+    position: relative;
+    overflow: hidden;
 }
 
-.recent-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+.recent-card-inner::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 4px;
+    height: 100%;
+    background: var(--secondary-color);
+    opacity: 0.3;
+    transition: opacity 0.3s;
+}
+
+.recent-card-premium:hover .recent-card-inner {
+    transform: translateY(-10px);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
     border-color: var(--secondary-color);
 }
 
-.recent-card-header {
+.recent-card-premium:hover .recent-card-inner::after {
+    opacity: 1;
+}
+
+.recent-card-top {
     display: flex;
     justify-content: space-between;
-    align-items: center;
-    margin-bottom: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.recent-status-pill {
+    background: #ff5e5e;
+    color: #fff;
+    font-size: 0.7rem;
+    font-weight: 800;
+    padding: 0.2rem 0.6rem;
+    border-radius: 4px;
+    letter-spacing: 0.05em;
+}
+
+.recent-category-tag {
+    color: var(--secondary-color);
     font-size: 0.85rem;
-}
-
-.recent-badge {
-    background: var(--bg-warm);
-    color: var(--primary-color);
-    padding: 0.3rem 0.8rem;
-    border-radius: 20px;
-    font-weight: 600;
-}
-
-.recent-date {
-    color: #999;
-}
-
-.recent-title {
-    font-size: 1.1rem;
     font-weight: 700;
-    color: #333;
-    margin-bottom: 1rem;
-    line-height: 1.4;
+}
+
+.recent-title-premium {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #1a2a44;
+    line-height: 1.5;
+    margin-bottom: 2rem;
     word-break: keep-all;
 }
 
-.recent-btn {
+.recent-card-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-top: 1px solid #f5f5f5;
+    padding-top: 1.2rem;
+}
+
+.recent-date-premium {
+    font-size: 0.85rem;
+    color: #999;
+}
+
+.recent-link-btn {
     background: transparent;
     border: none;
     color: var(--secondary-color);
-    font-weight: 600;
-    cursor: pointer;
-    text-align: right;
-    padding: 0;
+    font-weight: 700;
     font-size: 0.9rem;
+    cursor: pointer;
     display: flex;
     align-items: center;
-    justify-content: flex-end;
-    gap: 0.5rem;
+    gap: 0.4rem;
+    transition: gap 0.2s;
 }
 
-.recent-btn:hover {
-    text-decoration: underline;
+.recent-card-premium:hover .recent-link-btn {
+    gap: 0.8rem;
 }
 
 /* --- Admin Post Actions Styles --- */
