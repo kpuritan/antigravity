@@ -70,20 +70,28 @@ header {
 
 .logo-kor {
     font-family: 'Noto Sans KR', sans-serif;
-    font-size: 0.75rem;
+    font-size: 0.65rem;
+    /* Slightly smaller to fit better */
     font-weight: 700;
-    color: rgba(255, 255, 255, 0.7);
-    letter-spacing: 0.1em;
-    margin-bottom: 2px;
+    color: rgba(255, 255, 255, 0.82);
+    margin-bottom: 0px;
+    text-align: justify;
+    text-align-last: justify;
+    /* This spreads the letters to fill the width */
+    width: 100%;
+    display: block;
 }
 
 .logo-eng {
     font-family: 'Montserrat', sans-serif;
-    font-size: 2.2rem;
+    font-size: 2.5rem;
+    /* Slightly larger for impact */
     font-weight: 900;
     color: var(--white);
     letter-spacing: -0.05em;
-    margin-top: -4px;
+    margin-top: -6px;
+    display: block;
+    line-height: 0.9;
 }
 
 nav ul li a {
