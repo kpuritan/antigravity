@@ -570,7 +570,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // 실시간 목록 불러오기 (Only if not mocking initially)
         if (!useMock && db) {
-            db.collection("posts").orderBy("createdAt", "desc").limit(10)
+            db.collection("posts").orderBy("createdAt", "desc").limit(100)
                 .onSnapshot((querySnapshot) => {
                     recentPostsList.innerHTML = '';
                     if (querySnapshot.empty) {
