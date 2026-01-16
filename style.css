@@ -387,6 +387,14 @@ nav ul li a:hover {
     transform: translateY(-3px);
 }
 
+.cta-btn:disabled {
+    background-color: #ccc !important;
+    cursor: not-allowed;
+    transform: none !important;
+    box-shadow: none !important;
+    opacity: 0.7;
+}
+
 .cta-btn.secondary:hover {
     background-color: rgba(255, 255, 255, 0.1);
     border-color: #ffffff;

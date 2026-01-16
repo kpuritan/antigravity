@@ -418,17 +418,31 @@ document.addEventListener('DOMContentLoaded', () => {
             const progressContainer = document.getElementById('upload-progress-container');
             const progressBar = document.getElementById('upload-progress-bar');
             const percText = document.getElementById('upload-perc-text');
+            const statusText = document.getElementById('upload-status-text');
             const originalBtnText = submitBtn.innerHTML;
 
+            // --- 1. UI 초기화 및 상태 표시 ---
             submitBtn.disabled = true;
-            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 대기 중...';
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 업로드 준비 중...';
+
+            if (progressContainer) {
+                progressContainer.style.display = 'block';
+                if (progressBar) progressBar.style.width = '0%';
+                if (percText) percText.textContent = '0%';
+                if (statusText) statusText.textContent = '서버 연결 중...';
+            }
 
             try {
+                // Firebase 상태 체크
+                if (!useMock && (!db || !storage)) {
+                    throw new Error("Firebase가 아직 초기화되지 않았거나 연결에 실패했습니다. 잠시 후 다시 시도해주세요.");
+                }
+
                 let fileUrl = "";
 
-                // 파일이 있다면 Firebase Storage에 업로드
+                // --- 2. 파일 업로드 (있을 경우) ---
                 if (file) {
-                    if (progressContainer) progressContainer.style.display = 'block';
+                    console.log(`📂 파일 업로드 시도: ${file.name} (${file.size} bytes)`);
                     const storageRef = storage.ref(`files/${Date.now()}_${file.name}`);
                     const uploadTask = storageRef.put(file);
 
@@ -439,30 +453,37 @@ document.addEventListener('DOMContentLoaded', () => {
                                     ? (snapshot.bytesTransferred / snapshot.totalBytes) * 100
                                     : 0;
 
+                                // UI 업데이트
                                 if (progressBar) progressBar.style.width = progress + '%';
                                 if (percText) percText.textContent = Math.round(progress) + '%';
+                                if (statusText) statusText.textContent = `파일 전송 중... (${Math.round(progress)}%)`;
+
                                 submitBtn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> 전송 중 (${Math.round(progress)}%)`;
                                 console.log(`📊 업로드 진행률: ${Math.round(progress)}% (${snapshot.bytesTransferred}/${snapshot.totalBytes})`);
                             },
                             (error) => {
                                 console.error("❌ Storage 업로드 에러 상세:", error);
-                                reject(error);
+                                reject(new Error("파일 서버 업로드 중 오류가 발생했습니다: " + error.message));
                             },
                             async () => {
                                 try {
+                                    if (statusText) statusText.textContent = '파일 처리 중...';
                                     console.log('✅ 파일 업로드 완료, URL 추출 중...');
                                     const url = await uploadTask.snapshot.ref.getDownloadURL();
                                     resolve(url);
                                 } catch (err) {
                                     console.error("❌ URL 추출 에러:", err);
-                                    reject(err);
+                                    reject(new Error("파일 주소를 가져오는 데 실패했습니다."));
                                 }
                             }
                         );
                     });
                 }
 
-                // Firestore에 저장
+                // --- 3. Firestore 데이터 저장 ---
+                if (statusText) statusText.textContent = '자료 정보 저장 중...';
+                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 정보 저장 중...';
+
                 const postData = {
                     bibleBook,
                     topic,
@@ -470,7 +491,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     otherCategory: other,
                     tags,
                     title,
-                    series, // 누락된 시리즈 필드 추가
+                    series,
                     content,
                     fileUrl,
                     createdAt: firebase.firestore.FieldValue.serverTimestamp()
@@ -479,20 +500,28 @@ document.addEventListener('DOMContentLoaded', () => {
                 console.log('📝 Firestore 저장 데이터:', postData);
                 await db.collection("posts").add(postData);
 
+                // --- 4. 성공 처리 ---
+                if (statusText) statusText.textContent = '업로드 완료!';
                 alert(`✅ 자료가 성공적으로 업로드되었습니다!`);
+
                 uploadForm.reset();
-                clearUploadTarget(); // 업로드 후 타겟 초기화
-                if (window.loadRecentPostsGrid) window.loadRecentPostsGrid(); // 최신자료 목록 갱신
-                if (progressContainer) progressContainer.style.display = 'none';
+                clearUploadTarget();
+                if (window.loadRecentPostsGrid) window.loadRecentPostsGrid();
+
             } catch (error) {
-                console.error("Error adding document: ", error);
-                alert("업로드 중 오류가 발생했습니다: " + error.message);
+                console.error("❌ Upload Workflow Error:", error);
+                alert("업로드 중 오류가 발생했습니다:\n" + error.message);
             } finally {
+                // UI 복구
                 submitBtn.disabled = false;
                 submitBtn.innerHTML = originalBtnText;
-                if (progressContainer) progressContainer.style.display = 'none';
-                if (progressBar) progressBar.style.width = '0%';
+                // 진행바는 성공 시 1~2초 후 사라지게 하거나 즉시 숨김
+                setTimeout(() => {
+                    if (progressContainer) progressContainer.style.display = 'none';
+                    if (progressBar) progressBar.style.width = '0%';
+                }, 2000);
             }
+
         });
 
         // 실시간 목록 불러오기 (Only if not mocking initially)

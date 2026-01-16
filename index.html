@@ -242,33 +242,37 @@
                             <input type="text" id="post-title" placeholder="자료 제목을 입력하세요" required>
                         </div>
 
+                        <!-- 시리즈 필드는 스크립트 호환성을 위해 유지 (숨김 처리) -->
+                        <input type="hidden" id="post-series" value="">
+
                         <div class="input-group">
                             <label>내용 (또는 유튜브 링크)</label>
                             <textarea id="post-content" rows="6" placeholder="내용을 입력하거나 유튜브 주소를 넣어주세요"></textarea>
                         </div>
 
-                        <div class="form-row">
-                            <div class="input-group">
-                                <label>파일 첨부</label>
-                                <input type="file" id="post-file">
+                        <div class="input-group">
+                            <label>파일 첨부</label>
+                            <input type="file" id="post-file" style="margin-bottom: 5px;">
+                        </div>
+
+                        <div id="upload-progress-container"
+                            style="display: none; width: 100%; margin: 15px 0; background: #fafafa; padding: 15px; border-radius: 8px; border: 1px solid #eee;">
+                            <div
+                                style="display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 0.9rem; font-weight: 700;">
+                                <span id="upload-status-text" style="color: var(--secondary-color);">업로드 준비 중...</span>
+                                <span id="upload-perc-text">0%</span>
                             </div>
-                            <div id="upload-progress-container"
-                                style="display: none; width: 100%; margin-bottom: 1rem;">
-                                <div
-                                    style="display: flex; justify-content: space-between; margin-bottom: 5px; font-size: 0.85rem; font-weight: 600;">
-                                    <span id="upload-status-text" style="color: var(--secondary-color);">파일 전송
-                                        중...</span>
-                                    <span id="upload-perc-text">0%</span>
-                                </div>
-                                <div class="progress-bar-bg"
-                                    style="width: 100%; height: 8px; background: #eee; border-radius: 4px; overflow: hidden;">
-                                    <div id="upload-progress-bar"
-                                        style="width: 0%; height: 100%; background: var(--secondary-color); transition: width 0.3s;">
-                                    </div>
+                            <div class="progress-bar-bg"
+                                style="width: 100%; height: 10px; background: #eee; border-radius: 5px; overflow: hidden; box-shadow: inset 0 1px 3px rgba(0,0,0,0.1);">
+                                <div id="upload-progress-bar"
+                                    style="width: 0%; height: 100%; background: linear-gradient(90deg, var(--secondary-color), #d4af37); transition: width 0.3s; box-shadow: 0 0 10px rgba(201, 156, 94, 0.5);">
                                 </div>
                             </div>
                         </div>
-                        <button type="submit" class="cta-btn primary">자료 게시하기</button>
+
+                        <button type="submit" class="cta-btn primary"
+                            style="width: 100%; padding: 15px; font-size: 1.1rem;">자료 게시하기</button>
+
                     </form>
                 </div>
 
@@ -292,7 +296,6 @@
 
                         <div id="admin-series-list-container" class="series-management-grid"
                             style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px;">
-                            <!-- 시리즈 폴더 카드들이 여기에 생성됨 -->
                             <div class="loading-msg">시리즈 목록을 불러오는 중...</div>
                         </div>
                     </div>
@@ -316,14 +319,6 @@
                         </div>
                     </div>
                 </div>
-
-                <div class="admin-status">
-                    <h3>최근 업로드 현황</h3>
-                    <ul id="admin-recent-posts">
-                        <li class="empty-msg">아직 업로드된 자료가 없습니다.</li>
-                    </ul>
-                </div>
-                </form>
 
                 <div class="admin-status">
                     <h3>최근 업로드 현황</h3>
