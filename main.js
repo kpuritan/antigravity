@@ -1148,6 +1148,19 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             resourceListContainer.innerHTML = '';
+
+            // 전체보기 모달에서도 관리자 기능을 위해 UI 설정 로직 추가
+            const adminHeader = document.getElementById('resource-modal-admin-header');
+            const modalUploadForm = document.getElementById('modal-upload-form');
+            if (adminHeader) {
+                if (typeof isAdmin !== 'undefined' && isAdmin) {
+                    adminHeader.style.display = 'block';
+                    modalUploadForm.style.display = 'none';
+                } else {
+                    adminHeader.style.display = 'none';
+                }
+            }
+
             snapshot.forEach(doc => {
                 const post = { id: doc.id, ...doc.data() };
                 renderSingleResource(post, resourceListContainer);
@@ -1164,6 +1177,11 @@ document.addEventListener('DOMContentLoaded', () => {
         resourceListContainer.classList.remove('compact-view');
         resourceModalTitle.textContent = `전체 주제 목록`;
         resourceListContainer.innerHTML = '<div class="main-grid-container" id="modal-topic-grid"></div>';
+
+        // 검색/카테고리 선택 모달에서는 업로드 헤더 숨김
+        const adminHeader = document.getElementById('resource-modal-admin-header');
+        if (adminHeader) adminHeader.style.display = 'none';
+
         const grid = document.getElementById('modal-topic-grid');
 
         topics.forEach(item => {
@@ -1191,6 +1209,11 @@ document.addEventListener('DOMContentLoaded', () => {
             </div>
             <div class="main-grid-container" id="modal-author-grid"></div>
         `;
+
+        // 검색/카테고리 선택 모달에서는 업로드 헤더 숨김
+        const adminHeader = document.getElementById('resource-modal-admin-header');
+        if (adminHeader) adminHeader.style.display = 'none';
+
         const grid = document.getElementById('modal-author-grid');
         const searchInput = document.getElementById('modal-author-search');
 
