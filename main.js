@@ -407,7 +407,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // 특정 시리즈가 선택된 상태로 모달 열기
     window.openResourceModalWithSeries = (category, seriesName) => {
-        window.openResourceModal(category);
+        // Pass seriesName to openResourceModal for direct navigation
+        window.openResourceModal(category, seriesName);
         // 모달이 열린 후 인풋 세팅을 위해 약간의 지연
         setTimeout(() => {
             const seriesInput = document.getElementById('modal-post-series');
@@ -804,12 +805,18 @@ document.addEventListener('DOMContentLoaded', () => {
     const resourceListContainer = document.getElementById('resource-list-container');
     const resourceModalTitle = document.getElementById('resource-modal-title');
 
-    window.openResourceModal = async (categoryName) => {
+    window.openResourceModal = async (categoryName, targetSeries = null) => {
         if (!resourceModal) return;
         resourceModal.classList.add('show');
         resourceListContainer.classList.remove('compact-view'); // 기본 목록은 크게
         resourceModalTitle.textContent = `${categoryName} 자료 목록`;
         resourceListContainer.innerHTML = '<li class="no-resource-msg">자료를 불러오는 중입니다...</li>';
+
+        // Clean up previous Sortable instance if exists
+        if (window.currentSortable) {
+            window.currentSortable.destroy();
+            window.currentSortable = null;
+        }
 
         // Admin UI Logic in Modal
         const adminHeader = document.getElementById('resource-modal-admin-header');
@@ -1061,9 +1068,43 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 // Scroll to top of modal content
                 resourceListContainer.parentElement.scrollTop = 0;
+
+                // --- Drag and Drop Logic (Admin Only) ---
+                if (isAdmin && typeof Sortable !== 'undefined') {
+                    window.currentSortable = new Sortable(resourceListContainer, {
+                        animation: 150,
+                        ghostClass: 'sortable-ghost',
+                        draggable: '.resource-item-wrapper',
+                        onEnd: async () => {
+                            const items = resourceListContainer.querySelectorAll('.resource-item-wrapper');
+                            const batch = db.batch();
+
+                            items.forEach((item, index) => {
+                                const postId = item.getAttribute('data-id');
+                                if (postId) {
+                                    const ref = db.collection("posts").doc(postId);
+                                    batch.update(ref, { order: index });
+                                }
+                            });
+
+                            try {
+                                await batch.commit();
+                                console.log("Order updated successfully.");
+                            } catch (err) {
+                                console.error("Error updating order:", err);
+                                alert("순서 변경 저장 실패: " + err.message);
+                            }
+                        }
+                    });
+                }
             };
 
-            renderListView(groupedPosts);
+            // If targetSeries is provided, go straight to detail view
+            if (targetSeries && groupedPosts[targetSeries]) {
+                renderDetailView(targetSeries, groupedPosts[targetSeries]);
+            } else {
+                renderListView(groupedPosts);
+            }
 
         } catch (error) {
             console.error("Error fetching documents: ", error);
@@ -1074,6 +1115,8 @@ document.addEventListener('DOMContentLoaded', () => {
     function renderSingleResource(post, container) {
         const li = document.createElement('li');
         li.className = 'resource-item-wrapper';
+        li.setAttribute('data-id', post.id);
+        if (isAdmin) li.style.cursor = 'grab';
 
         const date = post.createdAt ? post.createdAt.toDate().toLocaleDateString() : '날짜 없음';
         let youtubeEmbedHtml = '';

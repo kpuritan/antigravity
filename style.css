@@ -1891,3 +1891,23 @@ footer {
 #edit-file-status {
     margin-bottom: 5px;
 }
+
+/* Sortable Styles */
+.sortable-ghost {
+    opacity: 0.4;
+    border: 2px dashed var(--secondary-color) !important;
+    background: #fdfdfd !important;
+}
+
+.resource-item-wrapper {
+    transition: transform 0.2s cubic-bezier(0.165, 0.84, 0.44, 1);
+}
+
+.resource-item-wrapper:active {
+    cursor: grabbing !important;
+}
+
+.resource-item-wrapper.sortable-drag {
+    z-index: 1000;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2) !important;
+}
