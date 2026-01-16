@@ -171,15 +171,40 @@
                     <p id="firebase-status" style="font-size: 0.9em; margin-top: 0.5rem;">연결 상태 확인 중...</p>
                 </div>
 
-                <div class="admin-grid">
-                    <form id="post-upload-form" class="upload-form">
-                        <div id="admin-upload-target-info"
-                            style="display: none; background: var(--secondary-color); color: white; padding: 10px; border-radius: 8px; margin-bottom: 20px; font-weight: 600;">
-                            <i class="fas fa-folder-open"></i> 현재 <span id="admin-target-category-name"></span> 분류에 업로드
-                            중입니다.
-                            <button type="button" onclick="clearUploadTarget()"
-                                style="background: none; border: 1px solid white; color: white; padding: 2px 8px; border-radius: 4px; margin-left: 10px; cursor: pointer; font-size: 0.8rem;">취소</button>
+                <!-- 관리자 메뉴 선택 (3단 분리 포털) -->
+                <div class="admin-portal-grid"
+                    style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 40px; margin-top: 20px;">
+                    <div class="admin-portal-card active" onclick="switchAdminTab('general')" id="tab-general"
+                        style="background: #fff; padding: 25px; border-radius: 15px; border: 2px solid var(--primary-color); text-align: center; cursor: pointer; transition: all 0.3s; box-shadow: 0 10px 20px rgba(0,0,0,0.05);">
+                        <i class="fas fa-book"
+                            style="font-size: 2rem; color: var(--primary-color); margin-bottom: 15px;"></i>
+                        <h3 style="margin-bottom: 5px; font-size: 1.1rem;">일반 도서 게시</h3>
+                        <p style="font-size: 0.8rem; color: #666;">성경/주제/저자/기타</p>
+                    </div>
+                    <div class="admin-portal-card" onclick="openResourceModal('강해설교')"
+                        style="background: #fff; padding: 25px; border-radius: 15px; border: 2px solid #eee; text-align: center; cursor: pointer; transition: all 0.3s;">
+                        <i class="fas fa-scroll"
+                            style="font-size: 2rem; color: var(--secondary-color); margin-bottom: 15px;"></i>
+                        <h3 style="margin-bottom: 5px; font-size: 1.1rem;">강해설교 관리</h3>
+                        <p style="font-size: 0.8rem; color: #666;">시리즈 및 회차 관리</p>
+                    </div>
+                    <div class="admin-portal-card" onclick="openResourceModal('전도 소책자')"
+                        style="background: #fff; padding: 25px; border-radius: 15px; border: 2px solid #eee; text-align: center; cursor: pointer; transition: all 0.3s;">
+                        <i class="fas fa-bullhorn" style="font-size: 2.5rem; color: #e67e22; margin-bottom: 15px;"></i>
+                        <h3 style="margin-bottom: 5px; font-size: 1.1rem;">전도 소책자 관리</h3>
+                        <p style="font-size: 0.8rem; color: #666;">소책자 전용 게시판</p>
+                    </div>
+                </div>
+
+                <div class="admin-grid" id="admin-general-section">
+                    <form id="post-upload-form" class="upload-form"
+                        style="background: #fff; border: 1px solid #eee; box-shadow: 0 10px 30px rgba(0,0,0,0.05);">
+                        <div
+                            style="background: var(--primary-color); color: white; padding: 15px 25px; border-radius: 12px 12px 0 0; margin: -25px -25px 25px -25px; display: flex; align-items: center; gap: 10px; margin-bottom: 25px;">
+                            <i class="fas fa-edit"></i>
+                            <h3 style="margin:0; font-size: 1.1rem; color: white;">일반 자료 올리기</h3>
                         </div>
+
                         <div class="admin-form-tags-grid">
                             <div class="input-group">
                                 <label>성경책별 분류</label>
@@ -213,12 +238,15 @@
 
                         <div class="input-group">
                             <label>제목</label>
-                            <input type="text" id="post-title" placeholder="자료 제목을 입력하세요">
+                            <input type="text" id="post-title" placeholder="자료 제목을 입력하세요" required>
                         </div>
 
-                        <div class="input-group">
-                            <label>시리즈/연재 이름 (폴더명)</label>
-                            <input type="text" id="post-series" placeholder="예: 사도행전 강해 시리즈 (미입력 시 단독 게시물)">
+                        <!-- 시리즈 필드는 기본 대시보드에서 숨김 (폴더 내 업로드에서만 사용) -->
+                        <div id="series-field-group" style="display: none;">
+                            <div class="input-group">
+                                <label>시리즈/연재 이름 (폴더명)</label>
+                                <input type="text" id="post-series" placeholder="예: 사도행전 강해 시리즈">
+                            </div>
                         </div>
 
                         <div class="input-group">
@@ -388,9 +416,37 @@
         <div class="modal-content resource-modal-content">
             <span class="close-btn" id="resource-close-btn">&times;</span>
             <h2 id="resource-modal-title">자료 목록</h2>
-            <div id="resource-modal-admin-header" style="display: none; margin-bottom: 20px; text-align: right;">
-                <!-- Button injected via JS when isAdmin is true -->
+            <div id="resource-modal-admin-header"
+                style="display: none; border-bottom: 1px solid #eee; padding-bottom: 15px; margin-bottom: 20px;">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <span style="font-weight: 700; color: var(--secondary-color);"><i class="fas fa-plus-circle"></i> 이
+                        폴더에 새 자료 추가</span>
+                    <button class="cta-btn primary" id="toggle-modal-upload"
+                        style="padding: 5px 15px; font-size: 0.8rem;">업로드 창 열기</button>
+                </div>
+
+                <form id="modal-upload-form" class="upload-form"
+                    style="display: none; margin-top: 15px; background: #fff; padding: 15px; border-radius: 8px; border: 1px solid #ddd;">
+                    <input type="text" id="modal-post-title" placeholder="자료 제목"
+                        style="width:100%; margin-bottom:10px;">
+                    <input type="text" id="modal-post-series" placeholder="시리즈 이름 (자동 입력됨)"
+                        style="width:100%; margin-bottom:10px;">
+                    <textarea id="modal-post-content" rows="3" placeholder="내용 또는 유튜브 링크"
+                        style="width:100%; margin-bottom:10px;"></textarea>
+                    <div style="display: flex; gap: 10px; align-items: center;">
+                        <input type="file" id="modal-post-file" style="font-size: 0.8rem;">
+                        <button type="submit" class="cta-btn primary"
+                            style="flex-shrink: 0; padding: 8px 20px;">게시하기</button>
+                    </div>
+                    <div id="modal-upload-progress"
+                        style="display:none; margin-top:10px; height:4px; background:#eee; border-radius:2px; overflow:hidden;">
+                        <div id="modal-upload-bar"
+                            style="width:0%; height:100%; background:var(--secondary-color); transition:width 0.3s;">
+                        </div>
+                    </div>
+                </form>
             </div>
+
             <div class="resource-list-wrapper">
                 <ul id="resource-list-container" class="resource-list">
                     <!-- Content injected via JS -->

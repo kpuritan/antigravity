@@ -248,26 +248,39 @@ document.addEventListener('DOMContentLoaded', () => {
     // Real Database Upload Logic
     const uploadForm = document.getElementById('post-upload-form');
     const recentPostsList = document.getElementById('admin-recent-posts');
+    window.switchAdminTab = (tabName) => {
+        const portalCards = document.querySelectorAll('.admin-portal-card');
+        portalCards.forEach(card => {
+            card.style.border = '2px solid #eee';
+            card.style.boxShadow = 'none';
+        });
+
+        const activeCard = event ? event.currentTarget : document.getElementById('tab-general');
+        if (activeCard) {
+            activeCard.style.border = `2px solid var(--primary-color)`;
+            activeCard.style.boxShadow = '0 10px 20px rgba(0,0,0,0.05)';
+        }
+
+        // 일반 자료 섹션 표시 여부 조절
+        const generalSection = document.getElementById('admin-general-section');
+        if (generalSection) {
+            generalSection.style.display = (tabName === 'general') ? 'grid' : 'none';
+        }
+    };
     let currentUploadTarget = null;
 
     window.prepareUploadForCategory = (categoryName) => {
-        currentUploadTarget = categoryName;
-        const modal = document.getElementById('resource-modal');
-        if (modal) modal.classList.remove('show');
-
-        const targetInfo = document.getElementById('admin-upload-target-info');
-        const targetName = document.getElementById('admin-target-category-name');
-        if (targetInfo && targetName) {
-            targetInfo.style.display = 'block';
-            targetName.textContent = categoryName;
+        // 이 함수는 이제 모달 내부의 업로드 창을 열어주는 역할로 변경합니다.
+        const modalUploadForm = document.getElementById('modal-upload-form');
+        if (modalUploadForm) {
+            modalUploadForm.style.display = 'block';
+            const titleInput = document.getElementById('modal-post-title');
+            if (titleInput) titleInput.focus();
         }
-
-        const adminSection = document.getElementById('admin');
-        if (adminSection) adminSection.scrollIntoView({ behavior: 'smooth' });
     };
 
     window.clearUploadTarget = () => {
-        currentUploadTarget = null;
+        // 기존 알림바 제거
         const targetInfo = document.getElementById('admin-upload-target-info');
         if (targetInfo) targetInfo.style.display = 'none';
     };
@@ -557,16 +570,79 @@ document.addEventListener('DOMContentLoaded', () => {
         resourceModalTitle.textContent = `${categoryName} 자료 목록`;
         resourceListContainer.innerHTML = '<li class="no-resource-msg">자료를 불러오는 중입니다...</li>';
 
-        // Admin Upload Button in Modal
+        // Admin UI Logic in Modal
         const adminHeader = document.getElementById('resource-modal-admin-header');
+        const modalUploadForm = document.getElementById('modal-upload-form');
+        const toggleBtn = document.getElementById('toggle-modal-upload');
+        const seriesInput = document.getElementById('modal-post-series');
+
         if (adminHeader) {
             if (typeof isAdmin !== 'undefined' && isAdmin) {
                 adminHeader.style.display = 'block';
-                adminHeader.innerHTML = `
-                    <button class="cta-btn primary" style="padding: 10px 20px; font-size: 0.9rem;" onclick="prepareUploadForCategory('${categoryName}')">
-                        <i class="fas fa-plus-circle"></i> '${categoryName}'에 새 자료 올리기
-                    </button>
-                `;
+                modalUploadForm.style.display = 'none'; // 초기엔 닫힘
+                toggleBtn.textContent = '업로드 창 열기';
+
+                // 시리즈가 폴더면 시리즈 인풋값을 폴더명으로 자동 세팅. 
+                // 단 성경책/주제 등은 시리즈라기보단 태그이므로 비워두거나 필요시 입력.
+                if (seriesInput) seriesInput.value = '';
+
+                toggleBtn.onclick = () => {
+                    const isHidden = modalUploadForm.style.display === 'none';
+                    modalUploadForm.style.display = isHidden ? 'block' : 'none';
+                    toggleBtn.textContent = isHidden ? '업로드 창 닫기' : '업로드 창 열기';
+                };
+
+                // 모달 전용 업로드 이벤트
+                modalUploadForm.onsubmit = async (e) => {
+                    e.preventDefault();
+                    const title = document.getElementById('modal-post-title').value.trim();
+                    const series = document.getElementById('modal-post-series').value.trim();
+                    const content = document.getElementById('modal-post-content').value;
+                    const fileInput = document.getElementById('modal-post-file');
+                    const file = fileInput.files[0];
+                    const progressContainer = document.getElementById('modal-upload-progress');
+                    const progressBar = document.getElementById('modal-upload-bar');
+
+                    if (!title) { alert('제목을 입력해 주세요.'); return; }
+
+                    try {
+                        let fileUrl = "";
+                        if (file) {
+                            progressContainer.style.display = 'block';
+                            const storageRef = storage.ref(`files/${Date.now()}_${file.name}`);
+                            const uploadTask = storageRef.put(file);
+
+                            fileUrl = await new Promise((res, rej) => {
+                                uploadTask.on('state_changed',
+                                    (snap) => {
+                                        const p = (snap.bytesTransferred / snap.totalBytes) * 100;
+                                        progressBar.style.width = p + '%';
+                                    }, rej, async () => {
+                                        res(await uploadTask.snapshot.ref.getDownloadURL());
+                                    }
+                                );
+                            });
+                        }
+
+                        await db.collection("posts").add({
+                            title, series, content, fileUrl,
+                            tags: [categoryName],
+                            createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                        });
+
+                        alert('✅ 업로드 완료!');
+                        modalUploadForm.reset();
+                        modalUploadForm.style.display = 'none';
+                        toggleBtn.textContent = '업로드 창 열기';
+                        openResourceModal(categoryName); // 목록 새로고침
+                        if (window.loadRecentPostsGrid) window.loadRecentPostsGrid(); // 메인 갱신
+                    } catch (err) {
+                        alert('업로드 실패: ' + err.message);
+                    } finally {
+                        progressContainer.style.display = 'none';
+                        progressBar.style.width = '0%';
+                    }
+                };
             } else {
                 adminHeader.style.display = 'none';
             }
