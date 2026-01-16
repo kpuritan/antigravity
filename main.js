@@ -358,7 +358,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         if (seriesDataMap[a].minOrder !== seriesDataMap[b].minOrder) {
                             return seriesDataMap[a].minOrder - seriesDataMap[b].minOrder;
                         }
-                        return a.localeCompare(b, undefined, { numeric: true });
+                        return a.trim().localeCompare(b.trim(), 'ko', { numeric: true, sensitivity: 'base' });
                     });
 
                     sortedSeries.forEach(seriesName => {
@@ -969,7 +969,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     const minOrderA = Math.min(...currentGroupedData[a].map(p => p.order || 0));
                     const minOrderB = Math.min(...currentGroupedData[b].map(p => p.order || 0));
                     if (minOrderA !== minOrderB) return minOrderA - minOrderB;
-                    return a.localeCompare(b, undefined, { numeric: true });
+                    return a.trim().localeCompare(b.trim(), 'ko', { numeric: true, sensitivity: 'base' });
                 });
 
                 // If there are only standalone posts (none) and no folders, show them directly
@@ -1054,7 +1054,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     sortAlphaBtn.onclick = async () => {
                         if (!confirm(`'${seriesName}' 폴더 내의 자료들을 가나다순으로 자동 정렬하시겠습니까?`)) return;
 
-                        const sorted = [...posts].sort((a, b) => a.title.localeCompare(b.title, undefined, { numeric: true }));
+                        const sorted = [...posts].sort((a, b) => a.title.trim().localeCompare(b.title.trim(), 'ko', { numeric: true, sensitivity: 'base' }));
                         const batch = db.batch();
                         sorted.forEach((p, idx) => {
                             batch.update(db.collection("posts").doc(p.id), { order: idx });
