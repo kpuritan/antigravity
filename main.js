@@ -1381,7 +1381,16 @@ document.addEventListener('DOMContentLoaded', () => {
     let hasMoreRecent = true;
 
     window.loadRecentPostsGrid = async (isInitial = true) => {
-        if (!recentGrid || typeof db === 'undefined' || isRecentLoading || !hasMoreRecent && !isInitial) return;
+        if (!recentGrid) return;
+
+        // Ensure db is initialized
+        if (typeof db === 'undefined') {
+            console.warn("DB not ready, retrying in 500ms");
+            setTimeout(() => window.loadRecentPostsGrid(isInitial), 500);
+            return;
+        }
+
+        if (isRecentLoading || (!hasMoreRecent && !isInitial)) return;
 
         // Safe check for Mock Mode
         if (typeof useMock !== 'undefined' && useMock) {
@@ -1445,14 +1454,25 @@ document.addEventListener('DOMContentLoaded', () => {
             hasMoreRecent = false;
 
         } catch (err) {
-            console.log("Error loading recents:", err);
+            console.error("Error loading recents:", err);
             if (isInitial) {
-                recentGrid.innerHTML = '<p style="text-align:center; color:red;">자료 불러오기 실패</p>';
+                recentGrid.innerHTML = `<p style="text-align:center; color:#e74c3c; padding: 2rem;">
+                    <i class="fas fa-exclamation-circle"></i> 자료를 불러오지 못했습니다.<br>
+                    <span style="font-size:0.8em; color:#666;">잠시 후 새로고침 해주세요. (${err.message})</span>
+                </p>`;
             }
         } finally {
             isRecentLoading = false;
         }
     };
+
+    // 타임아웃 안전장치: 5초 후에도 로딩 중이면 강제 종료
+    setTimeout(() => {
+        const loadingMsg = recentGrid ? recentGrid.querySelector('.loading-msg') : null;
+        if (loadingMsg) {
+            recentGrid.innerHTML = '<p style="text-align:center; color:#999;">서버 응답이 지연되고 있습니다.</p>';
+        }
+    }, 5000);
 
     // Set up Infinite Scroll Observer removed to keep main page clean (limit 4)
 

@@ -1065,6 +1065,9 @@ footer {
     align-items: center;
     justify-content: center;
     opacity: 0.8;
+    text-decoration: none;
+    /* 밑줄 제거 */
+    border: none;
 }
 
 .social-links a:hover {
