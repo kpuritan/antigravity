@@ -1,8 +1,0 @@
-[build]
-  publish = "."
-
-# SPA support if you decide to use frontend routing later
-[[redirects]]
-  from = "/*"
-  to = "/index.html"
-  status = 200
