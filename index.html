@@ -144,21 +144,46 @@
         </style>
 
         <script>
-            // Emergency Fallback: If main.js fails to load content within 2 seconds, show mock data
+            // Emergency Fallback: Standalone Mock Data Renderer
+            // This script runs if the main logic fails to populate the grid within 1.5 seconds.
             setTimeout(() => {
                 const grid = document.getElementById('recent-posts-grid');
                 if (grid && grid.children.length === 0) {
-                    console.warn("Emergency Fallback Triggered");
-                    grid.innerHTML = '<div style="text-align:center; padding:2rem; grid-column:1/-1;">데이터 로딩 중... (잠시만 기다려주세요)</div>';
-                    // Attempt to call render function if available
-                    if (window.renderMockRecentPosts) {
-                        window.renderMockRecentPosts();
-                    } else {
-                        // Manual injection if function missing
-                        grid.innerHTML = '<div style="text-align:center; padding:2rem; grid-column:1/-1; color:#999;">서버 연결 대기 중...<br><button onclick="location.reload()" style="margin-top:10px; padding:5px 10px;">새로고침</button></div>';
-                    }
+                    console.warn("Emergency Fallback Triggered: Rendering Standalone Mock Data");
+
+                    const mockData = [
+                        { title: "청교도 신학의 정수: 존 오웬의 성령론", cat: "청교도 신학", date: "2024.01.15" },
+                        { title: "현대 교회를 위한 웨스트민스터 신앙고백 해설", cat: "신앙고백", date: "2024.01.12" },
+                        { title: "고난 속의 위로: 리처드 십스의 상한 갈대", cat: "경건 서적", date: "2024.01.10" },
+                        { title: "설교란 무엇인가? 마틴 로이드 존스의 설교학", cat: "설교학", date: "2024.01.08" },
+                        { title: "가정 예배의 회복과 실제적인 지침", cat: "신자의 삶", date: "2024.01.05" },
+                        { title: "요한계시록 강해 시리즈 (1): 승리하신 그리스도", cat: "강해설교", date: "2024.01.01" }
+                    ];
+
+                    let html = '';
+                    mockData.forEach(item => {
+                        html += `
+                            <div class="recent-card-premium">
+                                <div class="recent-card-inner">
+                                    <div class="recent-card-top">
+                                        <span class="recent-status-pill">SAMPLE</span>
+                                        <span class="recent-category-tag">${item.cat}</span>
+                                    </div>
+                                    <h3 class="recent-title-premium">${item.title}</h3>
+                                    <div class="recent-card-footer">
+                                        <span class="recent-date-premium"><i class="far fa-calendar-alt"></i> ${item.date}</span>
+                                        <button class="recent-link-btn" onclick="alert('테스트용 샘플 데이터입니다. 실제 데이터베이스 연결을 확인해주세요.')">
+                                            상세보기 <i class="fas fa-chevron-right"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                    });
+
+                    grid.innerHTML = html;
                 }
-            }, 2000);
+            }, 1500);
         </script>
 
         <section id="inquiry">
