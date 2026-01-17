@@ -573,23 +573,67 @@ nav ul li:hover a i {
 }
 
 .about-text {
-    flex: 1;
+    flex: 1.2;
+}
+
+.about-description-large {
+    font-size: 1.35rem !important;
+    font-weight: 700;
+    line-height: 1.6;
+    color: var(--primary-color) !important;
+    margin: 2.5rem 0;
+    word-break: keep-all;
 }
 
 .about-text p {
     margin-bottom: 1.5rem;
-    font-size: 1.1rem;
+    font-size: 1.05rem;
     color: var(--text-light);
+    line-height: 1.8;
 }
 
-.about-image {
-    flex: 1;
+.about-right {
+    flex: 0.8;
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
 }
 
 .about-image img {
     width: 100%;
-    border-radius: 20px;
-    box-shadow: 0 20px 40px rgba(44, 30, 20, 0.1);
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+}
+
+.about-team {
+    margin-top: 1rem;
+    padding: 1.5rem;
+    background: #fcfaf7;
+    border-radius: 10px;
+    border: 1px dashed rgba(201, 156, 94, 0.3);
+}
+
+.about-team .team-title {
+    font-weight: 800;
+    color: var(--secondary-color);
+    display: block;
+    margin-bottom: 0.5rem;
+    font-size: 0.95rem;
+}
+
+.about-team .team-name {
+    font-weight: 700;
+    color: var(--primary-color);
+    font-size: 1.05rem;
+    line-height: 1.4;
+}
+
+.about-team .eng-team {
+    display: block;
+    font-size: 0.85rem;
+    color: #888;
+    margin-top: 0.3rem;
+    font-family: 'Montserrat', sans-serif;
 }
 
 .about-text .features {
@@ -620,11 +664,11 @@ nav ul li:hover a i {
 
 /* About Goals Styling */
 .about-goals-container {
-    margin: 2rem 0;
     background: #faf7f2;
-    padding: 1.5rem;
-    border-radius: 8px;
-    border-left: 4px solid var(--secondary-color);
+    padding: 1.8rem;
+    border-radius: 12px;
+    border-left: 5px solid var(--secondary-color);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.03);
 }
 
 .about-goals-container h4 {
