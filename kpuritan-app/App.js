@@ -1,5 +1,5 @@
 import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View, ScrollView, TouchableOpacity, ActivityIndicator } from 'react-native';
+import { StyleSheet, Text, View, ScrollView, TouchableOpacity, ActivityIndicator, Linking, Alert } from 'react-native';
 import { useState, useEffect } from 'react';
 import { db } from './firebase';
 
@@ -15,35 +15,65 @@ export default function App() {
     try {
       const snapshot = await db.collection('posts')
         .orderBy('createdAt', 'desc')
-        .limit(6)
+        .limit(10)
         .get();
 
-      const postsData = snapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      }));
-
-      setPosts(postsData);
+      if (snapshot.empty) {
+        console.log('No posts found, using mock data');
+        setPosts(getMockData());
+      } else {
+        const postsData = snapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data()
+        }));
+        setPosts(postsData);
+      }
       setLoading(false);
     } catch (error) {
       console.error('Error loading posts:', error);
-      // Fallback to mock data
-      setPosts([
-        { id: '1', title: "청교도 신학의 정수: 존 오웬의 성령론", tags: ["청교도 신학"], createdAt: { toDate: () => new Date('2024-01-15') } },
-        { id: '2', title: "현대 교회를 위한 웨스트민스터 신앙고백 해설", tags: ["신앙고백"], createdAt: { toDate: () => new Date('2024-01-12') } },
-        { id: '3', title: "고난 속의 위로: 리처드 십스의 상한 갈대", tags: ["경건 서적"], createdAt: { toDate: () => new Date('2024-01-10') } },
-        { id: '4', title: "설교란 무엇인가? 마틴 로이드 존스의 설교학", tags: ["설교학"], createdAt: { toDate: () => new Date('2024-01-08') } },
-        { id: '5', title: "가정 예배의 회복과 실제적인 지침", tags: ["신자의 삶"], createdAt: { toDate: () => new Date('2024-01-05') } },
-        { id: '6', title: "요한계시록 강해 시리즈 (1): 승리하신 그리스도", tags: ["강해설교"], createdAt: { toDate: () => new Date('2024-01-01') } }
-      ]);
+      setPosts(getMockData());
       setLoading(false);
     }
   };
 
+  const getMockData = () => [
+    { id: '1', title: "청교도 신학의 정수: 존 오웬의 성령론", tags: ["청교도 신학"], createdAt: new Date() },
+    { id: '2', title: "현대 교회를 위한 웨스트민스터 신앙고백 해설", tags: ["신앙고백"], createdAt: new Date(Date.now() - 86400000 * 3) },
+    { id: '3', title: "고난 속의 위로: 리처드 십스의 상한 갈대", tags: ["경건 서적"], createdAt: new Date(Date.now() - 86400000 * 5) },
+    { id: '4', title: "설교란 무엇인가? 마틴 로이드 존스의 설교학", tags: ["설교학"], createdAt: new Date(Date.now() - 86400000 * 8) },
+    { id: '5', title: "가정 예배의 회복과 실제적인 지침", tags: ["신자의 삶"], createdAt: new Date(Date.now() - 86400000 * 12) },
+    { id: '6', title: "요한계시록 강해 시리즈 (1): 승리하신 그리스도", tags: ["강해설교"], createdAt: new Date(Date.now() - 86400000 * 15) }
+  ];
+
   const formatDate = (timestamp) => {
     if (!timestamp) return '';
-    const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
+    let date;
+    if (timestamp.toDate) {
+      date = timestamp.toDate();
+    } else if (timestamp instanceof Date) {
+      date = timestamp;
+    } else {
+      date = new Date(timestamp);
+    }
     return date.toLocaleDateString('ko-KR', { year: 'numeric', month: '2-digit', day: '2-digit' }).replace(/\. /g, '.').replace(/\.$/, '');
+  };
+
+  const openResource = async (post) => {
+    const content = post.content || '';
+    const urlRegex = /(https?:\/\/[^\s]+)/g;
+    const urls = content.match(urlRegex) || [];
+    const targetUrl = post.fileUrl || (urls.length > 0 ? urls[0] : null);
+
+    if (targetUrl) {
+      const supported = await Linking.canOpenURL(targetUrl);
+      if (supported) {
+        await Linking.openURL(targetUrl);
+      } else {
+        Alert.alert("알림", "링크를 열 수 없습니다: " + targetUrl);
+      }
+    } else {
+      Alert.alert("알림", "연결된 파일이나 링크가 없는 자료입니다.");
+    }
   };
 
   return (
@@ -77,7 +107,11 @@ export default function App() {
             </View>
           ) : (
             posts.map((post) => (
-              <TouchableOpacity key={post.id} style={styles.card}>
+              <TouchableOpacity
+                key={post.id}
+                style={styles.card}
+                onPress={() => openResource(post)}
+              >
                 <View style={styles.cardHeader}>
                   <Text style={styles.badge}>NEW</Text>
                   <Text style={styles.category}>{post.tags && post.tags[0] ? post.tags[0] : '일반'}</Text>
@@ -117,7 +151,8 @@ export default function App() {
 
         {/* Footer */}
         <View style={styles.footer}>
-          <Text style={styles.footerText}>© 2024 한국 청교도 연구소</Text>
+          <Text style={styles.footerAddress}>주소: 인천광역시 계양구 이화동 122-36</Text>
+          <Text style={styles.footerText}>© 2026 한국 청교도 연구소</Text>
           <Text style={styles.footerText}>Korean Puritan Research Institute</Text>
         </View>
       </ScrollView>
@@ -262,6 +297,12 @@ const styles = StyleSheet.create({
     borderTopWidth: 1,
     borderTopColor: '#333',
     marginTop: 20,
+  },
+  footerAddress: {
+    color: '#999',
+    fontSize: 13,
+    marginBottom: 10,
+    textAlign: 'center',
   },
   footerText: {
     color: '#666',
