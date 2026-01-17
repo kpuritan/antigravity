@@ -58,6 +58,27 @@ document.addEventListener('DOMContentLoaded', () => {
     const topicDropdown = document.getElementById('topic-dropdown');
     const authorDropdownGrid = document.getElementById('author-dropdown-grid');
 
+    // --- Modal Management with Browser Back Button Support ---
+    const openModal = (modal) => {
+        if (!modal) return;
+        modal.classList.add('show');
+        // Push a state to history so back button closes the modal
+        history.pushState({ modalOpen: true, modalId: modal.id }, "");
+    };
+
+    const closeAllModals = (shouldGoBack = true) => {
+        document.querySelectorAll('.modal').forEach(m => m.classList.remove('show'));
+        // If we manually closed via button/click outside, and there's a state to pop
+        if (shouldGoBack && history.state && history.state.modalOpen) {
+            history.back();
+        }
+    };
+
+    window.addEventListener('popstate', (e) => {
+        // Close modals when user presses the browser back button
+        document.querySelectorAll('.modal').forEach(m => m.classList.remove('show'));
+    });
+
     // ... (기존 렌더링 함수들) ...
 
     // Render function for dropdowns
@@ -262,13 +283,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (loginOpenBtn && loginModal) {
         loginOpenBtn.addEventListener('click', () => {
-            loginModal.classList.add('show');
+            openModal(loginModal);
         });
     }
 
     if (loginCloseBtn && loginModal) {
         loginCloseBtn.addEventListener('click', () => {
-            loginModal.classList.remove('show');
+            closeAllModals();
         });
     }
 
@@ -281,20 +302,20 @@ document.addEventListener('DOMContentLoaded', () => {
         link.addEventListener('click', (e) => {
             e.preventDefault();
             e.stopPropagation(); // Stop smooth scroll
-            if (aboutModal) aboutModal.classList.add('show');
+            openModal(aboutModal);
         });
     });
 
     if (aboutCloseBtn && aboutModal) {
         aboutCloseBtn.addEventListener('click', () => {
-            aboutModal.classList.remove('show');
+            closeAllModals();
         });
     }
 
     // Close modal when clicking outside content (Unified logic)
     window.addEventListener('click', (e) => {
         if (e.target.classList.contains('modal')) {
-            e.target.classList.remove('show');
+            closeAllModals();
         }
     });
 
@@ -308,7 +329,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (id === 'admin' && pw === '1234') {
                 alert('관리자로 로그인되었습니다. 하단 대시보드에서 자료를 관리하세요.');
                 isAdmin = true;
-                loginModal.classList.remove('show');
+                closeAllModals();
                 loginOpenBtn.innerHTML = '<i class="fas fa-user-check"></i> 관리자(로그인됨)';
 
                 // Show Admin Dashboard
@@ -702,7 +723,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 alert(`✅ 자료가 성공적으로 업로드되었습니다!`);
 
                 uploadForm.reset();
-                clearUploadTarget();
+                clearUploadTarget(); // This helper should exist in your codebase to clear file selection UI
                 if (window.loadRecentPostsGrid) window.loadRecentPostsGrid();
 
             } catch (error) {
@@ -760,11 +781,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- Edit & Delete Functions ---
     const editModal = document.getElementById('edit-modal');
     const editCloseBtn = document.getElementById('edit-close-btn');
-    const editForm = document.getElementById('edit-form');
-
-    if (editCloseBtn) {
-        editCloseBtn.addEventListener('click', () => editModal.classList.remove('show'));
-    }
+    if (editCloseBtn) editCloseBtn.addEventListener('click', () => closeAllModals());
 
     window.openEditModal = async (id) => {
         try {
@@ -848,7 +865,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 await db.collection("posts").doc(id).update(updateData);
                 alert("수정되었습니다.");
-                editModal.classList.remove('show');
+                closeAllModals();
+                if (window.loadRecentPostsGrid) window.loadRecentPostsGrid();
+                const currentCat = resourceModalTitle.textContent.replace(' 자료 목록', '').trim();
+                if (currentCat) openResourceModal(currentCat);
             } catch (error) {
                 console.error("Update error:", error);
                 alert("수정 실패: " + error.message);
@@ -876,7 +896,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     window.openResourceModal = async (categoryName, targetSeries = null) => {
         if (!resourceModal) return;
-        resourceModal.classList.add('show');
+        openModal(resourceModal);
         resourceListContainer.classList.remove('compact-view'); // 기본 목록은 크게
         resourceModalTitle.textContent = `${categoryName} 자료 목록`;
         resourceListContainer.innerHTML = '<li class="no-resource-msg">자료를 불러오는 중입니다...</li>';
@@ -1349,7 +1369,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (resourceCloseBtn && resourceModal) {
         resourceCloseBtn.addEventListener('click', () => {
-            resourceModal.classList.remove('show');
+            closeAllModals();
         });
     }
 
@@ -1446,7 +1466,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!query) return;
         if (!resourceModal) return;
 
-        resourceModal.classList.add('show');
+        openModal(resourceModal);
         resourceModalTitle.textContent = `'${query}' 검색 결과`;
         resourceListContainer.innerHTML = '<li class="no-resource-msg">검색 중입니다...</li>';
 
@@ -1488,7 +1508,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- Global View Functions (Moved here for scope) ---
     window.openAllRecentModal = async () => {
         if (!resourceModal) return;
-        resourceModal.classList.add('show');
+        openModal(resourceModal);
         resourceModalTitle.textContent = `최신 업데이트 전체 목록`;
         resourceListContainer.innerHTML = '<li class="no-resource-msg">최신 자료를 불러오는 중입니다...</li>';
         resourceListContainer.classList.add('compact-view'); // 숲을 볼 수 있게 콤팩트하게 표시
@@ -1530,7 +1550,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     window.openAllTopicsModal = () => {
         if (!resourceModal) return;
-        resourceModal.classList.add('show');
+        openModal(resourceModal);
         resourceListContainer.classList.remove('compact-view');
         resourceModalTitle.textContent = `전체 주제 목록`;
 
@@ -1605,7 +1625,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     window.openAllAuthorsModal = () => {
         if (!resourceModal) return;
-        resourceModal.classList.add('show');
+        openModal(resourceModal);
         resourceListContainer.classList.remove('compact-view');
         resourceModalTitle.textContent = `전체 저자 목록`;
 

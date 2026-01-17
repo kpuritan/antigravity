@@ -588,12 +588,16 @@ nav ul li:hover a i {
 
 .about-text p {
     margin-bottom: 1.5rem;
-    font-size: 1.05rem;
-    color: var(--text-light);
-    line-height: 1.8;
+    font-size: 1.1rem;
+    /* Increased from 1.05rem */
+    color: #000;
+    /* Pure black for maximum contrast */
+    line-height: 1.9;
     word-break: keep-all;
     overflow-wrap: break-word;
     text-align: justify;
+    font-weight: 500;
+    /* Added slight weight */
 }
 
 .about-right {
@@ -658,12 +662,14 @@ nav ul li:hover a i {
 }
 
 .about-team .team-name {
-    font-weight: 800;
-    /* Bolder */
-    color: #1a2a44;
-    /* Darker navy for maximum contrast */
-    font-size: 1.1rem;
+    font-weight: 900;
+    /* Maximum bold */
+    color: #000;
+    font-size: 1.2rem;
+    /* Increased */
     line-height: 1.4;
+    text-shadow: 0 0 2px rgba(255, 255, 255, 0.8);
+    /* Stronger halo */
 }
 
 .about-team .eng-team {
@@ -727,10 +733,10 @@ nav ul li:hover a i {
 
 .about-goals li {
     font-size: 1.05rem;
-    font-weight: 600;
-    /* Slightly bolder list items */
-    color: #333;
-    /* Darker text */
+    font-weight: 700;
+    /* Even bolder */
+    color: #000;
+    /* Pure black */
     display: flex;
     align-items: flex-start;
     gap: 0.8rem;
