@@ -1407,13 +1407,13 @@ document.addEventListener('DOMContentLoaded', () => {
             div.innerHTML = `
                 <div class="recent-card-inner">
                     <div class="recent-card-top">
-                        <span class="recent-status-pill">SAMPLE</span>
+                        <span class="recent-status-pill">NEW</span>
                         <span class="recent-category-tag">${item.cat}</span>
                     </div>
                     <h3 class="recent-title-premium">${item.title}</h3>
                     <div class="recent-card-footer">
                         <span class="recent-date-premium"><i class="far fa-calendar-alt"></i> ${item.date}</span>
-                        <button class="recent-link-btn" onclick="alert('테스트용 샘플 데이터입니다. 실제 자료가 곧 업데이트될 예정입니다.')">
+                        <button class="recent-link-btn" onclick="if(window.openResourceModal) { window.openResourceModal('${item.cat}'); } else { location.reload(); }">
                             상세보기 <i class="fas fa-chevron-right"></i>
                         </button>
                     </div>
@@ -1463,7 +1463,7 @@ document.addEventListener('DOMContentLoaded', () => {
             // 타임아웃 설정 (3초 안에 응답 없으면 샘플 데이터 표시)
             const snapshot = await Promise.race([
                 query.get(),
-                new Promise((_, reject) => setTimeout(() => reject(new Error("Timeout")), 3000))
+                new Promise((_, reject) => setTimeout(() => reject(new Error("Timeout")), 10000))
             ]);
 
             if (snapshot.empty) {

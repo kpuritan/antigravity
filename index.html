@@ -166,13 +166,13 @@
                             <div class="recent-card-premium">
                                 <div class="recent-card-inner">
                                     <div class="recent-card-top">
-                                        <span class="recent-status-pill">SAMPLE</span>
+                                        <span class="recent-status-pill">NEW</span>
                                         <span class="recent-category-tag">${item.cat}</span>
                                     </div>
                                     <h3 class="recent-title-premium">${item.title}</h3>
                                     <div class="recent-card-footer">
                                         <span class="recent-date-premium"><i class="far fa-calendar-alt"></i> ${item.date}</span>
-                                        <button class="recent-link-btn" onclick="alert('테스트용 샘플 데이터입니다. 실제 데이터베이스 연결을 확인해주세요.')">
+                                        <button class="recent-link-btn" onclick="if(window.openResourceModal) { window.openResourceModal('${item.cat}'); } else { location.reload(); }">
                                             상세보기 <i class="fas fa-chevron-right"></i>
                                         </button>
                                     </div>
