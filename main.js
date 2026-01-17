@@ -1386,9 +1386,12 @@ document.addEventListener('DOMContentLoaded', () => {
     let hasMoreRecent = true;
 
     // --- Mock Data Rendering Helper ---
-    const renderMockRecentPosts = () => {
-        if (!recentGrid) return;
-        recentGrid.innerHTML = '';
+    window.renderMockRecentPosts = () => {
+        const grid = document.getElementById('recent-posts-grid');
+        if (!grid) return;
+
+        console.log("Rendering Mock Data...");
+        grid.innerHTML = '';
         const mockData = [
             { title: "청교도 신학의 정수: 존 오웬의 성령론", cat: "청교도 신학", date: "2024.01.15" },
             { title: "현대 교회를 위한 웨스트민스터 신앙고백 해설", cat: "신앙고백", date: "2024.01.12" },
@@ -1416,20 +1419,21 @@ document.addEventListener('DOMContentLoaded', () => {
                     </div>
                 </div>
             `;
-            recentGrid.appendChild(div);
+            grid.appendChild(div);
         });
 
         // 로딩바 숨김
-        if (recentLoadMoreTrigger) recentLoadMoreTrigger.style.display = 'none';
+        const trigger = document.getElementById('recent-load-more');
+        if (trigger) trigger.style.display = 'none';
     };
 
     window.loadRecentPostsGrid = async (isInitial = true) => {
         if (!recentGrid) return;
 
         // DB 연결 상태 체크: 연결 안됐으면 바로 샘플 데이터 보여주기 (기다리지 않음)
-        if (typeof db === 'undefined') {
+        if (typeof db === 'undefined' || !db) {
             console.warn("⚠️ DB 미연결. 샘플 데이터를 표시합니다.");
-            renderMockRecentPosts();
+            window.renderMockRecentPosts();
             return;
         }
 
@@ -1437,7 +1441,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Mock Mode Check
         if (typeof useMock !== 'undefined' && useMock) {
-            renderMockRecentPosts();
+            window.renderMockRecentPosts();
             return;
         }
 
@@ -1466,7 +1470,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (isInitial) {
                     // 데이터가 진짜 0개면 샘플이라도 보여줘서 디자인 확인 가능하게 함
                     console.log("데이터 없음. 샘플 표시.");
-                    renderMockRecentPosts();
+                    window.renderMockRecentPosts();
                 }
                 hasMoreRecent = false;
                 return;
@@ -1506,7 +1510,7 @@ document.addEventListener('DOMContentLoaded', () => {
         } catch (err) {
             console.error("Error loading recents:", err);
             // 에러 나면 에러 메시지 대신 그냥 샘플 데이터 보여줌 (사용자 경험 우선)
-            renderMockRecentPosts();
+            window.renderMockRecentPosts();
         } finally {
             isRecentLoading = false;
         }
