@@ -614,11 +614,19 @@ nav ul li:hover a i {
     left: -15%;
     width: 130%;
     height: 130%;
-    z-index: -1;
-    filter: grayscale(100%) contrast(1.1) brightness(1.1) opacity(0.15);
+    z-index: 0;
+    /* Changed from -1 to 0 to ensure stays within context */
+    filter: grayscale(100%) contrast(1.2) brightness(1.1) opacity(0.3);
     object-fit: cover;
     pointer-events: none;
     user-select: none;
+}
+
+.about-goals-container,
+.about-team {
+    position: relative;
+    z-index: 1;
+    /* Ensure text is above background image */
 }
 
 .about-image img {
@@ -632,8 +640,9 @@ nav ul li:hover a i {
 .about-team {
     margin-top: 1rem;
     padding: 1.5rem;
-    background: rgba(252, 250, 247, 0.7);
-    backdrop-filter: blur(2px);
+    background: rgba(255, 255, 255, 0.5);
+    /* Higher transparency */
+    backdrop-filter: blur(3px);
     border-radius: 10px;
     border: 1px dashed rgba(201, 156, 94, 0.3);
 }
@@ -689,8 +698,9 @@ nav ul li:hover a i {
 
 /* About Goals Styling */
 .about-goals-container {
-    background: rgba(250, 247, 242, 0.85);
-    backdrop-filter: blur(2px);
+    background: rgba(255, 255, 255, 0.5);
+    /* Higher transparency */
+    backdrop-filter: blur(3px);
     padding: 1.8rem;
     border-radius: 12px;
     border-left: 5px solid var(--secondary-color);
