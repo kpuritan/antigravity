@@ -1324,6 +1324,95 @@ footer {
     padding: 2rem;
 }
 
+/* Modal Navigation Styles */
+.modal-nav-container {
+    display: flex;
+    position: relative;
+    width: 100%;
+    margin-top: 1rem;
+    gap: 1rem;
+}
+
+.modal-content-scroll {
+    flex: 1;
+    overflow-y: auto;
+    padding-right: 1.5rem;
+    max-height: 60vh;
+    scroll-behavior: smooth;
+}
+
+.modal-index-nav {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    gap: 0.1rem;
+    padding: 0.8rem 0.4rem;
+    background: rgba(240, 237, 230, 0.5);
+    border-radius: 12px;
+    user-select: none;
+    height: fit-content;
+    position: sticky;
+    top: 0;
+    border: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.modal-index-nav span {
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: #777;
+    cursor: pointer;
+    width: 22px;
+    height: 22px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+    border-radius: 4px;
+}
+
+.modal-index-nav span:hover {
+    color: var(--secondary-color);
+    background: #fff;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+}
+
+.modal-index-nav span.active {
+    color: #fff;
+    background: var(--secondary-color);
+}
+
+.modal-section-header {
+    grid-column: 1 / -1;
+    font-size: 0.95rem;
+    font-weight: 800;
+    color: var(--secondary-color);
+    background: #f0ede6;
+    padding: 0.6rem 1.2rem;
+    margin: 2rem 0 1rem;
+    border-radius: 8px;
+    border-left: 5px solid var(--secondary-color);
+    scroll-margin-top: 10px;
+}
+
+.main-grid-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+    gap: 0.8rem;
+    width: 100%;
+}
+
+@media (max-width: 768px) {
+    .modal-index-nav {
+        padding: 0.4rem 0.2rem;
+    }
+
+    .modal-index-nav span {
+        width: 18px;
+        height: 18px;
+        font-size: 0.65rem;
+    }
+}
+
 /* =========================================
    Premium UI Enhancements
    ========================================= */

@@ -30,8 +30,20 @@ try {
 document.addEventListener('DOMContentLoaded', () => {
     // Sort Categories Alphabetically as requested
     // Bible books kept in canonical order.
-    if (typeof topics !== 'undefined') topics.sort();
-    if (typeof authors !== 'undefined') authors.sort();
+    if (typeof topics !== 'undefined') topics.sort((a, b) => a.localeCompare(b, 'ko'));
+    if (typeof authors !== 'undefined') authors.sort((a, b) => a.localeCompare(b, 'ko'));
+
+    // Helper for Korean Initial Consonants
+    const getInitialConsonant = (str) => {
+        if (!str) return '';
+        const charCode = str.charCodeAt(0);
+        if (charCode < 44032 || charCode > 55203) return str.charAt(0).toUpperCase();
+        const initialIndex = Math.floor((charCode - 44032) / 588);
+        const initialConsonants = [
+            'ㄱ', 'ㄱ', 'ㄴ', 'ㄷ', 'ㄷ', 'ㄹ', 'ㅁ', 'ㅂ', 'ㅂ', 'ㅅ', 'ㅅ', 'ㅇ', 'ㅈ', 'ㅈ', 'ㅊ', 'ㅋ', 'ㅌ', 'ㅍ', 'ㅎ'
+        ];
+        return initialConsonants[initialIndex];
+    };
 
     // Display Firebase Connection Status
     const statusEl = document.getElementById('firebase-status');
@@ -1521,25 +1533,73 @@ document.addEventListener('DOMContentLoaded', () => {
         resourceModal.classList.add('show');
         resourceListContainer.classList.remove('compact-view');
         resourceModalTitle.textContent = `전체 주제 목록`;
-        resourceListContainer.innerHTML = '<div class="main-grid-container" id="modal-topic-grid"></div>';
 
         // 검색/카테고리 선택 모달에서는 업로드 헤더 숨김
         const adminHeader = document.getElementById('resource-modal-admin-header');
         if (adminHeader) adminHeader.style.display = 'none';
 
-        const grid = document.getElementById('modal-topic-grid');
+        // 정렬
+        const sortedTopics = [...topics].sort((a, b) => a.localeCompare(b, 'ko'));
 
-        topics.forEach(item => {
-            const div = document.createElement('div');
-            div.className = 'main-grid-item';
-            div.innerHTML = `
-                <i class="fas fa-tags"></i>
-                <span>${item}</span>
-            `;
-            div.addEventListener('click', () => {
-                openResourceModal(item);
+        // 그룹화
+        const groups = {};
+        sortedTopics.forEach(item => {
+            const initial = getInitialConsonant(item);
+            if (!groups[initial]) groups[initial] = [];
+            groups[initial].push(item);
+        });
+
+        const consonants = Object.keys(groups).sort();
+
+        // UI 생성
+        resourceListContainer.innerHTML = `
+            <div class="modal-nav-container">
+                <div class="modal-content-scroll" id="modal-topic-scroll">
+                    <div class="main-grid-container" id="modal-topic-grid"></div>
+                </div>
+                <div class="modal-index-nav" id="modal-topic-index"></div>
+            </div>
+        `;
+
+        const grid = document.getElementById('modal-topic-grid');
+        const indexNav = document.getElementById('modal-topic-index');
+        const scrollContainer = document.getElementById('modal-topic-scroll');
+
+        consonants.forEach(consonant => {
+            // 인덱스 바 추가
+            const span = document.createElement('span');
+            span.textContent = consonant;
+            span.addEventListener('click', () => {
+                const header = document.getElementById(`header-topic-${consonant}`);
+                if (header) {
+                    scrollContainer.scrollTo({
+                        top: header.offsetTop - 10,
+                        behavior: 'smooth'
+                    });
+                }
             });
-            grid.appendChild(div);
+            indexNav.appendChild(span);
+
+            // 섹션 헤더 추가
+            const header = document.createElement('div');
+            header.className = 'modal-section-header';
+            header.id = `header-topic-${consonant}`;
+            header.textContent = consonant;
+            grid.appendChild(header);
+
+            // 항목 추가
+            groups[consonant].forEach(item => {
+                const div = document.createElement('div');
+                div.className = 'main-grid-item';
+                div.innerHTML = `
+                    <i class="fas fa-tags"></i>
+                    <span>${item}</span>
+                `;
+                div.addEventListener('click', () => {
+                    openResourceModal(item);
+                });
+                grid.appendChild(div);
+            });
         });
     };
 
@@ -1548,43 +1608,175 @@ document.addEventListener('DOMContentLoaded', () => {
         resourceModal.classList.add('show');
         resourceListContainer.classList.remove('compact-view');
         resourceModalTitle.textContent = `전체 저자 목록`;
-        resourceListContainer.innerHTML = `
-            <div class="author-search-container" style="margin-bottom: 2rem;">
-                <input type="text" id="modal-author-search" placeholder="저자 이름 검색..." style="width: 100%; padding: 1rem; border-radius: 8px; border: 1px solid #ddd;">
-            </div>
-            <div class="main-grid-container" id="modal-author-grid"></div>
-        `;
 
         // 검색/카테고리 선택 모달에서는 업로드 헤더 숨김
         const adminHeader = document.getElementById('resource-modal-admin-header');
         if (adminHeader) adminHeader.style.display = 'none';
 
-        const grid = document.getElementById('modal-author-grid');
-        const searchInput = document.getElementById('modal-author-search');
+        const renderAuthorContent = (list) => {
+            // 정렬
+            const sortedList = [...list].sort((a, b) => a.localeCompare(b, 'ko'));
 
-        const renderGrid = (list) => {
-            grid.innerHTML = '';
-            list.forEach(item => {
-                const div = document.createElement('div');
-                div.className = 'main-grid-item';
-                div.innerHTML = `
-                    <i class="fas fa-user-edit"></i>
-                    <span>${item}</span>
-                `;
-                div.addEventListener('click', () => {
-                    openResourceModal(item);
+            // 그룹화
+            const groups = {};
+            sortedList.forEach(item => {
+                const initial = getInitialConsonant(item);
+                if (!groups[initial]) groups[initial] = [];
+                groups[initial].push(item);
+            });
+
+            const consonants = Object.keys(groups).sort();
+
+            resourceListContainer.innerHTML = `
+                <div class="author-search-container" style="margin-bottom: 2rem;">
+                    <input type="text" id="modal-author-search" placeholder="저자 이름 검색..." style="width: 100%; padding: 1rem; border-radius: 8px; border: 1px solid #ddd;">
+                </div>
+                <div class="modal-nav-container">
+                    <div class="modal-content-scroll" id="modal-author-scroll">
+                        <div class="main-grid-container" id="modal-author-grid"></div>
+                    </div>
+                    <div class="modal-index-nav" id="modal-author-index"></div>
+                </div>
+            `;
+
+            const grid = document.getElementById('modal-author-grid');
+            const indexNav = document.getElementById('modal-author-index');
+            const scrollContainer = document.getElementById('modal-author-scroll');
+            const searchInput = document.getElementById('modal-author-search');
+
+            consonants.forEach(consonant => {
+                // 인덱스 바
+                const span = document.createElement('span');
+                span.textContent = consonant;
+                span.addEventListener('click', () => {
+                    const header = document.getElementById(`header-author-${consonant}`);
+                    if (header) {
+                        scrollContainer.scrollTo({
+                            top: header.offsetTop - 10,
+                            behavior: 'smooth'
+                        });
+                    }
                 });
-                grid.appendChild(div);
+                indexNav.appendChild(span);
+
+                // 섹션 헤더
+                const header = document.createElement('div');
+                header.className = 'modal-section-header';
+                header.id = `header-author-${consonant}`;
+                header.textContent = consonant;
+                grid.appendChild(header);
+
+                // 항목
+                groups[consonant].forEach(item => {
+                    const div = document.createElement('div');
+                    div.className = 'main-grid-item';
+                    div.innerHTML = `
+                        <i class="fas fa-user-edit"></i>
+                        <span>${item}</span>
+                    `;
+                    div.addEventListener('click', () => {
+                        openResourceModal(item);
+                    });
+                    grid.appendChild(div);
+                });
+            });
+
+            // 검색어 유지 로직
+            if (searchInput) {
+                searchInput.addEventListener('input', (e) => {
+                    const val = e.target.value.toLowerCase();
+                    const filtered = authors.filter(a => a.toLowerCase().includes(val));
+                    // 검색 시에는 인덱스 네비게이션이 복잡해질 수 있으므로 간단한 리스트로 재렌더링하거나 필터링 로직 개선 필요
+                    // 여기서는 유저 요구사항인 '인덱스'를 유지하기 위해 전체 저자 목록에서 검색 필터링된 결과로 다시 그룹화 수행
+                    renderAuthorContentFiltered(filtered, val);
+                });
+            }
+        };
+
+        const renderAuthorContentFiltered = (list, searchVal) => {
+            // 전체 저자 목록 UI 구조는 유지하되 내용만 필터링
+            renderAuthorContentInternal(list, searchVal);
+        };
+
+        const renderAuthorContentInternal = (list, searchVal = '') => {
+            // 정렬
+            const sortedList = [...list].sort((a, b) => a.localeCompare(b, 'ko'));
+
+            // 그룹화
+            const groups = {};
+            sortedList.forEach(item => {
+                const initial = getInitialConsonant(item);
+                if (!groups[initial]) groups[initial] = [];
+                groups[initial].push(item);
+            });
+
+            const consonants = Object.keys(groups).sort();
+
+            resourceListContainer.innerHTML = `
+                <div class="author-search-container" style="margin-bottom: 2rem;">
+                    <input type="text" id="modal-author-search" value="${searchVal}" placeholder="저자 이름 검색..." style="width: 100%; padding: 1rem; border-radius: 8px; border: 1px solid #ddd;">
+                </div>
+                <div class="modal-nav-container">
+                    <div class="modal-content-scroll" id="modal-author-scroll">
+                        <div class="main-grid-container" id="modal-author-grid"></div>
+                    </div>
+                    <div class="modal-index-nav" id="modal-author-index"></div>
+                </div>
+            `;
+
+            const grid = document.getElementById('modal-author-grid');
+            const indexNav = document.getElementById('modal-author-index');
+            const scrollContainer = document.getElementById('modal-author-scroll');
+            const searchInput = document.getElementById('modal-author-search');
+
+            if (searchInput) {
+                searchInput.focus();
+                // Move cursor to end
+                searchInput.setSelectionRange(searchVal.length, searchVal.length);
+
+                searchInput.addEventListener('input', (e) => {
+                    const val = e.target.value.toLowerCase();
+                    const filtered = authors.filter(a => a.toLowerCase().includes(val));
+                    renderAuthorContentInternal(filtered, val);
+                });
+            }
+
+            consonants.forEach(consonant => {
+                const span = document.createElement('span');
+                span.textContent = consonant;
+                span.addEventListener('click', () => {
+                    const header = document.getElementById(`header-author-${consonant}`);
+                    if (header) {
+                        scrollContainer.scrollTo({
+                            top: header.offsetTop - 10,
+                            behavior: 'smooth'
+                        });
+                    }
+                });
+                indexNav.appendChild(span);
+
+                const header = document.createElement('div');
+                header.className = 'modal-section-header';
+                header.id = `header-author-${consonant}`;
+                header.textContent = consonant;
+                grid.appendChild(header);
+
+                groups[consonant].forEach(item => {
+                    const div = document.createElement('div');
+                    div.className = 'main-grid-item';
+                    div.innerHTML = `
+                        <i class="fas fa-user-edit"></i>
+                        <span>${item}</span>
+                    `;
+                    div.addEventListener('click', () => {
+                        openResourceModal(item);
+                    });
+                    grid.appendChild(div);
+                });
             });
         };
 
-        renderGrid(authors);
-
-        searchInput.addEventListener('input', (e) => {
-            const val = e.target.value.toLowerCase();
-            const filtered = authors.filter(a => a.toLowerCase().includes(val));
-            renderGrid(filtered);
-        });
+        renderAuthorContentInternal(authors);
     };
 
 }); // End of main DOMContentLoaded
