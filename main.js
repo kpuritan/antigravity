@@ -23,8 +23,13 @@ try {
     console.log("✅ Firebase 연결 성공!");
 } catch (e) {
     console.error("❌ Firebase 초기화 실패:", e);
-    console.warn("테스트 모드로 전환합니다.");
+    // 에러 발생 시 사용자에게 알림 (개발 단계 혹은 중대한 장애 시 중요)
+    // alert("데이터베이스 연결에 실패했습니다. 페이지를 새로고침 해보세요.\n" + e.message);
     useMock = true;
+
+    // 화면에 표시할 수 있는 DOM이 있다면 업데이트
+    const statusEl = document.getElementById('firebase-status');
+    if (statusEl) statusEl.innerHTML = '❌ 연결 실패: ' + e.message;
 }
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -1383,18 +1388,35 @@ document.addEventListener('DOMContentLoaded', () => {
     window.loadRecentPostsGrid = async (isInitial = true) => {
         if (!recentGrid) return;
 
-        // Ensure db is initialized
+        // Safe check for Mock Mode or DB Status
         if (typeof db === 'undefined') {
-            console.warn("DB not ready, retrying in 500ms");
-            setTimeout(() => window.loadRecentPostsGrid(isInitial), 500);
-            return;
+            if (typeof useMock !== 'undefined' && useMock) {
+                // Mock 모드라면 db 없어도 진행
+            } else {
+                // DB 연결 재시도 (최대 10회, 5초)
+                if (!window.dbRetryCount) window.dbRetryCount = 0;
+                window.dbRetryCount++;
+                if (window.dbRetryCount > 10) {
+                    console.error("DB Connection Timeout");
+                    recentGrid.innerHTML = `
+                        <div style="text-align:center; padding: 3rem 1rem;">
+                            <i class="fas fa-wifi" style="font-size: 2rem; color: #ccc; margin-bottom: 1rem;"></i>
+                            <p style="color:#e74c3c; font-weight:bold;">서버와 연결할 수 없습니다.</p>
+                            <p style="color:#666; font-size: 0.9rem; margin-top: 5px;">인터넷 연결을 확인하거나 잠시 후 다시 시도해주세요.</p>
+                        </div>`;
+                    return;
+                }
+                console.warn(`DB not ready, retrying... (${window.dbRetryCount}/10)`);
+                setTimeout(() => window.loadRecentPostsGrid(isInitial), 500);
+                return;
+            }
         }
 
         if (isRecentLoading || (!hasMoreRecent && !isInitial)) return;
 
-        // Safe check for Mock Mode
+        // Mock Mode Message
         if (typeof useMock !== 'undefined' && useMock) {
-            recentGrid.innerHTML = '<p style="text-align:center;">[테스트 모드] 서버 연결 대기 중...</p>';
+            recentGrid.innerHTML = '<p style="text-align:center; padding: 2rem;">[테스트 모드] 실제 데이터베이스에 연결되지 않았습니다.<br>관리자 설정을 확인해주세요.</p>';
             return;
         }
 
@@ -1403,6 +1425,7 @@ document.addEventListener('DOMContentLoaded', () => {
             recentGrid.innerHTML = '<div class="loading-msg">자료를 불러오는 중입니다...</div>';
             lastRecentDoc = null;
             hasMoreRecent = true;
+            window.dbRetryCount = 0; // 성공 시 리셋
         }
 
         if (recentLoadMoreTrigger) {
