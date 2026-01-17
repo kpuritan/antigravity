@@ -1346,6 +1346,14 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         };
 
+        const titleHtml = primaryLink !== '#'
+            ? `<a href="${primaryLink}" target="_blank" class="title-clickable">
+                ${isPdf ? '<i class="fas fa-file-pdf" style="color:#e74c3c; margin-right:5px;"></i>' : ''}
+                ${post.title}
+                <i class="fas fa-external-link-alt" style="font-size:0.7em; margin-left:8px; opacity:0.3;"></i>
+               </a>`
+            : `${post.title}`;
+
         li.innerHTML = `
             <div class="resource-card-modern ${isBookstore ? 'book-card' : ''}" style="margin-bottom: 20px;">
                 ${youtubeEmbedHtml}
@@ -1356,15 +1364,11 @@ document.addEventListener('DOMContentLoaded', () => {
                             <span class="resource-date-modern">${date}</span>
                         </div>
                         <h4 class="resource-title-modern">
-                            <a href="${primaryLink}" target="${primaryLink !== '#' ? '_blank' : '_self'}" class="title-clickable">
-                                ${isPdf ? '<i class="fas fa-file-pdf" style="color:#e74c3c; margin-right:5px;"></i>' : ''}
-                                ${post.title}
-                                ${primaryLink !== '#' ? '<i class="fas fa-external-link-alt" style="font-size:0.7em; margin-left:8px; opacity:0.3;"></i>' : ''}
-                            </a>
+                            ${titleHtml}
                         </h4>
                         ${adminButtons}
                     </div>
-                    <div class="resource-body-modern">${linkedContent.trim() || '<span style="color:#ccc; font-style:italic;">상세 내용 없음</span>'}</div>
+                    <div class="resource-body-modern">${linkedContent.trim() || (post.fileUrl ? '<span style="color:var(--secondary-color); font-size:0.9rem;"><i class="fas fa-info-circle"></i> 아래 첨부파일을 확인해주세요.</span>' : '<span style="color:#ccc; font-style:italic;">상세 내용 없음</span>')}</div>
                     ${priceHtml}
                     ${isBookstore ? buyButtonHtml : fileLinkHtml}
                 </div>
@@ -1612,6 +1616,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 const post = { id: doc.id, ...doc.data() };
                 renderSingleResource(post, resourceListContainer);
             });
+
+            // 스크롤을 맨 위로
+            resourceListContainer.parentElement.scrollTop = 0;
         } catch (e) {
             console.error(e);
             resourceListContainer.innerHTML = '<li class="no-resource-msg">자료를 불러오는 중에 오류가 발생했습니다.</li>';
