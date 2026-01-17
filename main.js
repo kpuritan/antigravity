@@ -1486,8 +1486,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
             snapshot.forEach(doc => {
                 const post = doc.data();
+                const postId = doc.id;
                 const date = post.createdAt ? post.createdAt.toDate().toLocaleDateString() : '최근';
                 const displayCategory = post.tags ? post.tags[0] : '자료';
+                const seriesName = post.series || '';
+
+                // 파일 링크 또는 외부 링크 추출
+                const contentText = post.content || '';
+                const urlRegex = /(https?:\/\/[^\s]+)/g;
+                const urls = contentText.match(urlRegex) || [];
+                const primaryLink = post.fileUrl || (urls.length > 0 ? urls[0] : '#');
 
                 const div = document.createElement('div');
                 div.className = 'recent-card-premium';
@@ -1497,10 +1505,14 @@ document.addEventListener('DOMContentLoaded', () => {
                             <span class="recent-status-pill">NEW</span>
                             <span class="recent-category-tag">${displayCategory}</span>
                         </div>
-                        <h3 class="recent-title-premium">${post.title}</h3>
+                        <h3 class="recent-title-premium">
+                            <a href="${primaryLink}" target="${primaryLink !== '#' ? '_blank' : '_self'}" style="text-decoration:none; color:inherit;">
+                                ${post.title}
+                            </a>
+                        </h3>
                         <div class="recent-card-footer">
                             <span class="recent-date-premium"><i class="far fa-calendar-alt"></i> ${date}</span>
-                            <button class="recent-link-btn" onclick="openResourceModal('${displayCategory}')">
+                            <button class="recent-link-btn" onclick="openResourceModal('${displayCategory}', '${seriesName.replace(/'/g, "\\'")}')">
                                 상세보기 <i class="fas fa-chevron-right"></i>
                             </button>
                         </div>
