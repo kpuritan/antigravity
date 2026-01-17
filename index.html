@@ -120,7 +120,7 @@
                 </button>
             </div>
             <div id="recent-posts-grid" class="recent-grid-container">
-                <div class="loading-msg">자료를 불러오는 중입니다...</div>
+                <!-- Content will be loaded by JS -->
             </div>
             <div id="recent-load-more" class="load-more-trigger"
                 style="text-align: center; padding: 40px 0; display: none;">
@@ -142,6 +142,24 @@
                 width: 100%;
             }
         </style>
+
+        <script>
+            // Emergency Fallback: If main.js fails to load content within 2 seconds, show mock data
+            setTimeout(() => {
+                const grid = document.getElementById('recent-posts-grid');
+                if (grid && grid.children.length === 0) {
+                    console.warn("Emergency Fallback Triggered");
+                    grid.innerHTML = '<div style="text-align:center; padding:2rem; grid-column:1/-1;">데이터 로딩 중... (잠시만 기다려주세요)</div>';
+                    // Attempt to call render function if available
+                    if (window.renderMockRecentPosts) {
+                        window.renderMockRecentPosts();
+                    } else {
+                        // Manual injection if function missing
+                        grid.innerHTML = '<div style="text-align:center; padding:2rem; grid-column:1/-1; color:#999;">서버 연결 대기 중...<br><button onclick="location.reload()" style="margin-top:10px; padding:5px 10px;">새로고침</button></div>';
+                    }
+                }
+            }, 2000);
+        </script>
 
         <section id="inquiry">
             <div class="inquiry-container">
