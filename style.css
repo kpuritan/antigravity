@@ -1049,6 +1049,37 @@ footer {
     text-decoration: none;
 }
 
+.social-links {
+    display: flex;
+    justify-content: center;
+    gap: 1.5rem;
+    margin-top: 1.5rem;
+}
+
+.social-links a {
+    color: var(--white);
+    font-size: 1.8rem;
+    /* 아이콘 크기 대폭 확대 */
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0.8;
+}
+
+.social-links a:hover {
+    color: var(--secondary-color);
+    transform: translateY(-3px);
+    opacity: 1;
+}
+
+.naver-link svg {
+    width: 1.6rem;
+    /* 폰트 아이콘과 비슷하게 크기 조정 */
+    height: 1.6rem;
+    fill: currentColor;
+}
+
 .copyright {
     opacity: 0.6;
     margin-top: 2rem;
