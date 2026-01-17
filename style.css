@@ -355,18 +355,22 @@ nav ul li:hover a i {
     /* Max signed 32-bit integer */
     display: flex !important;
     align-items: center;
-    gap: 0.6rem;
+    gap: 0.5rem;
 
     /* Appearance */
     background: var(--primary-color);
     color: var(--white);
-    padding: 0.9rem 1.6rem;
+    padding: 0.6rem 1rem;
+    /* Smaller padding */
     border-radius: 50px;
-    border: 2px solid rgba(255, 255, 255, 0.1);
+    border: none;
+    /* Removed border */
 
     /* Typography */
-    font-weight: 800;
-    font-size: 0.95rem;
+    font-weight: 500;
+    /* Lighter font weight */
+    font-size: 0.8rem;
+    /* Smaller font */
 
     /* Interaction */
     cursor: pointer !important;
@@ -374,25 +378,26 @@ nav ul li:hover a i {
     user-select: none;
 
     /* Effects */
-    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.4);
-    transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-    opacity: 1 !important;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    transition: all 0.3s ease;
+    opacity: 0.3 !important;
+    /* Transparent by default */
 }
 
 .login-trigger:hover {
+    opacity: 1 !important;
+    /* Fully visible on hover */
     background: var(--secondary-color);
-    transform: translateY(-5px) scale(1.05);
-    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.5);
-    border-color: rgba(255, 255, 255, 0.3);
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
 }
 
 .login-trigger:active {
-    transform: translateY(-2px) scale(0.98);
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+    transform: translateY(-1px);
 }
 
 .login-trigger i {
-    font-size: 1.1rem;
+    font-size: 0.9rem;
 }
 
 
