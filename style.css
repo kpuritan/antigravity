@@ -615,8 +615,8 @@ nav ul li:hover a i {
     width: 130%;
     height: 130%;
     z-index: 0;
-    /* Changed from -1 to 0 to ensure stays within context */
-    filter: grayscale(100%) contrast(1.2) brightness(1.1) opacity(0.3);
+    filter: grayscale(100%) contrast(1.1) brightness(1.2) opacity(0.1);
+    /* Decreased opacity for better text clarity */
     object-fit: cover;
     pointer-events: none;
     user-select: none;
@@ -640,11 +640,13 @@ nav ul li:hover a i {
 .about-team {
     margin-top: 1rem;
     padding: 1.5rem;
-    background: rgba(255, 255, 255, 0.5);
-    /* Higher transparency */
-    backdrop-filter: blur(3px);
+    background: rgba(255, 255, 255, 0.85);
+    /* Increased opacity for clarity */
+    backdrop-filter: blur(5px);
     border-radius: 10px;
-    border: 1px dashed rgba(201, 156, 94, 0.3);
+    border: 1px solid rgba(201, 156, 94, 0.2);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+    /* Added subtle shadow for depth */
 }
 
 .about-team .team-title {
@@ -656,9 +658,11 @@ nav ul li:hover a i {
 }
 
 .about-team .team-name {
-    font-weight: 700;
-    color: var(--primary-color);
-    font-size: 1.05rem;
+    font-weight: 800;
+    /* Bolder */
+    color: #1a2a44;
+    /* Darker navy for maximum contrast */
+    font-size: 1.1rem;
     line-height: 1.4;
 }
 
@@ -698,13 +702,13 @@ nav ul li:hover a i {
 
 /* About Goals Styling */
 .about-goals-container {
-    background: rgba(255, 255, 255, 0.5);
-    /* Higher transparency */
-    backdrop-filter: blur(3px);
+    background: rgba(255, 255, 255, 0.85);
+    /* Increased opacity for clarity */
+    backdrop-filter: blur(5px);
     padding: 1.8rem;
     border-radius: 12px;
-    border-left: 5px solid var(--secondary-color);
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.03);
+    border-left: 6px solid var(--secondary-color);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
 }
 
 .about-goals-container h4 {
@@ -722,12 +726,15 @@ nav ul li:hover a i {
 }
 
 .about-goals li {
-    font-size: 1rem;
-    color: var(--text-color);
+    font-size: 1.05rem;
+    font-weight: 600;
+    /* Slightly bolder list items */
+    color: #333;
+    /* Darker text */
     display: flex;
     align-items: flex-start;
     gap: 0.8rem;
-    line-height: 1.5;
+    line-height: 1.6;
     word-break: keep-all;
 }
 
