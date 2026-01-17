@@ -1409,15 +1409,15 @@ document.addEventListener('DOMContentLoaded', () => {
             const div = document.createElement('div');
             div.className = 'recent-card-premium';
             div.innerHTML = `
-                <div class="recent-card-inner">
+                <div class="recent-card-inner" onclick="if(window.openResourceModal) { window.openResourceModal('${item.cat}'); }">
                     <div class="recent-card-top">
-                        <span class="recent-status-pill">NEW</span>
+                        <span class="recent-status-pill">SAMPLE</span>
                         <span class="recent-category-tag">${item.cat}</span>
                     </div>
                     <h3 class="recent-title-premium">${item.title}</h3>
                     <div class="recent-card-footer">
                         <span class="recent-date-premium"><i class="far fa-calendar-alt"></i> ${item.date}</span>
-                        <button class="recent-link-btn" onclick="if(window.openResourceModal) { window.openResourceModal('${item.cat}'); } else { location.reload(); }">
+                        <button class="recent-link-btn">
                             상세보기 <i class="fas fa-chevron-right"></i>
                         </button>
                     </div>
@@ -1500,19 +1500,20 @@ document.addEventListener('DOMContentLoaded', () => {
                 const div = document.createElement('div');
                 div.className = 'recent-card-premium';
                 div.innerHTML = `
-                    <div class="recent-card-inner">
+                    <div class="recent-card-inner" onclick="openResourceModal('${displayCategory}', '${seriesName.replace(/'/g, "\\'")}')">
                         <div class="recent-card-top">
                             <span class="recent-status-pill">NEW</span>
                             <span class="recent-category-tag">${displayCategory}</span>
                         </div>
                         <h3 class="recent-title-premium">
-                            <a href="${primaryLink}" target="${primaryLink !== '#' ? '_blank' : '_self'}" style="text-decoration:none; color:inherit;">
+                            <a href="${primaryLink}" target="${primaryLink !== '#' ? '_blank' : '_self'}" onclick="event.stopPropagation();" style="text-decoration:none; color:inherit;">
                                 ${post.title}
+                                ${primaryLink !== '#' ? '<i class="fas fa-external-link-alt" style="font-size:0.6em; margin-left:5px;"></i>' : ''}
                             </a>
                         </h3>
                         <div class="recent-card-footer">
                             <span class="recent-date-premium"><i class="far fa-calendar-alt"></i> ${date}</span>
-                            <button class="recent-link-btn" onclick="openResourceModal('${displayCategory}', '${seriesName.replace(/'/g, "\\'")}')">
+                            <button class="recent-link-btn">
                                 상세보기 <i class="fas fa-chevron-right"></i>
                             </button>
                         </div>
