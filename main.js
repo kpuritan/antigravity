@@ -1385,38 +1385,59 @@ document.addEventListener('DOMContentLoaded', () => {
     let isRecentLoading = false;
     let hasMoreRecent = true;
 
+    // --- Mock Data Rendering Helper ---
+    const renderMockRecentPosts = () => {
+        if (!recentGrid) return;
+        recentGrid.innerHTML = '';
+        const mockData = [
+            { title: "청교도 신학의 정수: 존 오웬의 성령론", cat: "청교도 신학", date: "2024.01.15" },
+            { title: "현대 교회를 위한 웨스트민스터 신앙고백 해설", cat: "신앙고백", date: "2024.01.12" },
+            { title: "고난 속의 위로: 리처드 십스의 상한 갈대", cat: "경건 서적", date: "2024.01.10" },
+            { title: "설교란 무엇인가? 마틴 로이드 존스의 설교학", cat: "설교학", date: "2024.01.08" },
+            { title: "가정 예배의 회복과 실제적인 지침", cat: "신자의 삶", date: "2024.01.05" },
+            { title: "요한계시록 강해 시리즈 (1): 승리하신 그리스도", cat: "강해설교", date: "2024.01.01" }
+        ];
+
+        mockData.forEach(item => {
+            const div = document.createElement('div');
+            div.className = 'recent-card-premium';
+            div.innerHTML = `
+                <div class="recent-card-inner">
+                    <div class="recent-card-top">
+                        <span class="recent-status-pill">SAMPLE</span>
+                        <span class="recent-category-tag">${item.cat}</span>
+                    </div>
+                    <h3 class="recent-title-premium">${item.title}</h3>
+                    <div class="recent-card-footer">
+                        <span class="recent-date-premium"><i class="far fa-calendar-alt"></i> ${item.date}</span>
+                        <button class="recent-link-btn" onclick="alert('테스트용 샘플 데이터입니다. 실제 자료가 곧 업데이트될 예정입니다.')">
+                            상세보기 <i class="fas fa-chevron-right"></i>
+                        </button>
+                    </div>
+                </div>
+            `;
+            recentGrid.appendChild(div);
+        });
+
+        // 로딩바 숨김
+        if (recentLoadMoreTrigger) recentLoadMoreTrigger.style.display = 'none';
+    };
+
     window.loadRecentPostsGrid = async (isInitial = true) => {
         if (!recentGrid) return;
 
-        // Safe check for Mock Mode or DB Status
+        // DB 연결 상태 체크: 연결 안됐으면 바로 샘플 데이터 보여주기 (기다리지 않음)
         if (typeof db === 'undefined') {
-            if (typeof useMock !== 'undefined' && useMock) {
-                // Mock 모드라면 db 없어도 진행
-            } else {
-                // DB 연결 재시도 (최대 10회, 5초)
-                if (!window.dbRetryCount) window.dbRetryCount = 0;
-                window.dbRetryCount++;
-                if (window.dbRetryCount > 10) {
-                    console.error("DB Connection Timeout");
-                    recentGrid.innerHTML = `
-                        <div style="text-align:center; padding: 3rem 1rem;">
-                            <i class="fas fa-wifi" style="font-size: 2rem; color: #ccc; margin-bottom: 1rem;"></i>
-                            <p style="color:#e74c3c; font-weight:bold;">서버와 연결할 수 없습니다.</p>
-                            <p style="color:#666; font-size: 0.9rem; margin-top: 5px;">인터넷 연결을 확인하거나 잠시 후 다시 시도해주세요.</p>
-                        </div>`;
-                    return;
-                }
-                console.warn(`DB not ready, retrying... (${window.dbRetryCount}/10)`);
-                setTimeout(() => window.loadRecentPostsGrid(isInitial), 500);
-                return;
-            }
+            console.warn("⚠️ DB 미연결. 샘플 데이터를 표시합니다.");
+            renderMockRecentPosts();
+            return;
         }
 
         if (isRecentLoading || (!hasMoreRecent && !isInitial)) return;
 
-        // Mock Mode Message
+        // Mock Mode Check
         if (typeof useMock !== 'undefined' && useMock) {
-            recentGrid.innerHTML = '<p style="text-align:center; padding: 2rem;">[테스트 모드] 실제 데이터베이스에 연결되지 않았습니다.<br>관리자 설정을 확인해주세요.</p>';
+            renderMockRecentPosts();
             return;
         }
 
@@ -1425,7 +1446,6 @@ document.addEventListener('DOMContentLoaded', () => {
             recentGrid.innerHTML = '<div class="loading-msg">자료를 불러오는 중입니다...</div>';
             lastRecentDoc = null;
             hasMoreRecent = true;
-            window.dbRetryCount = 0; // 성공 시 리셋
         }
 
         if (recentLoadMoreTrigger) {
@@ -1435,11 +1455,18 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
             // 메인 페이지에는 최상위 6개만 항상 표시
             let query = db.collection("posts").orderBy("createdAt", "desc").limit(6);
-            const snapshot = await query.get();
+
+            // 타임아웃 설정 (3초 안에 응답 없으면 샘플 데이터 표시)
+            const snapshot = await Promise.race([
+                query.get(),
+                new Promise((_, reject) => setTimeout(() => reject(new Error("Timeout")), 3000))
+            ]);
 
             if (snapshot.empty) {
                 if (isInitial) {
-                    recentGrid.innerHTML = '<p style="text-align:center; width:100%; color:#999;">아직 등록된 자료가 없습니다.</p>';
+                    // 데이터가 진짜 0개면 샘플이라도 보여줘서 디자인 확인 가능하게 함
+                    console.log("데이터 없음. 샘플 표시.");
+                    renderMockRecentPosts();
                 }
                 hasMoreRecent = false;
                 return;
@@ -1478,12 +1505,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
         } catch (err) {
             console.error("Error loading recents:", err);
-            if (isInitial) {
-                recentGrid.innerHTML = `<p style="text-align:center; color:#e74c3c; padding: 2rem;">
-                    <i class="fas fa-exclamation-circle"></i> 자료를 불러오지 못했습니다.<br>
-                    <span style="font-size:0.8em; color:#666;">잠시 후 새로고침 해주세요. (${err.message})</span>
-                </p>`;
-            }
+            // 에러 나면 에러 메시지 대신 그냥 샘플 데이터 보여줌 (사용자 경험 우선)
+            renderMockRecentPosts();
         } finally {
             isRecentLoading = false;
         }
