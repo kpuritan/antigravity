@@ -21,7 +21,7 @@
     <meta property="twitter:description" content="청교도 신학과 개혁주의 신념을 연구하고 성경적인 자료를 제공하는 한국 청교도 연구소입니다.">
     <meta property="twitter:image" content="og-image.png?v=4">
 
-    <link rel="stylesheet" href="style.css?v=2">
+    <link rel="stylesheet" href="style.css?v=3">
     <!-- Favicon -->
     <link rel="icon" type="image/svg+xml" href="favicon.svg?v=2">
     <link rel="icon" type="image/x-icon" href="favicon.ico?v=2">
@@ -74,8 +74,6 @@
                         <div class="dropdown-content" id="publisher-dropdown">
                             <ul class="dropdown-list">
                                 <li><a href="javascript:void(0)" onclick="openResourceModal('도서 목록')">도서 목록</a></li>
-                                <li><a href="javascript:void(0)" onclick="openResourceModal('온라인 서점')">온라인 서점</a></li>
-                                <li><a href="javascript:void(0)" onclick="openResourceModal('도서 구매')">도서 구매</a></li>
                                 <li><a href="mailto:kpuritan.phb@gmail.com">메일 문의</a></li>
                             </ul>
                         </div>
@@ -330,10 +328,33 @@
                     </ul>
                 </div>
             </div>
-            </div>
         </section>
     </main>
 
+    <footer>
+        <div class="footer-content">
+            <div class="footer-section">
+                <h4>Korea Puritan Institute</h4>
+                <p>한국 청교도 연구소는 청교도 신학과 개혁주의 신념을 연구하고 성경적인 자료를 제공합니다.</p>
+                <div class="social-links">
+                    <a href="#"><i class="fab fa-youtube"></i></a>
+                    <a href="#"><i class="fab fa-facebook-f"></i></a>
+                    <a href="#"><i class="fab fa-instagram"></i></a>
+                </div>
+            </div>
+            <div class="footer-section">
+                <h4>Contact Us</h4>
+                <p>Email: kpuritan.phb@gmail.com</p>
+                <p>Address: 서울특별시 양천구 목동중앙본로 20길 22-1 (3층)</p>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2024 Korea Puritan Institute. All rights reserved.</p>
+            <p style="margin-top: 10px; font-size: 0.8rem;">
+                <a href="javascript:void(0)" onclick="document.getElementById('login-modal').classList.add('show')"
+                    style="color: #666; text-decoration: none;">관리자 로그인</a>
+            </p>
+        </div>
     </footer>
 
     <!-- Login Modal -->
@@ -511,17 +532,23 @@
         </div>
     </div>
 
-    <!-- Music Player Container -->
-    <div class="bgm-player" id="bgm-player">
-        <button id="bgm-toggle-btn" class="bgm-control">
+    <!-- Music Player Container (Left) -->
+    <div class="bgm-player" id="bgm-player"
+        style="position: fixed; bottom: 2rem; left: 2rem; z-index: 1500; pointer-events: none;">
+        <button id="bgm-toggle-btn" class="bgm-control" onclick="if(window.toggleBGM) window.toggleBGM(event)"
+            style="pointer-events: auto;">
             <span class="music-icon"><i class="fas fa-music"></i></span>
             <span class="music-text">배경음악 On/Off</span>
         </button>
         <div id="yt-player-container" style="display: none;"></div>
     </div>
 
-    <!-- Admin Floating Button -->
-    <button id="login-open-btn" class="login-trigger"><i class="fas fa-user-lock"></i> 관리자</button>
+    <!-- Admin Floating Button (Right) -->
+    <div id="admin-access-btn" class="login-trigger"
+        onclick="document.getElementById('login-modal').classList.add('show')"
+        style="position: fixed !important; bottom: 2rem !important; right: 2rem !important; z-index: 99999 !important; pointer-events: auto !important; cursor: pointer !important; opacity: 1 !important; display: flex !important;">
+        <i class="fas fa-user-lock"></i> <span>관리자</span>
+    </div>
 
     <!-- Drag and Drop Library -->
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>

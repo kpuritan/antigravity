@@ -244,7 +244,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Login Modal Logic
     const loginModal = document.getElementById('login-modal');
-    const loginOpenBtn = document.getElementById('login-open-btn');
+    const loginOpenBtn = document.getElementById('admin-access-btn');
     const loginCloseBtn = document.getElementById('login-close-btn');
     const loginForm = document.getElementById('login-form');
 
@@ -1255,7 +1255,7 @@ document.addEventListener('DOMContentLoaded', () => {
             `;
         }
 
-        const bookTags = ['도서 목록', '온라인 서점', '도서 구매', '도서구매'];
+        const bookTags = ['도서 목록'];
         const isBookstore = post.tags && post.tags.some(tag => bookTags.includes(tag));
         let priceHtml = '';
         let buyButtonHtml = '';
@@ -1641,41 +1641,40 @@ function onPlayerStateChange(event) {
 }
 
 // BGM Toggle & Autoplay Fallback
+// BGM Toggle Function for Global Access
+window.toggleBGM = (e) => {
+    if (e) e.stopPropagation();
+    if (!isPlayerReady || !player) {
+        alert("음악 플레이어가 로딩 중입니다. 잠시만 기다려주세요.");
+        return;
+    }
+    const state = player.getPlayerState();
+    if (state === YT.PlayerState.PLAYING) {
+        player.pauseVideo();
+    } else {
+        player.playVideo();
+    }
+};
+
 document.addEventListener('DOMContentLoaded', () => {
     const bgmBtn = document.getElementById('bgm-toggle-btn');
-
-    // Toggle Button Logic
     if (bgmBtn) {
-        bgmBtn.addEventListener('click', (e) => {
-            e.stopPropagation(); // Don't trigger the body fallback
-
-            if (!isPlayerReady || !player) {
-                alert("음악 플레이어가 로딩 중입니다. 잠시만 기다려주세요.");
-                return;
-            }
-
-            const state = player.getPlayerState();
-            if (state === YT.PlayerState.PLAYING) {
-                player.pauseVideo();
-            } else {
-                player.playVideo();
-            }
-        });
+        bgmBtn.addEventListener('click', window.toggleBGM);
     }
 
-    // Robust Auto-play Fallback (One-time click on body)
+    // Robust Auto-play Fallback
     const unlockAudio = () => {
         if (isPlayerReady && player) {
             if (player.getPlayerState() !== YT.PlayerState.PLAYING) {
                 player.playVideo();
             }
         }
-        // Remove listeners after first interaction
         document.body.removeEventListener('click', unlockAudio);
         document.body.removeEventListener('touchstart', unlockAudio);
         document.body.removeEventListener('keydown', unlockAudio);
     };
-
-    // --- Global View Functions (Moved to main scope above) ---
-}); // End of main DOMContentLoaded
+    document.body.addEventListener('click', unlockAudio);
+    document.body.addEventListener('touchstart', unlockAudio);
+    document.body.addEventListener('keydown', unlockAudio);
+});
 
