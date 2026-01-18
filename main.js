@@ -33,10 +33,23 @@ try {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
+    // --- Global Variable Declarations (DOM References) ---
+    const resourceModal = document.getElementById('resource-modal');
+    const resourceListContainer = document.getElementById('resource-list-container');
+    const resourceModalTitle = document.getElementById('resource-modal-title');
+    const aboutModal = document.getElementById('about-modal');
+    const loginModal = document.getElementById('login-modal');
+    const editModal = document.getElementById('edit-modal');
+    const recentGrid = document.getElementById('recent-posts-grid');
+
     // Sort Categories Alphabetically as requested
     // Bible books kept in canonical order.
-    if (typeof topics !== 'undefined') topics.sort((a, b) => a.localeCompare(b, 'ko'));
-    if (typeof authors !== 'undefined') authors.sort((a, b) => a.localeCompare(b, 'ko'));
+    if (typeof topics !== 'undefined' && Array.isArray(topics)) {
+        topics.sort((a, b) => a.localeCompare(b, 'ko'));
+    }
+    if (typeof authors !== 'undefined' && Array.isArray(authors)) {
+        authors.sort((a, b) => a.localeCompare(b, 'ko'));
+    }
 
     // Helper for Korean Initial Consonants
     const getInitialConsonant = (str) => {
@@ -64,14 +77,14 @@ document.addEventListener('DOMContentLoaded', () => {
     const authorDropdownGrid = document.getElementById('author-dropdown-grid');
 
     // --- Modal Management with Browser Back Button Support ---
-    const openModal = (modal) => {
+    window.openModal = (modal) => {
         if (!modal) return;
         modal.classList.add('show');
         // Push a state to history so back button closes the modal
         history.pushState({ modalOpen: true, modalId: modal.id }, "");
     };
 
-    const closeAllModals = (shouldGoBack = true) => {
+    window.closeAllModals = (shouldGoBack = true) => {
         document.querySelectorAll('.modal').forEach(m => m.classList.remove('show'));
         // If we manually closed via button/click outside, and there's a state to pop
         if (shouldGoBack && history.state && history.state.modalOpen) {
@@ -84,11 +97,9 @@ document.addEventListener('DOMContentLoaded', () => {
         document.querySelectorAll('.modal').forEach(m => m.classList.remove('show'));
     });
 
-    // ... (기존 렌더링 함수들) ...
-
     // Render function for dropdowns
     const renderMegaMenuItems = (items, container) => {
-        if (!container) return;
+        if (!container || !Array.isArray(items)) return;
         const grid = document.createElement('div');
         grid.className = 'mega-menu-grid';
 
@@ -97,7 +108,7 @@ document.addEventListener('DOMContentLoaded', () => {
             div.className = 'mega-menu-item';
             div.textContent = item;
             div.addEventListener('click', () => {
-                openResourceModal(item);
+                if (window.openResourceModal) window.openResourceModal(item);
             });
             grid.appendChild(div);
         });
@@ -105,24 +116,24 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     // Populate dropdowns
-    renderMegaMenuItems(topics, topicDropdown);
+    if (typeof topics !== 'undefined') renderMegaMenuItems(topics, topicDropdown);
 
     // Render for Author Dropdown (Special case for search)
     const renderAuthorsInDropdown = (list) => {
-        if (!authorDropdownGrid) return;
+        if (!authorDropdownGrid || !Array.isArray(list)) return;
         authorDropdownGrid.innerHTML = '';
         list.forEach(item => {
             const div = document.createElement('div');
             div.className = 'mega-menu-item';
             div.textContent = item;
             div.addEventListener('click', () => {
-                openResourceModal(item);
+                if (window.openResourceModal) window.openResourceModal(item);
             });
             authorDropdownGrid.appendChild(div);
         });
     };
 
-    renderAuthorsInDropdown(authors);
+    if (typeof authors !== 'undefined') renderAuthorsInDropdown(authors);
 
     // --- Mobile Menu Toggle ---
     const mobileMenuToggle = document.querySelector('.mobile-menu-toggle');
@@ -160,10 +171,9 @@ document.addEventListener('DOMContentLoaded', () => {
         document.querySelectorAll('.dropdown > a').forEach(dropdownMain => {
             dropdownMain.addEventListener('click', (e) => {
                 if (window.innerWidth <= 1024) {
-                    e.preventDefault();
-                    e.stopPropagation();
                     const parent = dropdownMain.parentElement;
                     parent.classList.toggle('active');
+                    // Removed stopPropagation and preventDefault to allow onclick attributes to fire
                 }
             });
         });
@@ -213,7 +223,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Search function for Author Dropdown
     const authorSearchInput = document.getElementById('author-dropdown-search');
-    if (authorSearchInput) {
+    if (authorSearchInput && typeof authors !== 'undefined') {
         authorSearchInput.addEventListener('input', (e) => {
             const val = e.target.value.toLowerCase();
             const filtered = authors.filter(a => a.toLowerCase().includes(val));
@@ -281,25 +291,23 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // Login Modal Logic
-    const loginModal = document.getElementById('login-modal');
     const loginOpenBtn = document.getElementById('admin-access-btn');
     const loginCloseBtn = document.getElementById('login-close-btn');
     const loginForm = document.getElementById('login-form');
 
     if (loginOpenBtn && loginModal) {
         loginOpenBtn.addEventListener('click', () => {
-            openModal(loginModal);
+            window.openModal(loginModal);
         });
     }
 
     if (loginCloseBtn && loginModal) {
         loginCloseBtn.addEventListener('click', () => {
-            closeAllModals();
+            window.closeAllModals();
         });
     }
 
     // About Modal Logic
-    const aboutModal = document.getElementById('about-modal');
     const aboutCloseBtn = document.getElementById('about-close-btn');
     const aboutLinks = document.querySelectorAll('a[href="#about"]');
 
@@ -307,20 +315,20 @@ document.addEventListener('DOMContentLoaded', () => {
         link.addEventListener('click', (e) => {
             e.preventDefault();
             e.stopPropagation(); // Stop smooth scroll
-            openModal(aboutModal);
+            window.openModal(aboutModal);
         });
     });
 
     if (aboutCloseBtn && aboutModal) {
         aboutCloseBtn.addEventListener('click', () => {
-            closeAllModals();
+            window.closeAllModals();
         });
     }
 
     // Close modal when clicking outside content (Unified logic)
     window.addEventListener('click', (e) => {
         if (e.target.classList.contains('modal')) {
-            closeAllModals();
+            window.closeAllModals();
         }
     });
 
@@ -334,7 +342,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (id === 'admin' && pw === '1234') {
                 alert('관리자로 로그인되었습니다. 하단 대시보드에서 자료를 관리하세요.');
                 isAdmin = true;
-                closeAllModals();
+                window.closeAllModals();
                 loginOpenBtn.innerHTML = '<i class="fas fa-user-check"></i> 관리자(로그인됨)';
 
                 // Show Admin Dashboard
@@ -361,10 +369,14 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     };
 
-    populateSelect('post-topic', topics);
-    populateSelect('post-author', authors);
-    populateSelect('edit-topic', topics);
-    populateSelect('edit-author', authors);
+    if (typeof topics !== 'undefined') {
+        populateSelect('post-topic', topics);
+        populateSelect('edit-topic', topics);
+    }
+    if (typeof authors !== 'undefined') {
+        populateSelect('post-author', authors);
+        populateSelect('edit-author', authors);
+    }
 
     // Real Database Upload Logic
     const uploadForm = document.getElementById('post-upload-form');
@@ -783,11 +795,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // --- Edit & Delete Functions ---
-    const editModal = document.getElementById('edit-modal');
-    const editCloseBtn = document.getElementById('edit-close-btn');
-    if (editCloseBtn) editCloseBtn.addEventListener('click', () => closeAllModals());
-
     window.openEditModal = async (id) => {
         try {
             const doc = await db.collection("posts").doc(id).get();
@@ -805,7 +812,7 @@ document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('edit-content').value = post.content || '';
             document.getElementById('edit-file-status').textContent = post.fileUrl ? "기존 파일이 있습니다 (교체 시 새로 선택)" : "첨부된 파일 없음";
 
-            editModal.classList.add('show');
+            if (editModal) editModal.classList.add('show');
         } catch (error) {
             console.error("Error opening edit modal:", error);
         }
@@ -870,7 +877,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 await db.collection("posts").doc(id).update(updateData);
                 alert("수정되었습니다.");
-                closeAllModals();
+                window.closeAllModals();
                 if (window.loadRecentPostsGrid) window.loadRecentPostsGrid();
                 const currentCat = resourceModalTitle.textContent.replace(' 자료 목록', '').trim();
                 if (currentCat) openResourceModal(currentCat);
@@ -894,14 +901,15 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
     // Resource Modal Logic
-    const resourceModal = document.getElementById('resource-modal');
     const resourceCloseBtn = document.getElementById('resource-close-btn');
-    const resourceListContainer = document.getElementById('resource-list-container');
-    const resourceModalTitle = document.getElementById('resource-modal-title');
 
-    window.openResourceModal = async (categoryName, targetSeries = null) => {
+    if (resourceCloseBtn) {
+        resourceCloseBtn.addEventListener('click', () => window.closeAllModals());
+    }
+
+    window.openResourceModal = async (categoryName, targetSeries = null, targetPostId = null) => {
         if (!resourceModal) return;
-        openModal(resourceModal);
+        window.openModal(resourceModal);
         resourceListContainer.classList.remove('compact-view'); // 기본 목록은 크게
         resourceModalTitle.textContent = `${categoryName} 자료 목록`;
         resourceListContainer.innerHTML = '<li class="no-resource-msg">자료를 불러오는 중입니다...</li>';
@@ -1242,6 +1250,26 @@ document.addEventListener('DOMContentLoaded', () => {
                 renderListView(groupedPosts);
             }
 
+            // 만약 특정 게시물 ID가 있다면 해당 위치로 스크롤
+            if (targetPostId) {
+                setTimeout(() => {
+                    const targetEl = resourceListContainer.querySelector(`[data-id="${targetPostId}"]`);
+                    if (targetEl) {
+                        targetEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        const card = targetEl.querySelector('.resource-card-modern');
+                        if (card) {
+                            card.style.transition = 'all 0.5s ease';
+                            card.style.border = '2px solid var(--secondary-color)';
+                            card.style.boxShadow = '0 0 20px rgba(10, 124, 104, 0.3)';
+                            setTimeout(() => {
+                                card.style.border = '';
+                                card.style.boxShadow = '';
+                            }, 3000);
+                        }
+                    }
+                }, 500);
+            }
+
         } catch (error) {
             console.error("Error fetching documents: ", error);
             resourceListContainer.innerHTML = `<li class="no-resource-msg">자료를 불러오는 중 오류가 발생했습니다.<br>(${error.message})</li>`;
@@ -1378,12 +1406,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (resourceCloseBtn && resourceModal) {
         resourceCloseBtn.addEventListener('click', () => {
-            closeAllModals();
+            window.closeAllModals();
         });
     }
 
     // Load Public Recent Posts (Visitor View) with Infinite Scroll
-    const recentGrid = document.getElementById('recent-posts-grid');
     const recentLoadMoreTrigger = document.getElementById('recent-load-more');
     let lastRecentDoc = null;
     let isRecentLoading = false;
@@ -1404,12 +1431,11 @@ document.addEventListener('DOMContentLoaded', () => {
             { title: "가정 예배의 회복과 실제적인 지침", cat: "신자의 삶", date: "2026.01.05" },
             { title: "요한계시록 강해 시리즈 (1): 승리하신 그리스도", cat: "강해설교", date: "2026.01.01" }
         ];
-
         mockData.forEach(item => {
             const div = document.createElement('div');
             div.className = 'recent-card-premium';
             div.innerHTML = `
-                <div class="recent-card-inner" onclick="if(window.openResourceModal) { window.openResourceModal('${item.cat}'); }">
+                <div class="recent-card-inner">
                     <div class="recent-card-top">
                         <span class="recent-status-pill">SAMPLE</span>
                         <span class="recent-category-tag">${item.cat}</span>
@@ -1423,6 +1449,9 @@ document.addEventListener('DOMContentLoaded', () => {
                     </div>
                 </div>
             `;
+            div.querySelector('.recent-card-inner').addEventListener('click', () => {
+                if (window.openResourceModal) window.openResourceModal(item.cat);
+            });
             grid.appendChild(div);
         });
 
@@ -1500,7 +1529,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const div = document.createElement('div');
                 div.className = 'recent-card-premium';
                 div.innerHTML = `
-                    <div class="recent-card-inner" onclick="openResourceModal('${displayCategory}', '${seriesName.replace(/'/g, "\\'")}')">
+                    <div class="recent-card-inner">
                         <div class="recent-card-top">
                             <span class="recent-status-pill">NEW</span>
                             <span class="recent-category-tag">${displayCategory}</span>
@@ -1519,6 +1548,10 @@ document.addEventListener('DOMContentLoaded', () => {
                         </div>
                     </div>
                 `;
+                // 인라인 onclick 대신 addEventListener를 사용하여 따옴표 오류 방지
+                div.querySelector('.recent-card-inner').addEventListener('click', () => {
+                    window.openResourceModal(displayCategory, seriesName, postId);
+                });
                 recentGrid.appendChild(div);
             });
 
@@ -1553,7 +1586,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!query) return;
         if (!resourceModal) return;
 
-        openModal(resourceModal);
+        window.openModal(resourceModal);
         resourceModalTitle.textContent = `'${query}' 검색 결과`;
         resourceListContainer.innerHTML = '<li class="no-resource-msg">검색 중입니다...</li>';
 
@@ -1595,7 +1628,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- Global View Functions (Moved here for scope) ---
     window.openAllRecentModal = async () => {
         if (!resourceModal) return;
-        openModal(resourceModal);
+        window.openModal(resourceModal);
         resourceModalTitle.textContent = `최신 업데이트 전체 목록`;
         resourceListContainer.innerHTML = '<li class="no-resource-msg">최신 자료를 불러오는 중입니다...</li>';
         resourceListContainer.classList.add('compact-view'); // 숲을 볼 수 있게 콤팩트하게 표시
@@ -1640,7 +1673,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     window.openAllTopicsModal = () => {
         if (!resourceModal) return;
-        openModal(resourceModal);
+        window.openModal(resourceModal);
         resourceListContainer.classList.remove('compact-view');
         resourceModalTitle.textContent = `전체 주제 목록`;
 
@@ -1715,7 +1748,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     window.openAllAuthorsModal = () => {
         if (!resourceModal) return;
-        openModal(resourceModal);
+        window.openModal(resourceModal);
         resourceListContainer.classList.remove('compact-view');
         resourceModalTitle.textContent = `전체 저자 목록`;
 
