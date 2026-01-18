@@ -195,7 +195,11 @@
                             { title: "[샘플] 청교도 신학의 정수", cat: "청교도 신학", date: "2026.01.15" },
                             { title: "[샘플] 웨스트민스터 신앙고백 해설", cat: "신앙고백", date: "2026.01.12" },
                             { title: "[샘플] 리처드 십스의 상한 갈대", cat: "경건 서적", date: "2026.01.10" },
-                            { title: "[샘플] 가정 예배 지침서", cat: "신자의 삶", date: "2026.01.05" }
+                            { title: "[샘플] 가정 예배 지침서", cat: "신자의 삶", date: "2026.01.05" },
+                            { title: "[샘플] 은혜의 수단으로서의 기도", cat: "청교도 신학", date: "2026.01.03" },
+                            { title: "[샘플] 참된 회심의 성경적 표지", cat: "회심", date: "2026.01.01" },
+                            { title: "[샘플] 그리스도의 위격과 사역", cat: "기독론", date: "2025.12.28" },
+                            { title: "[샘플] 성화의 신비와 능력", cat: "성화", date: "2025.12.25" }
                         ];
 
                         mockData.forEach(item => {
@@ -212,7 +216,11 @@
                                 </div>
                             `;
                             div.onclick = () => {
-                                if (window.openResourceModal) window.openResourceModal(item.cat);
+                                if (window.openResourceModal) {
+                                    window.openResourceModal(item.cat);
+                                } else {
+                                    alert('자료 로딩 중입니다. 잠시 후 다시 시도해주세요.\n(Main Script Not Loaded)');
+                                }
                             };
                             track.appendChild(div);
                         });
