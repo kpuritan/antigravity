@@ -220,7 +220,10 @@
                                     if (window.openResourceModal) {
                                         window.openResourceModal(item.cat);
                                     } else {
-                                        throw new Error("Main script not loaded");
+                                        // 급한대로 제목만이라도 보여주는 fallback
+                                        console.warn("Main Script Not Loaded - Basic Alert");
+                                        // alert("상세 보기 기능 로딩 중... (Main Script Not Loaded)\n제목: " + post.title); // post.title이 아니라 item.title이 맞음
+                                        openLocalMockModal(item.cat, item.title); // Fallback to local mock modal
                                     }
                                 } catch (e) {
                                     console.warn("Using local modal fallback:", e);
@@ -346,7 +349,8 @@
                             if (window.openResourceModal) {
                                 window.openResourceModal(item.cat);
                             } else {
-                                alert('자료 로딩 중입니다. 잠시만 기다려주세요.');
+                                console.warn("Main Script Not Loaded - Basic Alert");
+                                // alert('자료 로딩 중입니다. 잠시만 기다려주세요.');
                             }
                         });
                         grid.appendChild(div);
@@ -808,11 +812,11 @@
                 window.db = firebase.firestore();
                 window.storage = firebase.storage();
                 console.log("✅ Firebase (HTML) 연결 성공!");
-                alert("DEBUG: 1. Firebase (HTML) 연결 성공!"); // 사용자 확인용
+                // alert("DEBUG: 1. Firebase (HTML) 연결 성공!"); 
             }
         } catch (e) {
             console.error("❌ Firebase 초기화 실패:", e);
-            alert("DEBUG: Firebase 초기화 실패: " + e.message);
+            // alert("DEBUG: Firebase 초기화 실패: " + e.message);
             window.useMock = true;
         }
 
@@ -904,7 +908,8 @@
                 if (window.openResourceModal) {
                     window.openResourceModal(displayCategory, post.series || '', docId);
                 } else {
-                    alert("상세 보기 기능 준비 중...");
+                    console.warn("Main Script Not Loaded - Basic Alert");
+                    // alert("상세 보기 기능 로딩 중... (Main Script Not Loaded)\n제목: " + post.title);
                 }
             });
             return div;
@@ -912,10 +917,10 @@
 
         window.loadMainCarousels = async () => {
             if (!window.db) {
-                // alert("DEBUG: DB 연결 대기 중...");
+                // console.log("DEBUG: DB 연결 대기 중...");
                 return;
             }
-            // alert("DEBUG: 2. (Inline) 데이터 로딩 시작");
+            // console.log("DEBUG: 2. (Inline) 데이터 로딩 시작");
 
             // 1. New Arrivals
             const newTrack = document.getElementById('carousel-new');

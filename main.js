@@ -810,6 +810,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
+    const editForm = document.getElementById('edit-form');
     if (editForm) {
         editForm.addEventListener('submit', async (e) => {
             e.preventDefault();
