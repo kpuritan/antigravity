@@ -1520,7 +1520,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 // 타임아웃 5초 설정
                 const snapshot = await Promise.race([
                     db.collection("posts").orderBy("createdAt", "desc").limit(10).get(),
-                    new Promise((_, reject) => setTimeout(() => reject(new Error("Timeout")), 5000))
+                    new Promise((_, reject) => setTimeout(() => reject(new Error("Timeout")), 10000))
                 ]);
 
                 if (!snapshot.empty) {
