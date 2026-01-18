@@ -1,37 +1,17 @@
 // Data is loaded from data.js globally
 alert("DEBUG: 0. Main JS 파일 로드됨");
 
-// --- Firebase Configuration ---
-// 관리자님: 파이어베이스 콘솔에서 받은 본인의 설정값으로 아래를 교체해주세요.
-const firebaseConfig = {
-    apiKey: "AIzaSyCJbOaiElCypwgtPgbwdnudn3VC737fMrs",
-    authDomain: "kpuritan-home.firebaseapp.com",
-    projectId: "kpuritan-home",
-    storageBucket: "kpuritan-home.firebasestorage.app",
-    messagingSenderId: "1071220455502", // Project specific ID (optional usually)
-    appId: "1:1071220455502:web:7f6f59b48c48a73437f8f0" // App specific ID (optional usually)
-};
+// --- Firebase Configuration REMOVED (Moved to HTML) ---
+// const firebaseConfig = { ... };
 
-// Initialize Firebase
-let useMock = false;
-let db, storage;
-let isAdmin = false; // Add global isAdmin variable
+// Initialize Firebase Variables (Connected in HTML)
+// let useMock = false;
+// let db, storage;
+// let isAdmin = false; 
 
-try {
-    const app = firebase.initializeApp(firebaseConfig);
-    db = firebase.firestore();
-    storage = firebase.storage();
-    console.log("✅ Firebase 연결 성공!");
-} catch (e) {
-    console.error("❌ Firebase 초기화 실패:", e);
-    // 에러 발생 시 사용자에게 알림 (개발 단계 혹은 중대한 장애 시 중요)
-    // alert("데이터베이스 연결에 실패했습니다. 페이지를 새로고침 해보세요.\n" + e.message);
-    useMock = true;
+// HTML에서 초기화된 전역 변수들이 사용됩니다.
+console.log("Main JS using global DB connection");
 
-    // 화면에 표시할 수 있는 DOM이 있다면 업데이트
-    const statusEl = document.getElementById('firebase-status');
-    if (statusEl) statusEl.innerHTML = '❌ 연결 실패: ' + e.message;
-}
 
 document.addEventListener('DOMContentLoaded', () => {
     // --- Global Variable Declarations (DOM References) ---

@@ -779,12 +779,42 @@
     <script src="https://cdn.iamport.kr/v1/iamport.js"></script>
     <script src="data.js?v=20240118_v2"></script>
     <script>
+        // --- Firebase Configuration (Migrated to HTML for Safety) ---
+        const firebaseConfig = {
+            apiKey: "AIzaSyCJbOaiElCypwgtPgbwdnudn3VC737fMrs",
+            authDomain: "kpuritan-home.firebaseapp.com",
+            projectId: "kpuritan-home",
+            storageBucket: "kpuritan-home.firebasestorage.app",
+            messagingSenderId: "1071220455502",
+            appId: "1:1071220455502:web:7f6f59b48c48a73437f8f0"
+        };
+
+        // Initialize Firebase Global Variables
+        window.db = null;
+        window.storage = null;
+        window.isAdmin = false;
+        window.useMock = false;
+
+        try {
+            if (firebase.apps.length === 0) {
+                firebase.initializeApp(firebaseConfig);
+                window.db = firebase.firestore();
+                window.storage = firebase.storage();
+                console.log("✅ Firebase (HTML) 연결 성공!");
+                alert("DEBUG: 1. Firebase (HTML) 연결 성공!"); // 사용자 확인용
+            }
+        } catch (e) {
+            console.error("❌ Firebase 초기화 실패:", e);
+            alert("DEBUG: Firebase 초기화 실패: " + e.message);
+            window.useMock = true;
+        }
+
         window.onerror = function (msg, url, lineNo, columnNo, error) {
             alert('자바스크립트 에러 발생:\n' + msg + '\n라인: ' + lineNo);
             return false;
         };
     </script>
-    <script src="main.js?v=20240118_v8"></script>
+    <script src="main.js?v=20240118_v9"></script>
 </body>
 
 </html>
