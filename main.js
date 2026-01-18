@@ -926,9 +926,13 @@ document.addEventListener('DOMContentLoaded', () => {
         const toggleBtn = document.getElementById('toggle-modal-upload');
         const seriesInput = document.getElementById('modal-post-series');
 
+        // DB 미연결 시 Mock Mode 강제 활성화
+        const isOffline = (typeof db === 'undefined' || !db);
+
         if (adminHeader) {
-            if (typeof isAdmin !== 'undefined' && isAdmin) {
+            if (!isOffline && typeof isAdmin !== 'undefined' && isAdmin) {
                 adminHeader.style.display = 'block';
+                // ... (Admin logic omitted for brevity as it relies on DB)
                 modalUploadForm.style.display = 'none'; // 초기엔 닫힘
                 toggleBtn.textContent = '업로드 창 열기';
 
@@ -1008,17 +1012,27 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
 
-        // Use Mock data if in test mode
-        if (typeof useMock !== 'undefined' && useMock) {
+
+
+        // Use Mock data if in test mode OR Offline
+        if ((typeof useMock !== 'undefined' && useMock) || isOffline) {
             setTimeout(() => {
-                resourceListContainer.innerHTML = `
-                    <li class="resource-item">
-                        <div class="resource-header">
-                            <span class="resource-title">[테스트] ${categoryName} 관련 자료 예시</span>
-                            <span class="resource-date">2026.01.15</span>
-                        </div>
-                        <div class="resource-body">이것은 테스트 모드에서 보여지는 예시 자료입니다. 실제 업로드된 자료가 아닙니다.</div>
-                    </li>`;
+                resourceListContainer.innerHTML = '';
+                const mockItems = [
+                    { title: `[샘플] ${categoryName} 관련 자료 1`, date: "2026.01.15", content: "이것은 예시 자료입니다. 데이터베이스가 연결되지 않았거나 로딩 중일 때 표시됩니다." },
+                    { title: `[샘플] ${categoryName} 관련 자료 2`, date: "2026.01.12", content: "유튜브 영상이나 파일이 포함될 수 있습니다." },
+                    { title: `[샘플] ${categoryName} 관련 자료 3`, date: "2026.01.10", content: "더 많은 자료를 데이터베이스에서 불러와야 합니다." },
+                    { title: `[샘플] ${categoryName} 관련 자료 4`, date: "2026.01.05", content: "관리자 모드에서 실제 자료를 업로드해주세요." }
+                ];
+
+                mockItems.forEach(item => {
+                    renderSingleResource({
+                        title: item.title,
+                        createdAt: { toDate: () => new Date() },
+                        content: item.content,
+                        tags: [categoryName]
+                    }, resourceListContainer);
+                });
             }, 500);
             return;
         }
@@ -1496,19 +1510,29 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- Mock Data Rendering for Carousel ---
     window.renderMockCarousels = () => {
-        const mockData = [
-            { id: 'mock1', title: "청교도 신학의 정수: 존 오웬의 성령론", cat: "청교도 신학", date: "2026.01.15", series: "" },
-            { id: 'mock2', title: "현대 교회를 위한 웨스트민스터 신앙고백 해설", cat: "신앙고백", date: "2026.01.12", series: "" },
-            { id: 'mock3', title: "고난 속의 위로: 리처드 십스의 상한 갈대", cat: "경건 서적", date: "2026.01.10", series: "" },
-            { id: 'mock4', title: "설교란 무엇인가? 마틴 로이드 존스의 설교학", cat: "설교학", date: "2026.01.08", series: "" },
-            { id: 'mock5', title: "가정 예배의 회복과 실제적인 지침", cat: "신자의 삶", date: "2026.01.05", series: "" }
+        // 데이터를 2배로 늘려서 화면 꽉 차게 (8개 이상)
+        const baseData = [
+            { title: "청교도 신학의 정수: 존 오웬의 성령론", cat: "청교도 신학", date: "2026.01.15", series: "" },
+            { title: "현대 교회를 위한 웨스트민스터 신앙고백 해설", cat: "신앙고백", date: "2026.01.12", series: "" },
+            { title: "고난 속의 위로: 리처드 십스의 상한 갈대", cat: "경건 서적", date: "2026.01.10", series: "" },
+            { title: "설교란 무엇인가? 마틴 로이드 존스의 설교학", cat: "설교학", date: "2026.01.08", series: "" },
+            { title: "가정 예배의 회복과 실제적인 지침", cat: "신자의 삶", date: "2026.01.05", series: "" },
+            { title: "은혜의 수단으로서의 기도", cat: "청교도 신학", date: "2026.01.03", series: "" },
+            { title: "참된 회심의 성경적 표지", cat: "회심", date: "2026.01.01", series: "" },
+            { title: "그리스도의 위격과 사역", cat: "기독론", date: "2025.12.28", series: "" }
         ];
 
+        const mockData = baseData.map((item, index) => ({ ...item, id: `mock_new_${index}` }));
+
         const mockSermons = [
-            { id: 'mock6', title: "요한계시록 강해 (1): 승리하신 그리스도", cat: "강해설교", date: "2026.01.01", series: "요한계시록 강해" },
-            { id: 'mock7', title: "로마서 강해 (12): 이신칭의의 교리", cat: "강해설교", date: "2025.12.25", series: "로마서 강해" },
-            { id: 'mock8', title: "산상수훈 강해 (5): 팔복의 의미", cat: "강해설교", date: "2025.12.20", series: "산상수훈 강해" }
+            { id: 'mock_s1', title: "요한계시록 강해 (1): 승리하신 그리스도", cat: "강해설교", date: "2026.01.01", series: "요한계시록 강해" },
+            { id: 'mock_s2', title: "로마서 강해 (12): 이신칭의의 교리", cat: "강해설교", date: "2025.12.25", series: "로마서 강해" },
+            { id: 'mock_s3', title: "산상수훈 강해 (5): 팔복의 의미", cat: "강해설교", date: "2025.12.20", series: "산상수훈 강해" },
+            { id: 'mock_s4', title: "에베소서 강해 (3): 교회란 무엇인가", cat: "강해설교", date: "2025.12.15", series: "에베소서 강해" },
+            { id: 'mock_s5', title: "시편 강해 (23): 목자되신 여호와", cat: "강해설교", date: "2025.12.10", series: "시편 강해" }
         ];
+        // 설교도 좀 더 늘리기
+        const extendedSermons = [...mockSermons, ...mockSermons.map(s => ({ ...s, id: s.id + '_dup' }))];
 
         const populateTrack = (trackId, data) => {
             const track = document.getElementById(trackId);
@@ -1526,8 +1550,8 @@ document.addEventListener('DOMContentLoaded', () => {
         };
 
         populateTrack('carousel-new', mockData);
-        populateTrack('carousel-topic', mockData);
-        populateTrack('carousel-sermon', mockSermons);
+        populateTrack('carousel-topic', mockData); // 같은 데이터 재사용
+        populateTrack('carousel-sermon', extendedSermons);
     };
 
     window.loadMainCarousels = async () => {
