@@ -778,7 +778,13 @@
     <!-- PortOne SDK for actual payments -->
     <script src="https://cdn.iamport.kr/v1/iamport.js"></script>
     <script src="data.js?v=20240118_v2"></script>
-    <script src="main.js?v=20240118_v7"></script>
+    <script>
+        window.onerror = function (msg, url, lineNo, columnNo, error) {
+            alert('자바스크립트 에러 발생:\n' + msg + '\n라인: ' + lineNo);
+            return false;
+        };
+    </script>
+    <script src="main.js?v=20240118_v8"></script>
 </body>
 
 </html>

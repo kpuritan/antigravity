@@ -1,4 +1,5 @@
 // Data is loaded from data.js globally
+alert("DEBUG: 0. Main JS 파일 로드됨");
 
 // --- Firebase Configuration ---
 // 관리자님: 파이어베이스 콘솔에서 받은 본인의 설정값으로 아래를 교체해주세요.
@@ -1598,7 +1599,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Initial Load
     // Initial Load
-    loadMainCarousels();
+    document.addEventListener('DOMContentLoaded', () => {
+        console.log("DOM Ready, initializing carousels...");
+        setTimeout(loadMainCarousels, 100);
+    });
 
     // Real Search Logic
     const searchInput = document.querySelector('.search-bar input');
