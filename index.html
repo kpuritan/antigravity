@@ -216,14 +216,58 @@
                                 </div>
                             `;
                             div.onclick = () => {
-                                if (window.openResourceModal) {
-                                    window.openResourceModal(item.cat);
-                                } else {
-                                    alert('자료 로딩 중입니다. 잠시 후 다시 시도해주세요.\n(Main Script Not Loaded)');
+                                try {
+                                    if (window.openResourceModal) {
+                                        window.openResourceModal(item.cat);
+                                    } else {
+                                        throw new Error("Main script not loaded");
+                                    }
+                                } catch (e) {
+                                    console.warn("Using local modal fallback:", e);
+                                    openLocalMockModal(item.cat, item.title);
                                 }
                             };
                             track.appendChild(div);
                         });
+                    }
+                };
+
+                // 자체 로컬 모달 오픈 함수 (Main.js 의존성 제거)
+                const openLocalMockModal = (cat, clickedTitle) => {
+                    const modal = document.getElementById('resource-modal');
+                    const list = document.getElementById('resource-list-container');
+                    const title = document.getElementById('resource-modal-title');
+
+                    if (modal && list) {
+                        modal.classList.add('show');
+                        if (title) title.textContent = cat + " 자료 목록 (샘플)";
+                        list.innerHTML = '';
+
+                        // 클릭한 아이템을 최상단에 보여줌
+                        const li = document.createElement('li');
+                        li.className = 'resource-item';
+                        li.style.border = '2px solid var(--secondary-color)';
+                        li.innerHTML = `
+                            <div class="resource-header" style="margin-bottom:5px;">
+                                <span style="font-size:0.8rem; color:var(--secondary-color);">샘플 자료</span>
+                                <span style="font-size:0.8rem; color:#888;">2024.01.18</span>
+                            </div>
+                            <h3 style="margin:0 0 10px 0; font-size:1.1rem;">${clickedTitle || cat + ' 관련 자료'}</h3>
+                            <p style="font-size:0.9rem; color:#555;">이것은 데이터베이스 연결이 없을 때 보여지는 예시 자료입니다.<br>
+                            실제 파일 다운로드나 상세 보기는 서버 연결 후 가능합니다.</p>
+                        `;
+                        list.appendChild(li);
+
+                        // 추가 샘플들
+                        const extras = ['심화 연구 자료', '관련 특강 영상', '참고 문헌 리스트'];
+                        extras.forEach(ex => {
+                            const eli = document.createElement('li');
+                            eli.className = 'resource-item';
+                            eli.innerHTML = `<h4 style="margin:0;">[샘플] ${cat} ${ex}</h4><p style="font-size:0.8rem; color:#999;">준비 중입니다.</p>`;
+                            list.appendChild(eli);
+                        });
+                    } else {
+                        alert("모달 요소를 찾을 수 없습니다. 페이지를 새로고침 해주세요.");
                     }
                 };
 
@@ -723,7 +767,7 @@
     <!-- PortOne SDK for actual payments -->
     <script src="https://cdn.iamport.kr/v1/iamport.js"></script>
     <script src="data.js?v=20240118_v2"></script>
-    <script src="main.js?v=20240118_v3"></script>
+    <script src="main.js?v=20240118_v4"></script>
 </body>
 
 </html>
