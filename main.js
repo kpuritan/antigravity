@@ -1505,9 +1505,12 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     window.loadMainCarousels = async () => {
+        // Debug Alert 1: 함수 호출 확인
+        alert("DEBUG: 1. 캐러셀 로딩 시작");
+
         // DB Check & Fallback
         if (typeof db === 'undefined' || !db) {
-            console.warn("⚠️ DB 미연결. 샘플 Carousel 표시.");
+            alert("DEBUG: DB 미연결 (undefined)");
             window.renderMockCarousels();
             return;
         }
@@ -1517,11 +1520,9 @@ document.addEventListener('DOMContentLoaded', () => {
         if (newTrack) {
             newTrack.innerHTML = '<div class="loading-msg" style="padding:1rem;">불러오는 중...</div>';
             try {
-                // 타임아웃 5초 설정
-                const snapshot = await Promise.race([
-                    db.collection("posts").orderBy("createdAt", "desc").limit(10).get(),
-                    new Promise((_, reject) => setTimeout(() => reject(new Error("Timeout")), 10000))
-                ]);
+                alert("DEBUG: 2. New Arrivals 데이터 요청 중...");
+                const snapshot = await db.collection("posts").orderBy("createdAt", "desc").limit(10).get();
+                alert(`DEBUG: 3. 데이터 응답 완료. 문서 개수: ${snapshot.size}개`);
 
                 if (!snapshot.empty) {
                     newTrack.innerHTML = '';
@@ -1529,14 +1530,12 @@ document.addEventListener('DOMContentLoaded', () => {
                         newTrack.appendChild(createCarouselCard(doc.data(), doc.id));
                     });
                 } else {
-                    newTrack.innerHTML = '<div style="padding:1rem">업데이트된 자료가 없습니다.</div>';
+                    newTrack.innerHTML = '<div style="padding:1rem">업데이트된 자료가 없습니다. (데이터 0개)</div>';
                 }
             } catch (e) {
-                console.error("New Load Error", e);
-                alert("데이터 로딩 오류(New): " + e.message); // 디버깅용 알림
-                // 모달과 달리 메인 화면은 비어있으면 안 예쁘므로 에러 시 Mock 데이터 보여줌
+                alert("DEBUG: 에러 발생! " + e.message);
                 window.renderMockCarousels();
-                return; // 하나라도 실패하면 전체 Mock으로 전환 (일관성 위해)
+                return;
             }
         }
 
