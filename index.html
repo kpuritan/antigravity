@@ -182,6 +182,49 @@
         </section>
         </section>
 
+        <script>
+            // Emergency Fallback for Carousels
+            setTimeout(() => {
+                const checkAndFill = (id) => {
+                    const track = document.getElementById(id);
+                    // 내용이 없거나 loading-msg만 있으면 fallback 실행
+                    if (track && (track.children.length === 0 || track.querySelector('.loading-msg'))) {
+                        console.warn(`Fallback triggered for ${id}`);
+                        track.innerHTML = '';
+                        const mockData = [
+                            { title: "[샘플] 청교도 신학의 정수", cat: "청교도 신학", date: "2026.01.15" },
+                            { title: "[샘플] 웨스트민스터 신앙고백 해설", cat: "신앙고백", date: "2026.01.12" },
+                            { title: "[샘플] 리처드 십스의 상한 갈대", cat: "경건 서적", date: "2026.01.10" },
+                            { title: "[샘플] 가정 예배 지침서", cat: "신자의 삶", date: "2026.01.05" }
+                        ];
+
+                        mockData.forEach(item => {
+                            const div = document.createElement('div');
+                            div.className = 'carousel-card';
+                            div.innerHTML = `
+                                <div class="carousel-card-content">
+                                    <div class="carousel-card-tag">${item.cat}</div>
+                                    <div class="carousel-card-title">${item.title}</div>
+                                    <div class="carousel-card-meta">
+                                        <span>${item.date}</span>
+                                        <div class="carousel-icon-btn"><i class="fas fa-arrow-right"></i></div>
+                                    </div>
+                                </div>
+                            `;
+                            div.onclick = () => {
+                                if (window.openResourceModal) window.openResourceModal(item.cat);
+                            };
+                            track.appendChild(div);
+                        });
+                    }
+                };
+
+                checkAndFill('carousel-new');
+                checkAndFill('carousel-topic');
+                checkAndFill('carousel-sermon');
+            }, 3000); // 3초 내로 로딩 안되면 샘플 표시
+        </script>
+
         <style>
             @keyframes spin {
                 to {

@@ -1494,12 +1494,61 @@ document.addEventListener('DOMContentLoaded', () => {
         return div;
     };
 
+    // --- Mock Data Rendering for Carousel ---
+    window.renderMockCarousels = () => {
+        const mockData = [
+            { id: 'mock1', title: "청교도 신학의 정수: 존 오웬의 성령론", cat: "청교도 신학", date: "2026.01.15", series: "" },
+            { id: 'mock2', title: "현대 교회를 위한 웨스트민스터 신앙고백 해설", cat: "신앙고백", date: "2026.01.12", series: "" },
+            { id: 'mock3', title: "고난 속의 위로: 리처드 십스의 상한 갈대", cat: "경건 서적", date: "2026.01.10", series: "" },
+            { id: 'mock4', title: "설교란 무엇인가? 마틴 로이드 존스의 설교학", cat: "설교학", date: "2026.01.08", series: "" },
+            { id: 'mock5', title: "가정 예배의 회복과 실제적인 지침", cat: "신자의 삶", date: "2026.01.05", series: "" }
+        ];
+
+        const mockSermons = [
+            { id: 'mock6', title: "요한계시록 강해 (1): 승리하신 그리스도", cat: "강해설교", date: "2026.01.01", series: "요한계시록 강해" },
+            { id: 'mock7', title: "로마서 강해 (12): 이신칭의의 교리", cat: "강해설교", date: "2025.12.25", series: "로마서 강해" },
+            { id: 'mock8', title: "산상수훈 강해 (5): 팔복의 의미", cat: "강해설교", date: "2025.12.20", series: "산상수훈 강해" }
+        ];
+
+        const populateTrack = (trackId, data) => {
+            const track = document.getElementById(trackId);
+            if (!track) return;
+            track.innerHTML = '';
+            data.forEach(item => {
+                track.appendChild(createCarouselCard({
+                    title: item.title,
+                    tags: [item.cat],
+                    createdAt: { toDate: () => new Date() }, // Mock date object
+                    series: item.series,
+                    content: 'Mock content'
+                }, item.id));
+            });
+        };
+
+        populateTrack('carousel-new', mockData);
+        populateTrack('carousel-topic', mockData);
+        populateTrack('carousel-sermon', mockSermons);
+    };
+
     window.loadMainCarousels = async () => {
+        // DB Check & Fallback
+        if (typeof db === 'undefined' || !db) {
+            console.warn("⚠️ DB 미연결. 샘플 Carousel 표시.");
+            window.renderMockCarousels();
+            return;
+        }
+
         // 1. New Arrivals
         const newTrack = document.getElementById('carousel-new');
         if (newTrack) {
+            newTrack.innerHTML = '<div class="loading-msg" style="padding:1rem;">불러오는 중...</div>';
             try {
-                const snapshot = await db.collection("posts").orderBy("createdAt", "desc").limit(10).get();
+                // 타임아웃 5초 설정
+                const snapshot = await Promise.race([
+                    db.collection("posts").orderBy("createdAt", "desc").limit(10).get(),
+                    new Promise((_, reject) => setTimeout(() => reject(new Error("Timeout")), 5000))
+                ]);
+
                 if (!snapshot.empty) {
                     newTrack.innerHTML = '';
                     snapshot.forEach(doc => {
@@ -1510,14 +1559,16 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             } catch (e) {
                 console.error("New Load Error", e);
-                newTrack.innerHTML = '<div style="padding:1rem;">자료 로딩 실패 (Mock Data 사용 가능)</div>';
-                // Fallback to mock if needed, but keeping it simple for now
+                // 모달과 달리 메인 화면은 비어있으면 안 예쁘므로 에러 시 Mock 데이터 보여줌
+                window.renderMockCarousels();
+                return; // 하나라도 실패하면 전체 Mock으로 전환 (일관성 위해)
             }
         }
 
         // 2. Featured Topics : "청교도 신학" (Puritan Theology)
         const topicTrack = document.getElementById('carousel-topic');
         if (topicTrack) {
+            topicTrack.innerHTML = '<div class="loading-msg" style="padding:1rem;">불러오는 중...</div>';
             try {
                 // '청교도 신학' 태그가 있는 게시물 10개
                 const snapshot = await db.collection("posts")
@@ -1536,6 +1587,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             } catch (e) {
                 console.error("Topic Load Error", e);
+                // 개별 섹션 에러는 무시하거나 비워둠
                 topicTrack.innerHTML = '<div style="padding:1rem">자료 로딩 실패</div>';
             }
         }
@@ -1543,6 +1595,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // 3. Expository Sermons : "강해설교" (Series)
         const sermonTrack = document.getElementById('carousel-sermon');
         if (sermonTrack) {
+            sermonTrack.innerHTML = '<div class="loading-msg" style="padding:1rem;">불러오는 중...</div>';
             try {
                 // '강해설교' 태그가 있는 게시물 10개
                 const snapshot = await db.collection("posts")
@@ -1557,6 +1610,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         sermonTrack.appendChild(createCarouselCard(doc.data(), doc.id));
                     });
                 } else {
+                    // 강해설교가 없으면 예비로 '설교학'이나 다른거라도 보여주도록 쿼리 변경 가능하나 일단 메시지 표시
                     sermonTrack.innerHTML = '<div style="padding:1rem">등록된 설교가 없습니다.</div>';
                 }
             } catch (e) {
