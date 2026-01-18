@@ -1533,6 +1533,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             } catch (e) {
                 console.error("New Load Error", e);
+                alert("데이터 로딩 오류(New): " + e.message); // 디버깅용 알림
                 // 모달과 달리 메인 화면은 비어있으면 안 예쁘므로 에러 시 Mock 데이터 보여줌
                 window.renderMockCarousels();
                 return; // 하나라도 실패하면 전체 Mock으로 전환 (일관성 위해)
