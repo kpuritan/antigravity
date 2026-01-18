@@ -1460,124 +1460,117 @@ document.addEventListener('DOMContentLoaded', () => {
         if (trigger) trigger.style.display = 'none';
     };
 
-    window.loadRecentPostsGrid = async (isInitial = true) => {
-        if (!recentGrid) return;
-
-        // DB 연결 상태 체크: 연결 안됐으면 바로 샘플 데이터 보여주기 (기다리지 않음)
-        if (typeof db === 'undefined' || !db) {
-            console.warn("⚠️ DB 미연결. 샘플 데이터를 표시합니다.");
-            window.renderMockRecentPosts();
-            return;
-        }
-
-        if (isRecentLoading || (!hasMoreRecent && !isInitial)) return;
-
-        // Mock Mode Check
-        if (typeof useMock !== 'undefined' && useMock) {
-            window.renderMockRecentPosts();
-            return;
-        }
-
-        isRecentLoading = true;
-        if (isInitial) {
-            recentGrid.innerHTML = '<div class="loading-msg">자료를 불러오는 중입니다...</div>';
-            lastRecentDoc = null;
-            hasMoreRecent = true;
-        }
-
-        if (recentLoadMoreTrigger) {
-            recentLoadMoreTrigger.style.display = 'none';
-        }
-
-        try {
-            // 메인 페이지에는 최상위 6개만 항상 표시
-            let query = db.collection("posts").orderBy("createdAt", "desc").limit(6);
-
-            // 타임아웃 설정 (3초 안에 응답 없으면 샘플 데이터 표시)
-            const snapshot = await Promise.race([
-                query.get(),
-                new Promise((_, reject) => setTimeout(() => reject(new Error("Timeout")), 10000))
-            ]);
-
-            if (snapshot.empty) {
-                if (isInitial) {
-                    // 데이터가 진짜 0개면 샘플이라도 보여줘서 디자인 확인 가능하게 함
-                    console.log("데이터 없음. 샘플 표시.");
-                    window.renderMockRecentPosts();
-                }
-                hasMoreRecent = false;
-                return;
-            }
-
-            if (isInitial) {
-                recentGrid.innerHTML = '';
-            }
-
-            snapshot.forEach(doc => {
-                const post = doc.data();
-                const postId = doc.id;
-                const date = post.createdAt ? post.createdAt.toDate().toLocaleDateString() : '최근';
-                const displayCategory = post.tags ? post.tags[0] : '자료';
-                const seriesName = post.series || '';
-
-                // 파일 링크 또는 외부 링크 추출
-                const contentText = post.content || '';
-                const urlRegex = /(https?:\/\/[^\s]+)/g;
-                const urls = contentText.match(urlRegex) || [];
-                const primaryLink = post.fileUrl || (urls.length > 0 ? urls[0] : '#');
-
-                const div = document.createElement('div');
-                div.className = 'recent-card-premium';
-                div.innerHTML = `
-                    <div class="recent-card-inner">
-                        <div class="recent-card-top">
-                            <span class="recent-status-pill">NEW</span>
-                            <span class="recent-category-tag">${displayCategory}</span>
-                        </div>
-                        <h3 class="recent-title-premium">
-                            <a href="${primaryLink}" target="${primaryLink !== '#' ? '_blank' : '_self'}" onclick="event.stopPropagation();" style="text-decoration:none; color:inherit;">
-                                ${post.title}
-                                ${primaryLink !== '#' ? '<i class="fas fa-external-link-alt" style="font-size:0.6em; margin-left:5px;"></i>' : ''}
-                            </a>
-                        </h3>
-                        <div class="recent-card-footer">
-                            <span class="recent-date-premium"><i class="far fa-calendar-alt"></i> ${date}</span>
-                            <button class="recent-link-btn">
-                                상세보기 <i class="fas fa-chevron-right"></i>
-                            </button>
-                        </div>
-                    </div>
-                `;
-                // 인라인 onclick 대신 addEventListener를 사용하여 따옴표 오류 방지
-                div.querySelector('.recent-card-inner').addEventListener('click', () => {
-                    window.openResourceModal(displayCategory, seriesName, postId);
-                });
-                recentGrid.appendChild(div);
-            });
-
-            hasMoreRecent = false;
-
-        } catch (err) {
-            console.error("Error loading recents:", err);
-            // 에러 나면 에러 메시지 대신 그냥 샘플 데이터 보여줌 (사용자 경험 우선)
-            window.renderMockRecentPosts();
-        } finally {
-            isRecentLoading = false;
+    // --- Carousel Logic Start ---
+    window.scrollCarousel = (id, offset) => {
+        const carousel = document.getElementById(id);
+        if (carousel) {
+            carousel.scrollBy({ left: offset, behavior: 'smooth' });
         }
     };
 
-    // 타임아웃 안전장치: 5초 후에도 로딩 중이면 강제 종료
-    setTimeout(() => {
-        const loadingMsg = recentGrid ? recentGrid.querySelector('.loading-msg') : null;
-        if (loadingMsg) {
-            recentGrid.innerHTML = '<p style="text-align:center; color:#999;">서버 응답이 지연되고 있습니다.</p>';
+    window.createCarouselCard = (post, docId) => {
+        const date = post.createdAt ? post.createdAt.toDate().toLocaleDateString() : '최근';
+        const displayCategory = post.tags ? post.tags[0] : '자료';
+        const seriesName = post.series || '';
+        // 기본 썸네일 대신 제목이 들어간 플레이스홀더 느낌의 카드 내용을 구성하거나
+        // 나중에 썸네일 필드가 생기면 그것을 사용.
+        // 여기서는 깔끔한 카드 UI를 생성.
+
+        const div = document.createElement('div');
+        div.className = 'carousel-card';
+        div.innerHTML = `
+            <div class="carousel-card-content">
+                <div class="carousel-card-tag">${displayCategory}</div>
+                <div class="carousel-card-title">${post.title}</div>
+                <div class="carousel-card-meta">
+                    <span>${date}</span>
+                    <div class="carousel-icon-btn"><i class="fas fa-arrow-right"></i></div>
+                </div>
+            </div>
+        `;
+        div.addEventListener('click', () => {
+            window.openResourceModal(displayCategory, seriesName, docId);
+        });
+        return div;
+    };
+
+    window.loadMainCarousels = async () => {
+        // 1. New Arrivals
+        const newTrack = document.getElementById('carousel-new');
+        if (newTrack) {
+            try {
+                const snapshot = await db.collection("posts").orderBy("createdAt", "desc").limit(10).get();
+                if (!snapshot.empty) {
+                    newTrack.innerHTML = '';
+                    snapshot.forEach(doc => {
+                        newTrack.appendChild(createCarouselCard(doc.data(), doc.id));
+                    });
+                } else {
+                    newTrack.innerHTML = '<div style="padding:1rem">업데이트된 자료가 없습니다.</div>';
+                }
+            } catch (e) {
+                console.error("New Load Error", e);
+                newTrack.innerHTML = '<div style="padding:1rem;">자료 로딩 실패 (Mock Data 사용 가능)</div>';
+                // Fallback to mock if needed, but keeping it simple for now
+            }
         }
-    }, 5000);
+
+        // 2. Featured Topics : "청교도 신학" (Puritan Theology)
+        const topicTrack = document.getElementById('carousel-topic');
+        if (topicTrack) {
+            try {
+                // '청교도 신학' 태그가 있는 게시물 10개
+                const snapshot = await db.collection("posts")
+                    .where("tags", "array-contains", "청교도 신학")
+                    .orderBy("createdAt", "desc")
+                    .limit(10)
+                    .get();
+
+                if (!snapshot.empty) {
+                    topicTrack.innerHTML = '';
+                    snapshot.forEach(doc => {
+                        topicTrack.appendChild(createCarouselCard(doc.data(), doc.id));
+                    });
+                } else {
+                    topicTrack.innerHTML = '<div style="padding:1rem">추천 자료 준비 중입니다.</div>';
+                }
+            } catch (e) {
+                console.error("Topic Load Error", e);
+                topicTrack.innerHTML = '<div style="padding:1rem">자료 로딩 실패</div>';
+            }
+        }
+
+        // 3. Expository Sermons : "강해설교" (Series)
+        const sermonTrack = document.getElementById('carousel-sermon');
+        if (sermonTrack) {
+            try {
+                // '강해설교' 태그가 있는 게시물 10개
+                const snapshot = await db.collection("posts")
+                    .where("tags", "array-contains", "강해설교")
+                    .orderBy("createdAt", "desc")
+                    .limit(10)
+                    .get();
+
+                if (!snapshot.empty) {
+                    sermonTrack.innerHTML = '';
+                    snapshot.forEach(doc => {
+                        sermonTrack.appendChild(createCarouselCard(doc.data(), doc.id));
+                    });
+                } else {
+                    sermonTrack.innerHTML = '<div style="padding:1rem">등록된 설교가 없습니다.</div>';
+                }
+            } catch (e) {
+                console.error("Sermon Load Error", e);
+                sermonTrack.innerHTML = '<div style="padding:1rem">자료 로딩 실패</div>';
+            }
+        }
+    };
 
     // Set up Infinite Scroll Observer removed to keep main page clean (limit 4)
 
     // Initial Load
-    loadRecentPostsGrid();
+    // Initial Load
+    loadMainCarousels();
 
     // Real Search Logic
     const searchInput = document.querySelector('.search-bar input');

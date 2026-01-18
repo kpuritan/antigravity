@@ -108,27 +108,78 @@
 
 
 
-        <section id="recent-updates" class="section-hidden">
-            <div class="section-title modern-flex">
+        <section id="recent-updates">
+            <div class="section-title modern-flex" style="margin-bottom: 2rem; border-bottom: none;">
                 <div class="title-text-group">
-                    <h2>FEATURED RESEARCH</h2>
-                    <p>Puritan theology, modern research. Discover the legacy of Reformed theology through our curated
-                        library of resources.</p>
+                    <h2>EXPLORE RESOURCES</h2>
+                    <p>Discover our curated library of Reformed theology.</p>
                 </div>
-                <button class="view-all-btn" onclick="openAllRecentModal()">
-                    View All <i class="fas fa-arrow-right"></i>
-                </button>
             </div>
-            <div id="recent-posts-grid" class="recent-grid-container">
-                <!-- Content will be loaded by JS -->
-            </div>
-            <div id="recent-load-more" class="load-more-trigger"
-                style="text-align: center; padding: 40px 0; display: none;">
-                <div class="loading-spinner"
-                    style="display: inline-block; width: 30px; height: 30px; border: 3px solid rgba(201, 156, 94, 0.3); border-radius: 50%; border-top-color: var(--secondary-color); animation: spin 1s linear infinite;">
+
+            <!-- 1. New Arrivals Carousel -->
+            <div class="carousel-section">
+                <div class="carousel-header">
+                    <h3 class="carousel-title">최신 업데이트 <span
+                            style="font-size:0.5em; color:#999; font-weight:500; margin-left:10px;">New Arrivals</span>
+                    </h3>
+                    <a href="javascript:void(0)" onclick="openAllRecentModal()" class="carousel-view-all">전체보기 <i
+                            class="fas fa-chevron-right"></i></a>
                 </div>
-                <p style="margin-top: 10px; color: var(--text-light); font-size: 0.9rem;">이전 자료를 불러오는 중...</p>
+                <div class="carousel-container-wrapper">
+                    <button class="carousel-nav-btn prev" onclick="scrollCarousel('carousel-new', -300)"><i
+                            class="fas fa-chevron-left"></i></button>
+                    <div class="carousel-track" id="carousel-new">
+                        <!-- JS injected cards -->
+                        <div class="loading-msg" style="padding:2rem;">최신 자료를 불러오는 중...</div>
+                    </div>
+                    <button class="carousel-nav-btn next" onclick="scrollCarousel('carousel-new', 300)"><i
+                            class="fas fa-chevron-right"></i></button>
+                </div>
             </div>
+
+            <!-- 2. Featured Topics Carousel -->
+            <div class="carousel-section">
+                <div class="carousel-header">
+                    <h3 class="carousel-title">주제별 추천 자료 <span
+                            style="font-size:0.5em; color:#999; font-weight:500; margin-left:10px;">Featured
+                            Topics</span></h3>
+                    <a href="javascript:void(0)" onclick="openAllTopicsModal()" class="carousel-view-all">주제 목록 더보기 <i
+                            class="fas fa-chevron-right"></i></a>
+                </div>
+                <div class="carousel-container-wrapper">
+                    <button class="carousel-nav-btn prev" onclick="scrollCarousel('carousel-topic', -300)"><i
+                            class="fas fa-chevron-left"></i></button>
+                    <div class="carousel-track" id="carousel-topic">
+                        <!-- JS injected cards -->
+                        <div class="loading-msg" style="padding:2rem;">추천 자료를 불러오는 중...</div>
+                    </div>
+                    <button class="carousel-nav-btn next" onclick="scrollCarousel('carousel-topic', 300)"><i
+                            class="fas fa-chevron-right"></i></button>
+                </div>
+            </div>
+
+            <!-- 3. Expository Sermons Carousel -->
+            <div class="carousel-section">
+                <div class="carousel-header">
+                    <h3 class="carousel-title">강해설교 시리즈 <span
+                            style="font-size:0.5em; color:#999; font-weight:500; margin-left:10px;">Sermon Series</span>
+                    </h3>
+                    <a href="javascript:void(0)" onclick="openResourceModal('강해설교')" class="carousel-view-all">시리즈 전체보기
+                        <i class="fas fa-chevron-right"></i></a>
+                </div>
+                <div class="carousel-container-wrapper">
+                    <button class="carousel-nav-btn prev" onclick="scrollCarousel('carousel-sermon', -300)"><i
+                            class="fas fa-chevron-left"></i></button>
+                    <div class="carousel-track" id="carousel-sermon">
+                        <!-- JS injected cards -->
+                        <div class="loading-msg" style="padding:2rem;">설교 시리즈를 불러오는 중...</div>
+                    </div>
+                    <button class="carousel-nav-btn next" onclick="scrollCarousel('carousel-sermon', 300)"><i
+                            class="fas fa-chevron-right"></i></button>
+                </div>
+            </div>
+
+        </section>
         </section>
 
         <style>
