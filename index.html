@@ -819,6 +819,72 @@
             alert('자바스크립트 에러 발생:\n' + msg + '\n라인: ' + lineNo);
             return false;
         };
+
+        // --- Core Logic Inlined (Emergency Fix) ---
+        window.createCarouselCard = (post, docId) => {
+            const date = post.createdAt ? post.createdAt.toDate().toLocaleDateString() : '최근';
+            const displayCategory = post.tags ? post.tags[0] : '자료';
+
+            const div = document.createElement('div');
+            div.className = 'carousel-card';
+            div.innerHTML = `
+                <div class="carousel-card-content">
+                    <div class="carousel-card-tag">${displayCategory}</div>
+                    <div class="carousel-card-title">${post.title}</div>
+                    <div class="carousel-card-meta">
+                        <span>${date}</span>
+                        <div class="carousel-icon-btn"><i class="fas fa-arrow-right"></i></div>
+                    </div>
+                </div>
+            `;
+            div.addEventListener('click', () => {
+                if (window.openResourceModal) {
+                    window.openResourceModal(displayCategory, post.series || '', docId);
+                } else {
+                    // Main JS 없어도 모달 열리도록 openLocalMockModal 활용
+                    // 단, 여기선 실제 데이터가 있으므로 내용 채워넣기 필요
+                    // 급한대로 제목만이라도 보여주는 fallback
+                    alert("상세 보기 기능 로딩 중... (Main Script Not Loaded)\n제목: " + post.title);
+                }
+            });
+            return div;
+        };
+
+        window.loadMainCarousels = async () => {
+            if (!window.db) {
+                alert("DEBUG: DB 연결 대기 중...");
+                return;
+            }
+            alert("DEBUG: 2. (Inline) 데이터 로딩 시작");
+
+            // 1. New Arrivals
+            const newTrack = document.getElementById('carousel-new');
+            if (newTrack) {
+                newTrack.innerHTML = '<div class="loading-msg" style="padding:1rem;">불러오는 중...</div>';
+                try {
+                    const snapshot = await window.db.collection("posts").orderBy("createdAt", "desc").limit(10).get();
+                    alert(`DEBUG: 3. (Inline) 응답 완료. 문서 수: ${snapshot.size}`);
+
+                    if (!snapshot.empty) {
+                        newTrack.innerHTML = '';
+                        snapshot.forEach(doc => {
+                            newTrack.appendChild(window.createCarouselCard(doc.data(), doc.id));
+                        });
+                    } else {
+                        newTrack.innerHTML = '<div style="padding:1rem">업데이트된 자료가 없습니다. (데이터 0개)</div>';
+                    }
+                } catch (e) {
+                    alert("DEBUG: (Inline) 에러 발생! " + e.message);
+                }
+            }
+
+            // 2, 3번 섹션은 일단 생략하거나 동일 패턴으로 추가 가능 (여기선 핵심인 New Arrivals 우선 복구)
+        };
+
+        // Auto-run if DB connected
+        if (window.db) {
+            setTimeout(window.loadMainCarousels, 500);
+        }
     </script>
     <script src="main.js?v=20240118_v10"></script>
 </body>
