@@ -1,5 +1,5 @@
 // Data is loaded from data.js globally
-alert("DEBUG: 0. Main JS 파일 로드됨");
+// alert("DEBUG: 0. Main JS 파일 로드됨");
 
 // --- Firebase Configuration REMOVED (Moved to HTML) ---
 // const firebaseConfig = { ... };

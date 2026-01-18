@@ -916,59 +916,76 @@
         };
 
         window.loadMainCarousels = async () => {
-            if (!window.db) {
-                // console.log("DEBUG: DB 연결 대기 중...");
-                return;
-            }
-            // console.log("DEBUG: 2. (Inline) 데이터 로딩 시작");
+            if (!window.db) return;
 
-            // 1. New Arrivals
+            // 1. New Arrivals (정상 작동)
             const newTrack = document.getElementById('carousel-new');
             if (newTrack) {
                 try {
-                    const snapshot = await window.db.collection("posts").orderBy("createdAt", "desc").limit(10).get();
+                    const snapshot = await window.db.collection("posts").orderBy("createdAt", "desc").limit(12).get();
                     if (!snapshot.empty) {
-                        window.isDataLoaded = true; // 성공 플래그 설정
+                        window.isDataLoaded = true;
                         newTrack.innerHTML = '';
                         snapshot.forEach(doc => {
                             newTrack.appendChild(window.createCarouselCard(doc.data(), doc.id));
                         });
                     }
                 } catch (e) {
-                    console.error(e);
+                    console.error("New Arrivals Error:", e);
                 }
             }
 
-            // 2. Topics (청교도 신학)
+            // 2. Topics (청교도 신학) - 인덱스 없이 작동하도록 JS 정렬
             const topicTrack = document.getElementById('carousel-topic');
             if (topicTrack) {
                 try {
                     const snapshot = await window.db.collection("posts")
                         .where("tags", "array-contains", "청교도 신학")
-                        .orderBy("createdAt", "desc").limit(10).get();
+                        .limit(20).get();
+
                     if (!snapshot.empty) {
                         topicTrack.innerHTML = '';
-                        snapshot.forEach(doc => {
-                            topicTrack.appendChild(window.createCarouselCard(doc.data(), doc.id));
+                        // JS에서 직접 정렬 (최신순)
+                        const docs = [];
+                        snapshot.forEach(doc => docs.push({ id: doc.id, data: doc.data() }));
+                        docs.sort((a, b) => (b.data.createdAt?.toDate() || 0) - (a.data.createdAt?.toDate() || 0));
+
+                        docs.slice(0, 10).forEach(item => {
+                            topicTrack.appendChild(window.createCarouselCard(item.data, item.id));
                         });
+                    } else {
+                        topicTrack.innerHTML = '<div style="padding:1.5rem; color:#888;">추천 자료를 준비 중입니다.</div>';
                     }
-                } catch (e) { console.error(e); }
+                } catch (e) {
+                    console.error("Topic Section Error:", e);
+                    topicTrack.innerHTML = '<div style="padding:1.5rem; color:#888;">자료를 불러오지 못했습니다.</div>';
+                }
             }
 
-            // 3. Sermons (강해설교)
+            // 3. Sermons (강해설교) - 인덱스 없이 작동하도록 JS 정렬
             const sermonTrack = document.getElementById('carousel-sermon');
             if (sermonTrack) {
                 try {
                     const snapshot = await window.db.collection("posts")
                         .where("tags", "array-contains", "강해설교")
-                        .orderBy("createdAt", "desc").limit(10).get();
+                        .limit(20).get();
+
                     if (!snapshot.empty) {
                         sermonTrack.innerHTML = '';
-                        snapshot.forEach(doc => {
-                            sermonTrack.appendChild(window.createCarouselCard(doc.data(), doc.id));
+                        const docs = [];
+                        snapshot.forEach(doc => docs.push({ id: doc.id, data: doc.data() }));
+                        docs.sort((a, b) => (b.data.createdAt?.toDate() || 0) - (a.data.createdAt?.toDate() || 0));
+
+                        docs.slice(0, 10).forEach(item => {
+                            sermonTrack.appendChild(window.createCarouselCard(item.data, item.id));
                         });
+                    } else {
+                        sermonTrack.innerHTML = '<div style="padding:1.5rem; color:#888;">설교 시리즈 등록 대기 중입니다.</div>';
                     }
-                } catch (e) { console.error(e); }
+                } catch (e) {
+                    console.error("Sermon Section Error:", e);
+                    sermonTrack.innerHTML = '<div style="padding:1.5rem; color:#888;">자료를 불러오지 못했습니다.</div>';
+                }
             }
         };
 
