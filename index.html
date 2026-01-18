@@ -254,12 +254,18 @@
                             </div>
                             <h3 style="margin:0 0 10px 0; font-size:1.1rem;">${clickedTitle || cat + ' 관련 자료'}</h3>
                             <p style="font-size:0.9rem; color:#555; margin-bottom: 15px;">
-                                본 자료는 샘플 데이터입니다. 실제 파일은 서버 연결 후 다운로드 가능합니다.<br>
-                                아래 버튼은 디자인 예시입니다.
+                                본 자료는 샘플 데이터입니다. (데이터베이스 연결 대기 중)<br>
+                                만약 계속 이 화면이 보인다면 아래 버튼을 눌러보세요.
                             </p>
-                            <a href="#" class="premium-btn" style="display:inline-block; text-decoration:none; color:var(--secondary-color); border:1px solid var(--secondary-color); padding:8px 15px; border-radius:4px; font-size:0.9rem;">
-                                <i class="fas fa-file-pdf"></i> [샘플] PDF 파일 받아보기
-                            </a>
+                            <div style="display:flex; gap:10px; margin-bottom:15px;">
+                                <button onclick="window.loadMainCarousels ? window.loadMainCarousels() : alert('메인 스크립트가 아직 로드되지 않았습니다.');" 
+                                    style="padding:8px 15px; background:var(--primary-color); color:white; border:none; border-radius:4px; cursor:pointer;">
+                                    <i class="fas fa-sync-alt"></i> 실제 데이터 불러오기 (강제 시도)
+                                </button>
+                                <a href="#" class="premium-btn" style="display:inline-block; text-decoration:none; color:var(--secondary-color); border:1px solid var(--secondary-color); padding:8px 15px; border-radius:4px; font-size:0.9rem;">
+                                    <i class="fas fa-file-pdf"></i> [샘플] PDF 디자인 예시
+                                </a>
+                            </div>
                         `;
                         list.appendChild(li);
 
@@ -814,7 +820,7 @@
             return false;
         };
     </script>
-    <script src="main.js?v=20240118_v9"></script>
+    <script src="main.js?v=20240118_v10"></script>
 </body>
 
 </html>
