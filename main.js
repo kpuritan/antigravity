@@ -1482,7 +1482,9 @@ document.addEventListener('DOMContentLoaded', () => {
         };
 
         populateTrack('carousel-new', mockData);
-        populateTrack('carousel-topic', mockData); // 같은 데이터 재사용
+        // "주제별 추천 자료"는 랜덤으로 섞어서 노출
+        const shuffledMock = [...mockData].sort(() => 0.5 - Math.random());
+        populateTrack('carousel-topic', shuffledMock);
         populateTrack('carousel-sermon', extendedSermons);
     };
 
@@ -1526,17 +1528,26 @@ document.addEventListener('DOMContentLoaded', () => {
         if (topicTrack) {
             topicTrack.innerHTML = '<div class="loading-msg" style="padding:1rem;">불러오는 중...</div>';
             try {
-                // '청교도 신학' 태그가 있는 게시물 10개
+                // '청교도 신학' 태그가 있는 게시물 40개 가져와서 랜덤으로 10개 선택
                 const snapshot = await db.collection("posts")
                     .where("tags", "array-contains", "청교도 신학")
                     .orderBy("createdAt", "desc")
-                    .limit(10)
+                    .limit(40)
                     .get();
 
                 if (!snapshot.empty) {
                     topicTrack.innerHTML = '';
+                    const items = [];
                     snapshot.forEach(doc => {
-                        topicTrack.appendChild(createCarouselCard(doc.data(), doc.id));
+                        items.push({ data: doc.data(), id: doc.id });
+                    });
+
+                    // Shuffle and pick 10
+                    items.sort(() => 0.5 - Math.random());
+                    const selected = items.slice(0, 10);
+
+                    selected.forEach(item => {
+                        topicTrack.appendChild(createCarouselCard(item.data, item.id));
                     });
                 } else {
                     topicTrack.innerHTML = '<div style="padding:1rem">추천 자료 준비 중입니다.</div>';
