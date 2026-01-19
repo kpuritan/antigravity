@@ -8,7 +8,11 @@ window.openResourceModal = (category, series, docId) => {
     const title = document.getElementById('resource-modal-title');
 
     if (modal && list) {
-        modal.classList.add('show');
+        if (window.openModal) {
+            window.openModal(modal);
+        } else {
+            modal.classList.add('show');
+        }
         if (title) title.textContent = (series || category) + " 자료 목록";
         list.innerHTML = '<li class="no-resource-msg">자료를 불러오는 중입니다...</li>';
 

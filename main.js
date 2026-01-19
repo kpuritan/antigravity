@@ -58,17 +58,29 @@ document.addEventListener('DOMContentLoaded', () => {
     const authorDropdownGrid = document.getElementById('author-dropdown-grid');
 
     // --- Modal Management with Browser Back Button Support ---
+    // --- Modal Management with Browser Back Button Support ---
     window.openModal = (modal) => {
         if (!modal) return;
+        if (modal.classList.contains('show')) return;
+
         modal.classList.add('show');
         // Push a state to history so back button closes the modal
-        history.pushState({ modalOpen: true, modalId: modal.id }, "");
+        // Using window.location.href to keep the same URL
+        history.pushState({ modalOpen: true, modalId: modal.id }, "", window.location.href);
     };
 
     window.closeAllModals = (shouldGoBack = true) => {
-        document.querySelectorAll('.modal').forEach(m => m.classList.remove('show'));
-        // If we manually closed via button/click outside, and there's a state to pop
-        if (shouldGoBack && history.state && history.state.modalOpen) {
+        let anyModalWasOpen = false;
+        document.querySelectorAll('.modal').forEach(m => {
+            if (m.classList.contains('show')) {
+                m.classList.remove('show');
+                anyModalWasOpen = true;
+            }
+        });
+
+        // Only call history.back() if a modal was actually open and we are in a modal state
+        // This prevents going back "too far" and exiting the site
+        if (shouldGoBack && anyModalWasOpen && history.state && history.state.modalOpen) {
             history.back();
         }
     };
@@ -283,7 +295,9 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     if (loginCloseBtn && loginModal) {
-        loginCloseBtn.addEventListener('click', () => {
+        loginCloseBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
             window.closeAllModals();
         });
     }
@@ -301,7 +315,9 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     if (aboutCloseBtn && aboutModal) {
-        aboutCloseBtn.addEventListener('click', () => {
+        aboutCloseBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
             window.closeAllModals();
         });
     }
@@ -1351,7 +1367,9 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     if (resourceCloseBtn && resourceModal) {
-        resourceCloseBtn.addEventListener('click', () => {
+        resourceCloseBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
             window.closeAllModals();
         });
     }
@@ -1996,7 +2014,7 @@ function onPlayerStateChange(event) {
 window.toggleBGM = (e) => {
     if (e) e.stopPropagation();
     if (!isPlayerReady || !player) {
-        alert("음악 플레이어가 로딩 중입니다. 잠시만 기다려주세요.");
+        console.log("Audio player loading...");
         return;
     }
     const state = player.getPlayerState();
