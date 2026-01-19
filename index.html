@@ -947,7 +947,10 @@
                     });
 
                     // 만약 일반 주제가 부족하면 전체에서 가져옴
-                    const displayTopics = topicItems.length >= 6 ? topicItems : allPosts.filter(item => !(item.data.tags || []).includes('강해설교'));
+                    let displayTopics = topicItems.length >= 6 ? topicItems : allPosts.filter(item => !(item.data.tags || []).includes('강해설교'));
+
+                    // [추가] 추천 자료 줄은 랜덤으로 섞어서 노출
+                    displayTopics = [...displayTopics].sort(() => 0.5 - Math.random());
 
                     displayTopics.slice(0, 12).forEach(item => {
                         topicTrack.appendChild(window.createCarouselCard(item.data, item.id));
