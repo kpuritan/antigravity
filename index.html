@@ -929,9 +929,11 @@
 
                 // 1. New Arrivals (무조건 최근 12개)
                 const newTrack = document.getElementById('carousel-new');
+                const latestIds = new Set();
                 if (newTrack) {
                     newTrack.innerHTML = '';
                     allPosts.slice(0, 12).forEach(item => {
+                        latestIds.add(item.id);
                         newTrack.appendChild(window.createCarouselCard(item.data, item.id));
                     });
                 }
@@ -942,12 +944,12 @@
                     topicTrack.innerHTML = '';
                     const topicItems = allPosts.filter(item => {
                         const tags = item.data.tags || [];
-                        // 강해설교가 아닌 일반 주제들 필터링
-                        return !tags.includes('강해설교') && !tags.includes('설교');
+                        // 강해설교가 아닌 일반 주제들 필터링 + 최신 자료와 중복 제거
+                        return !tags.includes('강해설교') && !tags.includes('설교') && !latestIds.has(item.id);
                     });
 
-                    // 만약 일반 주제가 부족하면 전체에서 가져옴
-                    let displayTopics = topicItems.length >= 6 ? topicItems : allPosts.filter(item => !(item.data.tags || []).includes('강해설교'));
+                    // 만약 일반 주제가 부족하면 전체에서 가져옴 (중복 제외)
+                    let displayTopics = topicItems.length >= 6 ? topicItems : allPosts.filter(item => !(item.data.tags || []).includes('강해설교') && !latestIds.has(item.id));
 
                     // [추가] 추천 자료 줄은 랜덤으로 섞어서 노출
                     displayTopics = [...displayTopics].sort(() => 0.5 - Math.random());

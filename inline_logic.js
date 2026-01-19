@@ -89,10 +89,10 @@ window.createCarouselCard = (post, docId) => {
 
 window.loadMainCarousels = async () => {
     if (!window.db) {
-        // alert("DEBUG: DB 연결 대기 중...");
         return;
     }
-    // alert("DEBUG: 2. (Inline) 데이터 로딩 시작");
+
+    const latestIds = new Set();
 
     // 1. New Arrivals
     const newTrack = document.getElementById('carousel-new');
@@ -100,9 +100,10 @@ window.loadMainCarousels = async () => {
         try {
             const snapshot = await window.db.collection("posts").orderBy("createdAt", "desc").limit(10).get();
             if (!snapshot.empty) {
-                window.isDataLoaded = true; // 성공 플래그 설정
+                window.isDataLoaded = true;
                 newTrack.innerHTML = '';
                 snapshot.forEach(doc => {
+                    latestIds.add(doc.id);
                     newTrack.appendChild(window.createCarouselCard(doc.data(), doc.id));
                 });
             }
@@ -125,7 +126,10 @@ window.loadMainCarousels = async () => {
                 topicTrack.innerHTML = '';
                 const items = [];
                 snapshot.forEach(doc => {
-                    items.push({ data: doc.data(), id: doc.id });
+                    // Exclude items already shown in "New Arrivals"
+                    if (!latestIds.has(doc.id)) {
+                        items.push({ data: doc.data(), id: doc.id });
+                    }
                 });
 
                 // Shuffle and pick 10

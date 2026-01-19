@@ -1489,35 +1489,32 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     window.loadMainCarousels = async () => {
-        // Debug Alert 1: 함수 호출 확인
-        alert("DEBUG: 1. 캐러셀 로딩 시작");
-
         // DB Check & Fallback
         if (typeof db === 'undefined' || !db) {
-            alert("DEBUG: DB 미연결 (undefined)");
             window.renderMockCarousels();
             return;
         }
+
+        const latestIds = new Set();
 
         // 1. New Arrivals
         const newTrack = document.getElementById('carousel-new');
         if (newTrack) {
             newTrack.innerHTML = '<div class="loading-msg" style="padding:1rem;">불러오는 중...</div>';
             try {
-                alert("DEBUG: 2. New Arrivals 데이터 요청 중...");
-                const snapshot = await db.collection("posts").orderBy("createdAt", "desc").limit(10).get();
-                alert(`DEBUG: 3. 데이터 응답 완료. 문서 개수: ${snapshot.size}개`);
+                const snapshot = await db.collection("posts").orderBy("createdAt", "desc").limit(12).get();
 
                 if (!snapshot.empty) {
                     newTrack.innerHTML = '';
                     snapshot.forEach(doc => {
+                        latestIds.add(doc.id);
                         newTrack.appendChild(createCarouselCard(doc.data(), doc.id));
                     });
                 } else {
                     newTrack.innerHTML = '<div style="padding:1rem">업데이트된 자료가 없습니다. (데이터 0개)</div>';
                 }
             } catch (e) {
-                alert("DEBUG: 에러 발생! " + e.message);
+                console.error("New Arrivals Load error:", e);
                 window.renderMockCarousels();
                 return;
             }
@@ -1539,7 +1536,9 @@ document.addEventListener('DOMContentLoaded', () => {
                     topicTrack.innerHTML = '';
                     const items = [];
                     snapshot.forEach(doc => {
-                        items.push({ data: doc.data(), id: doc.id });
+                        if (!latestIds.has(doc.id)) {
+                            items.push({ data: doc.data(), id: doc.id });
+                        }
                     });
 
                     // Shuffle and pick 10
