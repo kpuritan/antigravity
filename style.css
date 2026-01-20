@@ -2653,6 +2653,19 @@ footer {
     }
 }
 
+/* Carousel Card with Background Image Enhancement */
+.carousel-card.has-thumb .carousel-card-title {
+    color: white;
+    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.8), 0 1px 3px rgba(0, 0, 0, 0.9);
+    font-weight: 800;
+}
+
+.carousel-card.has-thumb .carousel-card-content {
+    background: linear-gradient(to top, rgba(0, 0, 0, 0.85) 0%, rgba(0, 0, 0, 0.4) 50%, rgba(0, 0, 0, 0.2) 100%);
+    position: relative;
+    z-index: 1;
+}
+
 /* --- Book List & Book Card Styles --- */
 .books-container {
     max-width: 1400px;
