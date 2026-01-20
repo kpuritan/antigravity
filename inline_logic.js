@@ -106,8 +106,8 @@ window.loadMainCarousels = async () => {
     }
 
     try {
-        // 한 번에 최근 50개를 가져와서 배분 (효율적 + 인덱스 문제 회피)
-        const snapshot = await window.db.collection("posts").orderBy("createdAt", "desc").limit(50).get();
+        // 한 번에 최근 100개를 가져와서 배분 (효율적 + 인덱스 문제 회피)
+        const snapshot = await window.db.collection("posts").orderBy("createdAt", "desc").limit(100).get();
         if (snapshot.empty) return;
 
         window.isDataLoaded = true;
