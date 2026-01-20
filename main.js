@@ -770,10 +770,16 @@ document.addEventListener('DOMContentLoaded', () => {
                         li.className = 'post-item admin-post-item';
                         const date = post.createdAt ? post.createdAt.toDate().toLocaleString() : '방금 전';
                         const displayTags = post.tags ? post.tags.join(', ') : '분류 없음';
+                        const hasFile = post.fileUrl ? true : false;
+                        const hasCover = post.coverUrl ? true : false;
+
                         li.innerHTML = `
                             <div class="post-info">
                                 <strong>[${displayTags}]</strong> ${post.title} 
-                                ${post.fileUrl ? `<a href="${post.fileUrl}" target="_blank" style="color:var(--secondary-color); margin-left:10px;"><i class="fas fa-file-download"></i></a>` : ''}
+                                <div style="display:inline-flex; gap:8px; margin-left:10px;">
+                                    ${hasFile ? `<a href="${post.fileUrl}" target="_blank" style="color:var(--secondary-color);" title="첨부파일"><i class="fas fa-file-download"></i></a>` : ''}
+                                    ${hasCover ? `<a href="${post.coverUrl}" target="_blank" style="color:#f39c12;" title="표지이미지"><i class="fas fa-image"></i></a>` : ''}
+                                </div>
                                 <br> <small>${date}</small>
                             </div>
                             <div class="post-actions">
@@ -1300,7 +1306,17 @@ document.addEventListener('DOMContentLoaded', () => {
         let priceHtml = '';
         let buyButtonHtml = '';
 
+        let authorHtml = '';
         if (isBookstore) {
+            const title = post.title || '';
+            if (title.includes(':')) {
+                const parts = title.split(':');
+                if (parts.length > 1) {
+                    const author = parts[0].trim();
+                    authorHtml = `<div class="resource-author-modern" style="font-size: 0.85rem; color: #666; margin-top: 5px;">${author} 저</div>`;
+                }
+            }
+
             const priceStr = post.price || (contentText.match(/(\d{1,3}(,\d{3})*원)/) ? contentText.match(/(\d{1,3}(,\d{3})*원)/)[0] : '가격 문의');
             const priceNum = parseInt(priceStr.replace(/[^0-9]/g, '')) || 0;
 
@@ -1310,13 +1326,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
             if (priceNum > 0) {
                 buyButtonHtml = `
-                    <button class="premium-btn" style="background: var(--secondary-color); color: white; border: none; width: 100%; margin-top: 15px; padding: 12px;" onclick="window.requestPay('${post.title}', ${priceNum})">
+                    <button class="premium-btn" style="background: var(--secondary-color); color: white; border: none; width: 100%; margin-top: 15px; padding: 12px;" onclick="window.requestPay('${post.title.replace(/'/g, "\\'")}', ${priceNum})">
                         <i class="fas fa-shopping-cart"></i> 바로 구매하기
                     </button>
                 `;
             } else {
                 buyButtonHtml = `
-                    <button class="premium-btn" style="background: var(--text-light); color: white; border: none; width: 100%; margin-top: 15px; padding: 12px;" onclick="window.open('mailto:kpuritan.phb@gmail.com?subject=구매 문의: ${post.title}', '_blank')">
+                    <button class="premium-btn" style="background: var(--text-light); color: white; border: none; width: 100%; margin-top: 15px; padding: 12px;" onclick="window.open('mailto:kpuritan.phb@gmail.com?subject=구매 문의: ${post.title.replace(/'/g, "\\'")}', '_blank')">
                         <i class="fas fa-envelope"></i> 구매 문의하기
                     </button>
                 `;
@@ -1358,8 +1374,18 @@ document.addEventListener('DOMContentLoaded', () => {
                </a>`
             : `${post.title}`;
 
+        let coverImgHtml = '';
+        if (post.coverUrl) {
+            coverImgHtml = `
+                <div class="resource-cover-modern" style="width: 100%; margin-bottom: 15px; border-radius: 8px; overflow: hidden; background: #f9f9f9; display: flex; justify-content: center; align-items: center; min-height: 200px;">
+                    <img src="${post.coverUrl}" alt="${post.title}" style="max-width: 100%; max-height: 400px; object-fit: contain; box-shadow: 0 5px 15px rgba(0,0,0,0.1);">
+                </div>
+            `;
+        }
+
         li.innerHTML = `
             <div class="resource-card-modern ${isBookstore ? 'book-card' : ''}" style="margin-bottom: 20px;">
+                ${coverImgHtml}
                 ${youtubeEmbedHtml}
                 <div class="resource-content-padding">
                     <div class="resource-header-modern">
@@ -1370,6 +1396,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         <h4 class="resource-title-modern">
                             ${titleHtml}
                         </h4>
+                        ${authorHtml}
                         ${adminButtons}
                     </div>
                     ${linkedContent.trim() || post.fileUrl ? `<div class="resource-body-modern">${linkedContent.trim() || (post.fileUrl ? '<span style="color:var(--secondary-color); font-size:0.9rem;"><i class="fas fa-info-circle"></i> 아래 첨부파일을 확인해주세요.</span>' : '')}</div>` : ''}
@@ -1454,15 +1481,26 @@ document.addEventListener('DOMContentLoaded', () => {
         // 나중에 썸네일 필드가 생기면 그것을 사용.
         // 여기서는 깔끔한 카드 UI를 생성.
 
+        const thumbUrl = post.coverUrl || '';
+        const hasThumb = thumbUrl ? 'has-thumb' : '';
+
         const div = document.createElement('div');
-        div.className = 'carousel-card';
+        div.className = `carousel-card ${hasThumb}`;
+
+        if (thumbUrl) {
+            div.style.backgroundImage = `linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.7)), url("${thumbUrl}")`;
+            div.style.backgroundSize = 'cover';
+            div.style.backgroundPosition = 'center';
+            div.style.color = 'white';
+        }
+
         div.innerHTML = `
             <div class="carousel-card-content">
-                <div class="carousel-card-tag">${displayCategory}</div>
+                <div class="carousel-card-tag" style="${thumbUrl ? 'background: var(--secondary-color); color: white;' : ''}">${displayCategory}</div>
                 <div class="carousel-card-title">${post.title}</div>
                 <div class="carousel-card-meta">
-                    <span>${date}</span>
-                    <div class="carousel-icon-btn"><i class="fas fa-arrow-right"></i></div>
+                    <span style="${thumbUrl ? 'color: rgba(255,255,255,0.8);' : ''}">${date}</span>
+                    <div class="carousel-icon-btn" style="${thumbUrl ? 'background: white; color: var(--primary-color);' : ''}"><i class="fas fa-arrow-right"></i></div>
                 </div>
             </div>
         `;
@@ -1528,14 +1566,14 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         const latestIds = new Set();
+        window.isDataLoaded = true;
 
-        // 1. New Arrivals
+        // 1. New Arrivals (Latest 15)
         const newTrack = document.getElementById('carousel-new');
         if (newTrack) {
             newTrack.innerHTML = '<div class="loading-msg" style="padding:1rem;">불러오는 중...</div>';
             try {
-                const snapshot = await db.collection("posts").orderBy("createdAt", "desc").limit(12).get();
-
+                const snapshot = await db.collection("posts").orderBy("createdAt", "desc").limit(15).get();
                 if (!snapshot.empty) {
                     newTrack.innerHTML = '';
                     snapshot.forEach(doc => {
@@ -1543,7 +1581,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         newTrack.appendChild(createCarouselCard(doc.data(), doc.id));
                     });
                 } else {
-                    newTrack.innerHTML = '<div style="padding:1rem">업데이트된 자료가 없습니다. (데이터 0개)</div>';
+                    newTrack.innerHTML = '<div style="padding:1rem">업데이트된 자료가 없습니다.</div>';
                 }
             } catch (e) {
                 console.error("New Arrivals Load error:", e);
@@ -1552,12 +1590,11 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
 
-        // 2. Featured Topics : "청교도 신학" (Puritan Theology)
+        // 2. Featured Topics : "청교도 신학" (Latest 40 -> Pick 15)
         const topicTrack = document.getElementById('carousel-topic');
         if (topicTrack) {
             topicTrack.innerHTML = '<div class="loading-msg" style="padding:1rem;">불러오는 중...</div>';
             try {
-                // '청교도 신학' 태그가 있는 게시물 40개 가져와서 랜덤으로 10개 선택
                 const snapshot = await db.collection("posts")
                     .where("tags", "array-contains", "청교도 신학")
                     .orderBy("createdAt", "desc")
@@ -1572,11 +1609,7 @@ document.addEventListener('DOMContentLoaded', () => {
                             items.push({ data: doc.data(), id: doc.id });
                         }
                     });
-
-                    // Shuffle and pick 10
-                    items.sort(() => 0.5 - Math.random());
-                    const selected = items.slice(0, 10);
-
+                    const selected = items.sort(() => 0.5 - Math.random()).slice(0, 15);
                     selected.forEach(item => {
                         topicTrack.appendChild(createCarouselCard(item.data, item.id));
                     });
@@ -1585,21 +1618,19 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             } catch (e) {
                 console.error("Topic Load Error", e);
-                // 개별 섹션 에러는 무시하거나 비워둠
                 topicTrack.innerHTML = '<div style="padding:1rem">자료 로딩 실패</div>';
             }
         }
 
-        // 3. Expository Sermons : "강해설교" (Series)
+        // 3. Expository Sermons : "강해설교" (Latest 20)
         const sermonTrack = document.getElementById('carousel-sermon');
         if (sermonTrack) {
             sermonTrack.innerHTML = '<div class="loading-msg" style="padding:1rem;">불러오는 중...</div>';
             try {
-                // '강해설교' 태그가 있는 게시물 10개
                 const snapshot = await db.collection("posts")
                     .where("tags", "array-contains", "강해설교")
                     .orderBy("createdAt", "desc")
-                    .limit(10)
+                    .limit(20)
                     .get();
 
                 if (!snapshot.empty) {
@@ -1608,8 +1639,20 @@ document.addEventListener('DOMContentLoaded', () => {
                         sermonTrack.appendChild(createCarouselCard(doc.data(), doc.id));
                     });
                 } else {
-                    // 강해설교가 없으면 예비로 '설교학'이나 다른거라도 보여주도록 쿼리 변경 가능하나 일단 메시지 표시
-                    sermonTrack.innerHTML = '<div style="padding:1rem">등록된 설교가 없습니다.</div>';
+                    // Fallback to general '설교' if '강해설교' is empty
+                    const fallbackSnap = await db.collection("posts")
+                        .where("tags", "array-contains", "설교")
+                        .orderBy("createdAt", "desc")
+                        .limit(20)
+                        .get();
+                    if (!fallbackSnap.empty) {
+                        sermonTrack.innerHTML = '';
+                        fallbackSnap.forEach(doc => {
+                            sermonTrack.appendChild(createCarouselCard(doc.data(), doc.id));
+                        });
+                    } else {
+                        sermonTrack.innerHTML = '<div style="padding:1rem">등록된 설교가 없습니다.</div>';
+                    }
                 }
             } catch (e) {
                 console.error("Sermon Load Error", e);

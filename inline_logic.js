@@ -68,16 +68,25 @@ window.openResourceModal = (category, series, docId) => {
 window.createCarouselCard = (post, docId) => {
     const date = post.createdAt ? post.createdAt.toDate().toLocaleDateString() : '최근';
     const displayCategory = post.tags ? post.tags[0] : '자료';
+    const thumbUrl = post.coverUrl || '';
 
     const div = document.createElement('div');
-    div.className = 'carousel-card';
+    div.className = 'carousel-card' + (thumbUrl ? ' has-thumb' : '');
+
+    if (thumbUrl) {
+        div.style.backgroundImage = `linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.7)), url("${thumbUrl}")`;
+        div.style.backgroundSize = 'cover';
+        div.style.backgroundPosition = 'center';
+        div.style.color = 'white';
+    }
+
     div.innerHTML = `
                 <div class="carousel-card-content">
-                    <div class="carousel-card-tag">${displayCategory}</div>
+                    <div class="carousel-card-tag" style="${thumbUrl ? 'background: var(--secondary-color); color: white;' : ''}">${displayCategory}</div>
                     <div class="carousel-card-title">${post.title}</div>
                     <div class="carousel-card-meta">
-                        <span>${date}</span>
-                        <div class="carousel-icon-btn"><i class="fas fa-arrow-right"></i></div>
+                        <span style="${thumbUrl ? 'color: rgba(255,255,255,0.8);' : ''}">${date}</span>
+                        <div class="carousel-icon-btn" style="${thumbUrl ? 'background: white; color: var(--primary-color);' : ''}"><i class="fas fa-arrow-right"></i></div>
                     </div>
                 </div>
             `;
@@ -97,14 +106,14 @@ window.loadMainCarousels = async () => {
     }
 
     const latestIds = new Set();
+    window.isDataLoaded = true;
 
     // 1. New Arrivals
     const newTrack = document.getElementById('carousel-new');
     if (newTrack) {
         try {
-            const snapshot = await window.db.collection("posts").orderBy("createdAt", "desc").limit(10).get();
+            const snapshot = await window.db.collection("posts").orderBy("createdAt", "desc").limit(15).get();
             if (!snapshot.empty) {
-                window.isDataLoaded = true;
                 newTrack.innerHTML = '';
                 snapshot.forEach(doc => {
                     latestIds.add(doc.id);
@@ -116,11 +125,10 @@ window.loadMainCarousels = async () => {
         }
     }
 
-    // 2. Topics (청교도 신학)
+    // 2. Featured Topics (Randomly pick 15 from latest 40 '청교도 신학' posts, excluding new arrivals)
     const topicTrack = document.getElementById('carousel-topic');
     if (topicTrack) {
         try {
-            // Fetch more items to allow randomization
             const snapshot = await window.db.collection("posts")
                 .where("tags", "array-contains", "청교도 신학")
                 .orderBy("createdAt", "desc")
@@ -130,15 +138,14 @@ window.loadMainCarousels = async () => {
                 topicTrack.innerHTML = '';
                 const items = [];
                 snapshot.forEach(doc => {
-                    // Exclude items already shown in "New Arrivals"
                     if (!latestIds.has(doc.id)) {
                         items.push({ data: doc.data(), id: doc.id });
                     }
                 });
 
-                // Shuffle and pick 10
+                // Shuffle and pick 15
                 const shuffled = items.sort(() => 0.5 - Math.random());
-                const selected = shuffled.slice(0, 10);
+                const selected = shuffled.slice(0, 15);
 
                 selected.forEach(item => {
                     topicTrack.appendChild(window.createCarouselCard(item.data, item.id));
@@ -147,18 +154,32 @@ window.loadMainCarousels = async () => {
         } catch (e) { console.error(e); }
     }
 
-    // 3. Sermons (강해설교)
+    // 3. Expository Sermons (Latest 20 '강해설교' posts)
     const sermonTrack = document.getElementById('carousel-sermon');
     if (sermonTrack) {
         try {
             const snapshot = await window.db.collection("posts")
                 .where("tags", "array-contains", "강해설교")
-                .orderBy("createdAt", "desc").limit(10).get();
+                .orderBy("createdAt", "desc")
+                .limit(20).get();
             if (!snapshot.empty) {
                 sermonTrack.innerHTML = '';
                 snapshot.forEach(doc => {
                     sermonTrack.appendChild(window.createCarouselCard(doc.data(), doc.id));
                 });
+            } else {
+                // Fallback: If no '강해설교' tag found, try '설교' tag
+                const fallbackSnap = await window.db.collection("posts")
+                    .where("tags", "array-contains", "설교")
+                    .orderBy("createdAt", "desc")
+                    .limit(20).get();
+
+                if (!fallbackSnap.empty) {
+                    sermonTrack.innerHTML = '';
+                    fallbackSnap.forEach(doc => {
+                        sermonTrack.appendChild(window.createCarouselCard(doc.data(), doc.id));
+                    });
+                }
             }
         } catch (e) { console.error(e); }
     }
