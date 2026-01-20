@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>YouTube 재생목록 일괄 업로드</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            max-width: 800px;
+            width: 100%;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        h1 {
+            color: #2c3e50;
+            margin-bottom: 10px;
+            font-size: 2rem;
+        }
+
+        .subtitle {
+            color: #7f8c8d;
+            margin-bottom: 30px;
+            font-size: 0.95rem;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #34495e;
+            font-weight: 600;
+        }
+
+        input,
+        select,
+        textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.3s;
+        }
+
+        input:focus,
+        select:focus,
+        textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        textarea {
+            min-height: 150px;
+            font-family: 'Courier New', monospace;
+            resize: vertical;
+        }
+
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 14px 30px;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            width: 100%;
+            margin-top: 10px;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .status {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 8px;
+            display: none;
+        }
+
+        .status.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .status.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .status.info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+
+        .preview {
+            margin-top: 20px;
+            max-height: 400px;
+            overflow-y: auto;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 15px;
+            display: none;
+        }
+
+        .preview-item {
+            padding: 10px;
+            margin-bottom: 10px;
+            background: #f8f9fa;
+            border-radius: 6px;
+            border-left: 4px solid #667eea;
+        }
+
+        .preview-item h4 {
+            color: #2c3e50;
+            margin-bottom: 5px;
+        }
+
+        .preview-item p {
+            color: #7f8c8d;
+            font-size: 0.9rem;
+        }
+
+        .help-text {
+            font-size: 0.85rem;
+            color: #7f8c8d;
+            margin-top: 5px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>🎬 YouTube 재생목록 일괄 업로드</h1>
+        <p class="subtitle">신명기 강해 시리즈를 한 번에 등록하세요</p>
+
+        <div class="input-group">
+            <label for="playlistUrl">재생목록 URL</label>
+            <input type="text" id="playlistUrl" placeholder="https://youtube.com/playlist?list=..."
+                value="https://youtube.com/playlist?list=PLjM7aB8k1thLTSGFbE5tcRSuGJakcFVDe">
+            <p class="help-text">YouTube 재생목록 페이지의 URL을 입력하세요</p>
+        </div>
+
+        <div class="input-group">
+            <label for="videoData">영상 정보 (JSON 형식)</label>
+            <textarea id="videoData" placeholder='[
+  {"title": "신명기 강해 1강", "url": "https://youtube.com/watch?v=..."},
+  {"title": "신명기 강해 2강", "url": "https://youtube.com/watch?v=..."}
+]'></textarea>
+            <p class="help-text">YouTube에서 각 영상의 제목과 URL을 복사하여 JSON 배열로 입력하세요</p>
+        </div>
+
+        <div class="input-group">
+            <label for="category">카테고리</label>
+            <select id="category">
+                <option value="강해">강해</option>
+                <option value="강해설교">강해설교</option>
+                <option value="설교">설교</option>
+            </select>
+        </div>
+
+        <div class="input-group">
+            <label for="series">시리즈명</label>
+            <input type="text" id="series" value="신명기 강해" placeholder="예: 신명기 강해">
+        </div>
+
+        <button onclick="parseAndPreview()">미리보기</button>
+        <button onclick="uploadToFirebase()" id="uploadBtn" disabled style="background: #28a745;">Firebase에 업로드</button>
+
+        <div id="status" class="status"></div>
+        <div id="preview" class="preview"></div>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-auth-compat.js"></script>
+
+    <script>
+        // Firebase 설정 (index.html과 동일)
+        const firebaseConfig = {
+            apiKey: "AIzaSyDGBCJhxFQdVPKMYmVTNlGsOXHPBQqUqWs",
+            authDomain: "kpi-research-institute.firebaseapp.com",
+            projectId: "kpi-research-institute",
+            storageBucket: "kpi-research-institute.firebasestorage.app",
+            messagingSenderId: "1036509862035",
+            appId: "1:1036509862035:web:c0f5e6d7f8e9f0a1b2c3d4"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+        const auth = firebase.auth();
+
+        let parsedVideos = [];
+
+        function showStatus(message, type = 'info') {
+            const statusEl = document.getElementById('status');
+            statusEl.textContent = message;
+            statusEl.className = `status ${type}`;
+            statusEl.style.display = 'block';
+        }
+
+        function parseAndPreview() {
+            const videoDataText = document.getElementById('videoData').value.trim();
+
+            if (!videoDataText) {
+                showStatus('영상 정보를 입력해주세요.', 'error');
+                return;
+            }
+
+            try {
+                parsedVideos = JSON.parse(videoDataText);
+
+                if (!Array.isArray(parsedVideos) || parsedVideos.length === 0) {
+                    throw new Error('올바른 배열 형식이 아닙니다.');
+                }
+
+                // 미리보기 생성
+                const previewEl = document.getElementById('preview');
+                previewEl.innerHTML = '<h3 style="margin-bottom: 15px;">📋 업로드될 영상 목록 (' + parsedVideos.length + '개)</h3>';
+
+                parsedVideos.forEach((video, index) => {
+                    const item = document.createElement('div');
+                    item.className = 'preview-item';
+                    item.innerHTML = `
+                        <h4>${index + 1}. ${video.title || '제목 없음'}</h4>
+                        <p>${video.url || 'URL 없음'}</p>
+                    `;
+                    previewEl.appendChild(item);
+                });
+
+                previewEl.style.display = 'block';
+                document.getElementById('uploadBtn').disabled = false;
+                showStatus(`${parsedVideos.length}개의 영상이 준비되었습니다. 업로드 버튼을 클릭하세요.`, 'success');
+
+            } catch (error) {
+                showStatus('JSON 형식이 올바르지 않습니다: ' + error.message, 'error');
+                document.getElementById('uploadBtn').disabled = true;
+            }
+        }
+
+        async function uploadToFirebase() {
+            const category = document.getElementById('category').value;
+            const series = document.getElementById('series').value;
+
+            if (!parsedVideos || parsedVideos.length === 0) {
+                showStatus('먼저 미리보기를 실행해주세요.', 'error');
+                return;
+            }
+
+            // 로그인 확인
+            const user = auth.currentUser;
+            if (!user) {
+                showStatus('먼저 로그인이 필요합니다. index.html에서 로그인 후 다시 시도하세요.', 'error');
+                return;
+            }
+
+            const uploadBtn = document.getElementById('uploadBtn');
+            uploadBtn.disabled = true;
+            uploadBtn.textContent = '업로드 중...';
+
+            let successCount = 0;
+            let errorCount = 0;
+
+            for (let i = 0; i < parsedVideos.length; i++) {
+                const video = parsedVideos[i];
+
+                try {
+                    await db.collection('posts').add({
+                        title: video.title,
+                        content: video.url,
+                        tags: [category],
+                        series: series,
+                        createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+                        order: i + 1
+                    });
+                    successCount++;
+                    showStatus(`업로드 중... (${successCount}/${parsedVideos.length})`, 'info');
+                } catch (error) {
+                    console.error('Upload error:', error);
+                    errorCount++;
+                }
+            }
+
+            uploadBtn.disabled = false;
+            uploadBtn.textContent = 'Firebase에 업로드';
+
+            if (errorCount === 0) {
+                showStatus(`✅ 모든 영상(${successCount}개)이 성공적으로 업로드되었습니다!`, 'success');
+            } else {
+                showStatus(`⚠️ ${successCount}개 성공, ${errorCount}개 실패`, 'error');
+            }
+        }
+
+        // 로그인 상태 확인
+        auth.onAuthStateChanged(user => {
+            if (user) {
+                showStatus('✅ 로그인됨: ' + user.email, 'success');
+            } else {
+                showStatus('⚠️ 로그인이 필요합니다. index.html에서 먼저 로그인하세요.', 'error');
+            }
+        });
+    </script>
+</body>
+
+</html>

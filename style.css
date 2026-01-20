@@ -2655,9 +2655,25 @@ footer {
 
 /* Carousel Card with Background Image Enhancement */
 .carousel-card.has-thumb .carousel-card-title {
-    color: white;
+    color: white !important;
     text-shadow: 0 2px 8px rgba(0, 0, 0, 0.8), 0 1px 3px rgba(0, 0, 0, 0.9);
     font-weight: 800;
+}
+
+.carousel-card.has-thumb .carousel-card-tag {
+    background: var(--secondary-color) !important;
+    color: white !important;
+    padding: 0.3rem 0.6rem;
+    border-radius: 4px;
+}
+
+.carousel-card.has-thumb .carousel-card-meta span {
+    color: rgba(255, 255, 255, 0.9) !important;
+}
+
+.carousel-card.has-thumb .carousel-icon-btn {
+    background: white !important;
+    color: var(--primary-color) !important;
 }
 
 .carousel-card.has-thumb .carousel-card-content {

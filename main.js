@@ -755,44 +755,90 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         // 실시간 목록 불러오기 (Only if not mocking initially)
-        if (!useMock && db) {
-            db.collection("posts").orderBy("createdAt", "desc").limit(100)
-                .onSnapshot((querySnapshot) => {
-                    recentPostsList.innerHTML = '';
-                    if (querySnapshot.empty) {
-                        recentPostsList.innerHTML = '<li class="empty-msg">아직 업로드된 자료가 없습니다.</li>';
-                        return;
-                    }
-                    querySnapshot.forEach((doc) => {
-                        const post = doc.data();
-                        const id = doc.id;
-                        const li = document.createElement('li');
-                        li.className = 'post-item admin-post-item';
-                        const date = post.createdAt ? post.createdAt.toDate().toLocaleString() : '방금 전';
-                        const displayTags = post.tags ? post.tags.join(', ') : '분류 없음';
-                        const hasFile = post.fileUrl ? true : false;
-                        const hasCover = post.coverUrl ? true : false;
+        let lastVisiblePost = null;
+        let isLoadingMore = false;
+        const POSTS_PER_PAGE = 50;
 
-                        li.innerHTML = `
-                            <div class="post-info">
-                                <strong>[${displayTags}]</strong> ${post.title} 
-                                <div style="display:inline-flex; gap:8px; margin-left:10px;">
-                                    ${hasFile ? `<a href="${post.fileUrl}" target="_blank" style="color:var(--secondary-color);" title="첨부파일"><i class="fas fa-file-download"></i></a>` : ''}
-                                    ${hasCover ? `<a href="${post.coverUrl}" target="_blank" style="color:#f39c12;" title="표지이미지"><i class="fas fa-image"></i></a>` : ''}
-                                </div>
-                                <br> <small>${date}</small>
+        async function loadAdminPosts(loadMore = false) {
+            if (isLoadingMore) return;
+            isLoadingMore = true;
+
+            try {
+                let query = db.collection("posts").orderBy("createdAt", "desc");
+
+                if (loadMore && lastVisiblePost) {
+                    query = query.startAfter(lastVisiblePost);
+                }
+
+                query = query.limit(POSTS_PER_PAGE);
+
+                const querySnapshot = await query.get();
+
+                if (!loadMore) {
+                    recentPostsList.innerHTML = '';
+                }
+
+                if (querySnapshot.empty && !loadMore) {
+                    recentPostsList.innerHTML = '<li class="empty-msg">아직 업로드된 자료가 없습니다.</li>';
+                    isLoadingMore = false;
+                    return;
+                }
+
+                querySnapshot.forEach((doc) => {
+                    const post = doc.data();
+                    const id = doc.id;
+                    const li = document.createElement('li');
+                    li.className = 'post-item admin-post-item';
+                    const date = post.createdAt ? post.createdAt.toDate().toLocaleString() : '방금 전';
+                    const displayTags = post.tags ? post.tags.join(', ') : '분류 없음';
+                    const hasFile = post.fileUrl ? true : false;
+                    const hasCover = post.coverUrl ? true : false;
+
+                    li.innerHTML = `
+                        <div class="post-info">
+                            <strong>[${displayTags}]</strong> ${post.title} 
+                            <div style="display:inline-flex; gap:8px; margin-left:10px;">
+                                ${hasFile ? `<a href="${post.fileUrl}" target="_blank" style="color:var(--secondary-color);" title="첨부파일"><i class="fas fa-file-download"></i></a>` : ''}
+                                ${hasCover ? `<a href="${post.coverUrl}" target="_blank" style="color:#f39c12;" title="표지이미지"><i class="fas fa-image"></i></a>` : ''}
                             </div>
-                            <div class="post-actions">
-                                <button class="action-btn edit" onclick="openEditModal('${id}')"><i class="fas fa-edit"></i></button>
-                                <button class="action-btn delete" onclick="deletePost('${id}')"><i class="fas fa-trash"></i></button>
-                            </div>
-                        `;
-                        recentPostsList.appendChild(li);
-                    });
-                }, (error) => {
-                    console.log("Real-time sync failed:", error);
-                    // Ignore auth errors for casual browsing
+                            <br> <small>${date}</small>
+                        </div>
+                        <div class="post-actions">
+                            <button class="action-btn edit" onclick="openEditModal('${id}')"><i class="fas fa-edit"></i></button>
+                            <button class="action-btn delete" onclick="deletePost('${id}')"><i class="fas fa-trash"></i></button>
+                        </div>
+                    `;
+                    recentPostsList.appendChild(li);
                 });
+
+                // 더 불러올 항목이 있는지 확인
+                if (!querySnapshot.empty) {
+                    lastVisiblePost = querySnapshot.docs[querySnapshot.docs.length - 1];
+
+                    // "더 보기" 버튼 추가 또는 업데이트
+                    let loadMoreBtn = document.getElementById('load-more-admin');
+                    if (!loadMoreBtn && querySnapshot.docs.length === POSTS_PER_PAGE) {
+                        loadMoreBtn = document.createElement('button');
+                        loadMoreBtn.id = 'load-more-admin';
+                        loadMoreBtn.className = 'premium-btn';
+                        loadMoreBtn.style.cssText = 'width: 100%; margin-top: 20px; padding: 12px;';
+                        loadMoreBtn.innerHTML = '<i class="fas fa-chevron-down"></i> 더 보기';
+                        loadMoreBtn.onclick = () => loadAdminPosts(true);
+                        recentPostsList.parentElement.appendChild(loadMoreBtn);
+                    } else if (loadMoreBtn && querySnapshot.docs.length < POSTS_PER_PAGE) {
+                        loadMoreBtn.remove();
+                    }
+                }
+
+            } catch (error) {
+                console.log("Load posts failed:", error);
+            } finally {
+                isLoadingMore = false;
+            }
+        }
+
+        if (!useMock && db) {
+            loadAdminPosts();
         }
     }
 
