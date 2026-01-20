@@ -170,50 +170,61 @@
 
         async function loadBooks() {
             try {
+                // Remove orderBy to avoid requiring a Firestore composite index
                 const snapshot = await db.collection("posts")
                     .where("tags", "array-contains", "도서 목록")
-                    .orderBy("createdAt", "desc")
                     .get();
 
                 if (snapshot.empty) {
+                    console.log("No books found in DB, rendering mock data.");
                     renderMockBooks();
                     return;
                 }
 
-                booksGrid.innerHTML = '';
+                let books = [];
                 snapshot.forEach(doc => {
-                    const book = doc.data();
-                    const bookId = doc.id;
-                    renderBookCard(book, bookId);
+                    books.push({ id: doc.id, ...doc.data() });
+                });
+
+                // Sort by createdAt desc in memory
+                books.sort((a, b) => {
+                    const timeA = a.createdAt ? (a.createdAt.seconds || 0) : 0;
+                    const timeB = b.createdAt ? (b.createdAt.seconds || 0) : 0;
+                    return timeB - timeA;
+                });
+
+                booksGrid.innerHTML = '';
+                books.forEach(book => {
+                    renderBookCard(book, book.id);
                 });
 
             } catch (error) {
                 console.error("Error loading books:", error);
-                renderMockBooks(); // Fallback to mock if error
+                // Even if Firestore fails, show mock data so the screen isn't empty
+                renderMockBooks();
             }
         }
 
         function renderBookCard(book, id) {
+            if (!book) return;
             const card = document.createElement('div');
             card.className = 'book-card-premium';
 
-            // Extract price if exists in content
+            const title = book.title || '제목 없음';
             const contentText = book.content || '';
             const priceMatch = contentText.match(/(\d{1,3}(,\d{3})*원)/);
             const priceStr = priceMatch ? priceMatch[0] : '가격 문의';
 
-            // Extract author from title or content (simplified)
-            let author = 'PHB 편집부';
-            if (book.title.includes(':')) {
-                // Example: "저자명 : 도서명"
-                const parts = book.title.split(':');
+            let author = 'KPI 편집부';
+            if (title.includes(':')) {
+                const parts = title.split(':');
                 if (parts.length > 1) {
                     author = parts[0].trim();
                 }
             }
 
-            // Thumbnail extraction: 1. Check uploaded file, 2. Check external link
-            let thumbUrl = 'images/puritan-study.png'; // Default
+            // Thumbnail extraction
+            let thumbUrl = 'images/puritan-study.png';
             if (book.fileUrl && book.fileUrl.match(/\.(jpeg|jpg|gif|png|webp|svg)/i)) {
                 thumbUrl = book.fileUrl;
             } else {
@@ -227,24 +238,23 @@
                 }
             }
 
-            // Clean title (remove author if it was extracted)
-            let cleanTitle = book.title;
+            let cleanTitle = title;
             if (cleanTitle.includes(':')) {
                 cleanTitle = cleanTitle.split(':')[1].trim();
             }
 
             card.innerHTML = `
                 <div class="book-cover-wrapper">
-                    <img src="${thumbUrl}" alt="${book.title}" onerror="this.src='images/puritan-study.png'">
+                    <img src="${thumbUrl}" alt="${title}" onerror="this.src='images/puritan-study.png'">
                 </div>
                 <div class="book-info">
                     <div class="book-tag">PURITAN HERITAGE BOOKS</div>
                     <h3 class="book-title">${cleanTitle}</h3>
                     <div class="book-author">${author}</div>
-                    <div class="book-description">${contentText.replace(urlRegex, '').trim() || '상세 설명이 준비 중입니다.'}</div>
+                    <div class="book-description">${contentText.replace(/(https?:\/\/[^\s]+)/g, '').trim() || '상세 설명이 준비 중입니다.'}</div>
                     <div class="book-footer">
                         <div class="book-price">${priceStr}</div>
-                        <a href="mailto:kpuritan.phb@gmail.com?subject=구매 문의: ${book.title}" class="book-buy-btn">구매 문의</a>
+                        <a href="mailto:kpuritan.phb@gmail.com?subject=구매 문의: ${title}" class="book-buy-btn">구매 문의</a>
                     </div>
                 </div>
             `;
