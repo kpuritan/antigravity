@@ -16,10 +16,12 @@
 
     <style>
         .books-hero {
-            height: 40vh;
+            height: 50vh;
+            position: relative;
             background: linear-gradient(rgba(42, 45, 50, 0.4), rgba(42, 45, 50, 0.4)), url('westminster_assembly_illustration_1768571596977.png');
             background-size: cover;
-            background-position: center;
+            background-position: center 30%;
+            background-attachment: fixed;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -210,16 +212,18 @@
                 }
             }
 
-            // Thumbnail extraction from text link or default
-            const urlRegex = /(https?:\/\/[^\s]+)/g;
-            const urls = contentText.match(urlRegex) || [];
+            // Thumbnail extraction: 1. Check uploaded file, 2. Check external link
             let thumbUrl = 'images/puritan-study.png'; // Default
-
-            // Simple logic to find an image link
-            for (let url of urls) {
-                if (url.match(/\.(jpeg|jpg|gif|png)$/) != null) {
-                    thumbUrl = url;
-                    break;
+            if (book.fileUrl && book.fileUrl.match(/\.(jpeg|jpg|gif|png|webp|svg)/i)) {
+                thumbUrl = book.fileUrl;
+            } else {
+                const urlRegex = /(https?:\/\/[^\s]+)/g;
+                const urls = contentText.match(urlRegex) || [];
+                for (let url of urls) {
+                    if (url.match(/\.(jpeg|jpg|gif|png|webp|svg)/i)) {
+                        thumbUrl = url;
+                        break;
+                    }
                 }
             }
 
