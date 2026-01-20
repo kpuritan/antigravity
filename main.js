@@ -1335,7 +1335,7 @@ document.addEventListener('DOMContentLoaded', () => {
         window.requestPay = (title, amount) => {
             if (!window.IMP) return alert("결제 모듈을 불러오는 중입니다. 잠시 후 타시 시도해주세요.");
             const IMP = window.IMP;
-            IMP.init("imp67011510"); // 예시 가맹점 식별코드 (실제 발급 필요)
+            IMP.init("imp67545025"); // 사용자 실가맹점 식별코드 업데이트
 
             if (!confirm(`'${title}'을(를) ${amount.toLocaleString()}원에 구매하시겠습니까?`)) return;
 
