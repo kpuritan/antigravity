@@ -1565,99 +1565,70 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        const latestIds = new Set();
-        window.isDataLoaded = true;
-
-        // 1. New Arrivals (Latest 15)
-        const newTrack = document.getElementById('carousel-new');
-        if (newTrack) {
-            newTrack.innerHTML = '<div class="loading-msg" style="padding:1rem;">불러오는 중...</div>';
-            try {
-                const snapshot = await db.collection("posts").orderBy("createdAt", "desc").limit(15).get();
-                if (!snapshot.empty) {
-                    newTrack.innerHTML = '';
-                    snapshot.forEach(doc => {
-                        latestIds.add(doc.id);
-                        newTrack.appendChild(createCarouselCard(doc.data(), doc.id));
-                    });
-                } else {
-                    newTrack.innerHTML = '<div style="padding:1rem">업데이트된 자료가 없습니다.</div>';
-                }
-            } catch (e) {
-                console.error("New Arrivals Load error:", e);
-                window.renderMockCarousels();
+        try {
+            // 한 번에 최근 50개를 가져와서 배분 (효율적 + 인덱스 문제 회피)
+            const snapshot = await db.collection("posts").orderBy("createdAt", "desc").limit(50).get();
+            if (snapshot.empty) {
+                console.log("No posts found");
                 return;
             }
-        }
 
-        // 2. Featured Topics : "청교도 신학" (Latest 40 -> Pick 15)
-        const topicTrack = document.getElementById('carousel-topic');
-        if (topicTrack) {
-            topicTrack.innerHTML = '<div class="loading-msg" style="padding:1rem;">불러오는 중...</div>';
-            try {
-                const snapshot = await db.collection("posts")
-                    .where("tags", "array-contains", "청교도 신학")
-                    .orderBy("createdAt", "desc")
-                    .limit(40)
-                    .get();
+            window.isDataLoaded = true;
+            const allPosts = [];
+            snapshot.forEach(doc => allPosts.push({ id: doc.id, data: doc.data() }));
 
-                if (!snapshot.empty) {
-                    topicTrack.innerHTML = '';
-                    const items = [];
-                    snapshot.forEach(doc => {
-                        if (!latestIds.has(doc.id)) {
-                            items.push({ data: doc.data(), id: doc.id });
-                        }
-                    });
-                    const selected = items.sort(() => 0.5 - Math.random()).slice(0, 15);
-                    selected.forEach(item => {
-                        topicTrack.appendChild(createCarouselCard(item.data, item.id));
-                    });
-                } else {
-                    topicTrack.innerHTML = '<div style="padding:1rem">추천 자료 준비 중입니다.</div>';
-                }
-            } catch (e) {
-                console.error("Topic Load Error", e);
-                topicTrack.innerHTML = '<div style="padding:1rem">자료 로딩 실패</div>';
+            // 1. New Arrivals (무조건 최근 12개)
+            const newTrack = document.getElementById('carousel-new');
+            const latestIds = new Set();
+            if (newTrack) {
+                newTrack.innerHTML = '';
+                allPosts.slice(0, 12).forEach(item => {
+                    latestIds.add(item.id);
+                    newTrack.appendChild(createCarouselCard(item.data, item.id));
+                });
             }
-        }
 
-        // 3. Expository Sermons : "강해설교" (Latest 20)
-        const sermonTrack = document.getElementById('carousel-sermon');
-        if (sermonTrack) {
-            sermonTrack.innerHTML = '<div class="loading-msg" style="padding:1rem;">불러오는 중...</div>';
-            try {
-                const snapshot = await db.collection("posts")
-                    .where("tags", "array-contains", "강해설교")
-                    .orderBy("createdAt", "desc")
-                    .limit(20)
-                    .get();
+            // 2. Featured Topics (강해설교가 아닌 것들 우선, 청교도 관련 주제 위주)
+            const topicTrack = document.getElementById('carousel-topic');
+            if (topicTrack) {
+                topicTrack.innerHTML = '';
+                const topicItems = allPosts.filter(item => {
+                    const tags = item.data.tags || [];
+                    // 강해설교가 아닌 일반 주제들 필터링 + 최신 자료와 중복 제거
+                    return !tags.includes('강해설교') && !tags.includes('설교') && !latestIds.has(item.id);
+                });
 
-                if (!snapshot.empty) {
-                    sermonTrack.innerHTML = '';
-                    snapshot.forEach(doc => {
-                        sermonTrack.appendChild(createCarouselCard(doc.data(), doc.id));
-                    });
-                } else {
-                    // Fallback to general '설교' if '강해설교' is empty
-                    const fallbackSnap = await db.collection("posts")
-                        .where("tags", "array-contains", "설교")
-                        .orderBy("createdAt", "desc")
-                        .limit(20)
-                        .get();
-                    if (!fallbackSnap.empty) {
-                        sermonTrack.innerHTML = '';
-                        fallbackSnap.forEach(doc => {
-                            sermonTrack.appendChild(createCarouselCard(doc.data(), doc.id));
-                        });
-                    } else {
-                        sermonTrack.innerHTML = '<div style="padding:1rem">등록된 설교가 없습니다.</div>';
-                    }
-                }
-            } catch (e) {
-                console.error("Sermon Load Error", e);
-                sermonTrack.innerHTML = '<div style="padding:1rem">자료 로딩 실패</div>';
+                // 만약 일반 주제가 부족하면 전체에서 가져옴 (중복 제외)
+                let displayTopics = topicItems.length >= 6 ? topicItems : allPosts.filter(item => !(item.data.tags || []).includes('강해설교') && !latestIds.has(item.id));
+
+                // [추가] 추천 자료 줄은 랜덤으로 섞어서 노출
+                displayTopics = [...displayTopics].sort(() => 0.5 - Math.random());
+
+                displayTopics.slice(0, 12).forEach(item => {
+                    topicTrack.appendChild(createCarouselCard(item.data, item.id));
+                });
             }
+
+            // 3. Expository Sermons (강해설교 태그가 있는 것들)
+            const sermonTrack = document.getElementById('carousel-sermon');
+            if (sermonTrack) {
+                sermonTrack.innerHTML = '';
+                const sermonItems = allPosts.filter(item => {
+                    const tags = item.data.tags || [];
+                    return tags.includes('강해설교') || tags.includes('설교');
+                });
+
+                // 설교가 부족하면 New Arrivals 제외한 나머지도 일부 포함
+                const displaySermons = sermonItems.length >= 4 ? sermonItems : allPosts;
+
+                displaySermons.slice(0, 12).forEach(item => {
+                    sermonTrack.appendChild(createCarouselCard(item.data, item.id));
+                });
+            }
+
+        } catch (e) {
+            console.error("Load Carousels Error:", e);
+            window.renderMockCarousels();
         }
     };
 

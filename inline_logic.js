@@ -35,7 +35,7 @@ window.openResourceModal = (category, series, docId) => {
 
                         // Link Check
                         let linkHtml = '';
-                        const fileUrl = item.fileUrl || item.downloadUrl; // fileUrl 혹은 downloadUrl 확인
+                        const fileUrl = item.fileUrl || item.downloadUrl;
                         if (fileUrl) linkHtml += `<a href="${fileUrl}" target="_blank" class="download-btn"><i class="fas fa-file-download"></i> 다운로드</a>`;
                         if (item.youtubeLink) linkHtml += `<a href="${item.youtubeLink}" target="_blank" class="download-btn youtube"><i class="fab fa-youtube"></i> 영상 보기</a>`;
                         if (!linkHtml) linkHtml = `<span style="color:#999; font-size:0.8rem;">첨부 파일 없음</span>`;
@@ -105,83 +105,61 @@ window.loadMainCarousels = async () => {
         return;
     }
 
-    const latestIds = new Set();
-    window.isDataLoaded = true;
+    try {
+        // 한 번에 최근 50개를 가져와서 배분 (효율적 + 인덱스 문제 회피)
+        const snapshot = await window.db.collection("posts").orderBy("createdAt", "desc").limit(50).get();
+        if (snapshot.empty) return;
 
-    // 1. New Arrivals
-    const newTrack = document.getElementById('carousel-new');
-    if (newTrack) {
-        try {
-            const snapshot = await window.db.collection("posts").orderBy("createdAt", "desc").limit(15).get();
-            if (!snapshot.empty) {
-                newTrack.innerHTML = '';
-                snapshot.forEach(doc => {
-                    latestIds.add(doc.id);
-                    newTrack.appendChild(window.createCarouselCard(doc.data(), doc.id));
-                });
-            }
-        } catch (e) {
-            console.error(e);
+        window.isDataLoaded = true;
+        const allPosts = [];
+        snapshot.forEach(doc => allPosts.push({ id: doc.id, data: doc.data() }));
+
+        // 1. New Arrivals (무조건 최근 12개)
+        const newTrack = document.getElementById('carousel-new');
+        const latestIds = new Set();
+        if (newTrack) {
+            newTrack.innerHTML = '';
+            allPosts.slice(0, 12).forEach(item => {
+                latestIds.add(item.id);
+                newTrack.appendChild(window.createCarouselCard(item.data, item.id));
+            });
         }
-    }
 
-    // 2. Featured Topics (Randomly pick 15 from latest 40 '청교도 신학' posts, excluding new arrivals)
-    const topicTrack = document.getElementById('carousel-topic');
-    if (topicTrack) {
-        try {
-            const snapshot = await window.db.collection("posts")
-                .where("tags", "array-contains", "청교도 신학")
-                .orderBy("createdAt", "desc")
-                .limit(40).get();
+        // 2. Featured Topics (강해설교가 아닌 것들 우선, 청교도 관련 주제 위주)
+        const topicTrack = document.getElementById('carousel-topic');
+        if (topicTrack) {
+            topicTrack.innerHTML = '';
+            const topicItems = allPosts.filter(item => {
+                const tags = item.data.tags || [];
+                return !tags.includes('강해설교') && !tags.includes('설교') && !latestIds.has(item.id);
+            });
 
-            if (!snapshot.empty) {
-                topicTrack.innerHTML = '';
-                const items = [];
-                snapshot.forEach(doc => {
-                    if (!latestIds.has(doc.id)) {
-                        items.push({ data: doc.data(), id: doc.id });
-                    }
-                });
+            let displayTopics = topicItems.length >= 6 ? topicItems : allPosts.filter(item => !(item.data.tags || []).includes('강해설교') && !latestIds.has(item.id));
+            displayTopics = [...displayTopics].sort(() => 0.5 - Math.random());
 
-                // Shuffle and pick 15
-                const shuffled = items.sort(() => 0.5 - Math.random());
-                const selected = shuffled.slice(0, 15);
+            displayTopics.slice(0, 12).forEach(item => {
+                topicTrack.appendChild(window.createCarouselCard(item.data, item.id));
+            });
+        }
 
-                selected.forEach(item => {
-                    topicTrack.appendChild(window.createCarouselCard(item.data, item.id));
-                });
-            }
-        } catch (e) { console.error(e); }
-    }
+        // 3. Expository Sermons (강해설교 태그가 있는 것들)
+        const sermonTrack = document.getElementById('carousel-sermon');
+        if (sermonTrack) {
+            sermonTrack.innerHTML = '';
+            const sermonItems = allPosts.filter(item => {
+                const tags = item.data.tags || [];
+                return tags.includes('강해설교') || tags.includes('설교');
+            });
 
-    // 3. Expository Sermons (Latest 20 '강해설교' posts)
-    const sermonTrack = document.getElementById('carousel-sermon');
-    if (sermonTrack) {
-        try {
-            const snapshot = await window.db.collection("posts")
-                .where("tags", "array-contains", "강해설교")
-                .orderBy("createdAt", "desc")
-                .limit(20).get();
-            if (!snapshot.empty) {
-                sermonTrack.innerHTML = '';
-                snapshot.forEach(doc => {
-                    sermonTrack.appendChild(window.createCarouselCard(doc.data(), doc.id));
-                });
-            } else {
-                // Fallback: If no '강해설교' tag found, try '설교' tag
-                const fallbackSnap = await window.db.collection("posts")
-                    .where("tags", "array-contains", "설교")
-                    .orderBy("createdAt", "desc")
-                    .limit(20).get();
+            const displaySermons = sermonItems.length >= 4 ? sermonItems : allPosts;
 
-                if (!fallbackSnap.empty) {
-                    sermonTrack.innerHTML = '';
-                    fallbackSnap.forEach(doc => {
-                        sermonTrack.appendChild(window.createCarouselCard(doc.data(), doc.id));
-                    });
-                }
-            }
-        } catch (e) { console.error(e); }
+            displaySermons.slice(0, 12).forEach(item => {
+                sermonTrack.appendChild(window.createCarouselCard(item.data, item.id));
+            });
+        }
+
+    } catch (e) {
+        console.error("Load Carousels Error:", e);
     }
 };
 
