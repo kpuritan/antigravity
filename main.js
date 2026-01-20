@@ -634,6 +634,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const title = document.getElementById('post-title').value.trim() || '제목 없음';
             const series = document.getElementById('post-series').value.trim() || '';
             const order = parseInt(document.getElementById('post-order').value) || 0;
+            const price = document.getElementById('post-price').value.trim() || '';
             const content = document.getElementById('post-content').value;
             const fileInput = document.getElementById('post-file');
             const file = fileInput.files[0];
@@ -742,6 +743,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     title,
                     series,
                     order,
+                    price,
                     content,
                     fileUrl,
                     createdAt: firebase.firestore.FieldValue.serverTimestamp()
@@ -824,6 +826,7 @@ document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('edit-title').value = post.title;
             document.getElementById('edit-series').value = post.series || "";
             document.getElementById('edit-order').value = post.order || 0;
+            document.getElementById('edit-price').value = post.price || "";
             document.getElementById('edit-content').value = post.content || '';
             document.getElementById('edit-file-status').textContent = post.fileUrl ? "기존 파일이 있습니다 (교체 시 새로 선택)" : "첨부된 파일 없음";
 
@@ -858,6 +861,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const title = document.getElementById('edit-title').value.trim();
             const series = document.getElementById('edit-series').value.trim() || "";
             const order = parseInt(document.getElementById('edit-order').value) || 0;
+            const price = document.getElementById('edit-price').value.trim() || '';
             const content = document.getElementById('edit-content').value;
             const fileInput = document.getElementById('edit-file');
             const file = fileInput.files[0];
@@ -881,6 +885,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     title,
                     series,
                     order,
+                    price,
                     content,
                     updatedAt: firebase.firestore.FieldValue.serverTimestamp()
                 };
@@ -1306,9 +1311,8 @@ document.addEventListener('DOMContentLoaded', () => {
         let buyButtonHtml = '';
 
         if (isBookstore) {
-            const priceMatch = contentText.match(/(\d{1,3}(,\d{3})*원)/);
-            const priceStr = priceMatch ? priceMatch[0] : '가격 문의';
-            const priceNum = priceMatch ? parseInt(priceMatch[0].replace(/[^0-9]/g, '')) : 0;
+            const priceStr = post.price || (contentText.match(/(\d{1,3}(,\d{3})*원)/) ? contentText.match(/(\d{1,3}(,\d{3})*원)/)[0] : '가격 문의');
+            const priceNum = parseInt(priceStr.replace(/[^0-9]/g, '')) || 0;
 
             priceHtml = `<div class="book-price" style="font-size: 1.2rem; font-weight: 700; color: var(--secondary-color); margin-top: 10px;">${priceStr}</div>`;
 

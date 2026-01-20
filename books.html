@@ -212,8 +212,7 @@
 
             const title = book.title || '제목 없음';
             const contentText = book.content || '';
-            const priceMatch = contentText.match(/(\d{1,3}(,\d{3})*원)/);
-            const priceStr = priceMatch ? priceMatch[0] : '가격 문의';
+            const priceStr = book.price || (contentText.match(/(\d{1,3}(,\d{3})*원)/) ? contentText.match(/(\d{1,3}(,\d{3})*원)/)[0] : '가격 문의');
 
             let author = 'KPI 편집부';
             if (title.includes(':')) {
