@@ -125,16 +125,19 @@ window.loadMainCarousels = async () => {
             });
         }
 
-        // 2. Featured Topics (강해설교가 아닌 것들 우선, 청교도 관련 주제 위주)
+        // 2. Featured Topics (강해가 아닌 것들 우선, 청교도 관련 주제 위주)
         const topicTrack = document.getElementById('carousel-topic');
         if (topicTrack) {
             topicTrack.innerHTML = '';
             const topicItems = allPosts.filter(item => {
                 const tags = item.data.tags || [];
-                return !tags.includes('강해설교') && !tags.includes('설교') && !latestIds.has(item.id);
+                return !tags.includes('강해') && !tags.includes('강해설교') && !tags.includes('설교') && !latestIds.has(item.id);
             });
 
-            let displayTopics = topicItems.length >= 6 ? topicItems : allPosts.filter(item => !(item.data.tags || []).includes('강해설교') && !latestIds.has(item.id));
+            let displayTopics = topicItems.length >= 6 ? topicItems : allPosts.filter(item => {
+                const tags = item.data.tags || [];
+                return !tags.includes('강해') && !tags.includes('강해설교') && !latestIds.has(item.id);
+            });
             displayTopics = [...displayTopics].sort(() => 0.5 - Math.random());
 
             displayTopics.slice(0, 12).forEach(item => {
@@ -142,13 +145,13 @@ window.loadMainCarousels = async () => {
             });
         }
 
-        // 3. Expository Sermons (강해설교 태그가 있는 것들)
+        // 3. Expository Sermons (강해 태그가 있는 것들)
         const sermonTrack = document.getElementById('carousel-sermon');
         if (sermonTrack) {
             sermonTrack.innerHTML = '';
             const sermonItems = allPosts.filter(item => {
                 const tags = item.data.tags || [];
-                return tags.includes('강해설교') || tags.includes('설교');
+                return tags.includes('강해') || tags.includes('강해설교') || tags.includes('설교');
             });
 
             const displaySermons = sermonItems.length >= 4 ? sermonItems : allPosts;
