@@ -637,7 +637,9 @@ document.addEventListener('DOMContentLoaded', () => {
             const price = document.getElementById('post-price').value.trim() || '';
             const content = document.getElementById('post-content').value;
             const fileInput = document.getElementById('post-file');
+            const coverInput = document.getElementById('post-cover');
             const file = fileInput.files[0];
+            const coverFile = coverInput ? coverInput.files[0] : null;
 
             if (tags.length === 0) {
                 alert("최소 하나 이상의 분류를 선택해 주세요.");
@@ -690,47 +692,22 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
 
                 let fileUrl = "";
+                let coverUrl = "";
 
-                // --- 2. 파일 업로드 (있을 경우) ---
+                // --- 2. 파일 업로드 ---
                 if (file) {
-                    console.log(`📂 파일 업로드 시도: ${file.name} (${file.size} bytes)`);
+                    if (statusText) statusText.textContent = '상세 파일 업로드 중...';
                     const storageRef = storage.ref(`files/${Date.now()}_${file.name}`);
-                    const uploadTask = storageRef.put(file);
-
-                    fileUrl = await new Promise((resolve, reject) => {
-                        uploadTask.on('state_changed',
-                            (snapshot) => {
-                                const progress = (snapshot.totalBytes > 0)
-                                    ? (snapshot.bytesTransferred / snapshot.totalBytes) * 100
-                                    : 0;
-
-                                // UI 업데이트
-                                if (progressBar) progressBar.style.width = progress + '%';
-                                if (percText) percText.textContent = Math.round(progress) + '%';
-                                if (statusText) statusText.textContent = `파일 전송 중... (${Math.round(progress)}%)`;
-
-                                submitBtn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> 전송 중 (${Math.round(progress)}%)`;
-                                console.log(`📊 업로드 진행률: ${Math.round(progress)}% (${snapshot.bytesTransferred}/${snapshot.totalBytes})`);
-                            },
-                            (error) => {
-                                console.error("❌ Storage 업로드 에러 상세:", error);
-                                reject(new Error("파일 서버 업로드 중 오류가 발생했습니다: " + error.message));
-                            },
-                            async () => {
-                                try {
-                                    if (statusText) statusText.textContent = '파일 처리 중...';
-                                    console.log('✅ 파일 업로드 완료, URL 추출 중...');
-                                    const url = await uploadTask.snapshot.ref.getDownloadURL();
-                                    resolve(url);
-                                } catch (err) {
-                                    console.error("❌ URL 추출 에러:", err);
-                                    reject(new Error("파일 주소를 가져오는 데 실패했습니다."));
-                                }
-                            }
-                        );
-                    });
+                    await storageRef.put(file);
+                    fileUrl = await storageRef.getDownloadURL();
                 }
 
+                if (coverFile) {
+                    if (statusText) statusText.textContent = '표지 이미지 업로드 중...';
+                    const coverRef = storage.ref(`covers/${Date.now()}_${coverFile.name}`);
+                    await coverRef.put(coverFile);
+                    coverUrl = await coverRef.getDownloadURL();
+                }
                 // --- 3. Firestore 데이터 저장 ---
                 if (statusText) statusText.textContent = '자료 정보 저장 중...';
                 submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 정보 저장 중...';
@@ -746,6 +723,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     price,
                     content,
                     fileUrl,
+                    coverUrl,
                     createdAt: firebase.firestore.FieldValue.serverTimestamp()
                 };
 
@@ -828,7 +806,12 @@ document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('edit-order').value = post.order || 0;
             document.getElementById('edit-price').value = post.price || "";
             document.getElementById('edit-content').value = post.content || '';
-            document.getElementById('edit-file-status').textContent = post.fileUrl ? "기존 파일이 있습니다 (교체 시 새로 선택)" : "첨부된 파일 없음";
+
+            const coverStatus = document.getElementById('edit-cover-status');
+            if (coverStatus) coverStatus.textContent = post.coverUrl ? "기존 표지가 있습니다 (교체 시 새로 선택)" : "등록된 표지 없음";
+
+            const fileStatus = document.getElementById('edit-file-status');
+            if (fileStatus) fileStatus.textContent = post.fileUrl ? "기존 상세 파일이 있습니다 (교체 시 새로 선택)" : "첨부된 파일 없음";
 
             if (editModal) editModal.classList.add('show');
         } catch (error) {
@@ -864,7 +847,9 @@ document.addEventListener('DOMContentLoaded', () => {
             const price = document.getElementById('edit-price').value.trim() || '';
             const content = document.getElementById('edit-content').value;
             const fileInput = document.getElementById('edit-file');
+            const coverInput = document.getElementById('edit-cover');
             const file = fileInput.files[0];
+            const coverFile = coverInput ? coverInput.files[0] : null;
 
             if (tags.length === 0) {
                 alert("최소 하나 이상의 분류를 선택해 주세요.");
@@ -896,6 +881,11 @@ document.addEventListener('DOMContentLoaded', () => {
                     updateData.fileUrl = await storageRef.getDownloadURL();
                 }
 
+                if (coverFile) {
+                    const coverRef = storage.ref(`covers/${Date.now()}_${coverFile.name}`);
+                    await coverRef.put(coverFile);
+                    updateData.coverUrl = await coverRef.getDownloadURL();
+                }
                 await db.collection("posts").doc(id).update(updateData);
                 alert("수정되었습니다.");
                 window.closeAllModals();

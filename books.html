@@ -307,7 +307,9 @@
             let authorHtml = author ? `<div class="book-author">${author}</div>` : '';
 
             let thumbUrl = 'images/puritan-study.png';
-            if (book.fileUrl && book.fileUrl.match(/\.(jpeg|jpg|gif|png|webp|svg)/i)) {
+            if (book.coverUrl) {
+                thumbUrl = book.coverUrl;
+            } else if (book.fileUrl && book.fileUrl.match(/\.(jpeg|jpg|gif|png|webp|svg)/i)) {
                 thumbUrl = book.fileUrl;
             } else {
                 const urlRegex = /(https?:\/\/[^\s]+)/g;
@@ -354,7 +356,9 @@
             let authorHtml = author ? `<div class="book-detail-author">${author} 저</div>` : '';
 
             let thumbUrl = 'images/puritan-study.png';
-            if (book.fileUrl && book.fileUrl.match(/\.(jpeg|jpg|gif|png|webp|svg)/i)) {
+            if (book.coverUrl) {
+                thumbUrl = book.coverUrl;
+            } else if (book.fileUrl && book.fileUrl.match(/\.(jpeg|jpg|gif|png|webp|svg)/i)) {
                 thumbUrl = book.fileUrl;
             } else {
                 const urlRegex = /(https?:\/\/[^\s]+)/g;
@@ -366,7 +370,6 @@
                     }
                 }
             }
-
             let cleanTitle = title;
             if (cleanTitle.includes(':')) cleanTitle = cleanTitle.split(':')[1].trim();
 

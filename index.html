@@ -480,10 +480,18 @@
                             <textarea id="post-content" rows="6" placeholder="내용을 입력하거나 유튜브 주소를 넣어주세요"></textarea>
                         </div>
 
-                        <div class="input-group">
-                            <label>파일 첨부</label>
-                            <input type="file" id="post-file" style="margin-bottom: 5px;">
+                        <div class="input-row" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                            <div class="input-group">
+                                <label>도서 표지 이미지 (목록용)</label>
+                                <input type="file" id="post-cover" accept="image/*" style="margin-bottom: 5px;">
+                            </div>
+                            <div class="input-group">
+                                <label>도서 상세/내용 이미지 (본문용)</label>
+                                <input type="file" id="post-file" style="margin-bottom: 5px;">
+                            </div>
                         </div>
+                        <p style="font-size: 0.8rem; color: #888; margin-bottom: 15px;">* 도서의 경우 '표지'와 '상세 이미지'를 각각 등록할
+                            수 있습니다. (상세 이미지는 PDF도 가능)</p>
 
                         <div id="upload-progress-container"
                             style="display: none; width: 100%; margin: 15px 0; background: #fafafa; padding: 15px; border-radius: 8px; border: 1px solid #eee;">
@@ -713,13 +721,23 @@
                     <label>내용 (또는 유튜브 링크)</label>
                     <textarea id="edit-content" rows="6" placeholder="내용을 입력하거나 유튜브 주소를 넣어주세요"></textarea>
                 </div>
-                <div class="form-row">
+                <div class="input-row"
+                    style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 15px;">
                     <div class="input-group">
-                        <label>파일 교체 (선택사항)</label>
+                        <label>도서 표지 교체</label>
+                        <input type="file" id="edit-cover" accept="image/*">
+                        <p id="edit-cover-status" style="font-size: 0.8em; color: var(--text-light); margin-top: 5px;">
+                        </p>
+                    </div>
+                    <div class="input-group">
+                        <label>상세 내용/파일 교체</label>
                         <input type="file" id="edit-file">
                         <p id="edit-file-status" style="font-size: 0.8em; color: var(--text-light); margin-top: 5px;">
                         </p>
                     </div>
+                </div>
+
+                <div class="form-row">
                     <button type="submit" class="cta-btn primary">수정 완료</button>
                 </div>
             </form>
