@@ -164,6 +164,9 @@
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
 
+    <!-- PortOne SDK -->
+    <script src="https://cdn.iamport.kr/v1/iamport.js"></script>
+
     <script>
         // Firebase Config (Must match index.html)
         const firebaseConfig = {
@@ -353,12 +356,51 @@
                     <div class="book-detail-price">${priceStr}</div>
                     <div class="book-detail-description">${contentText.replace(/(https?:\/\/[^\s]+)/g, '').trim()}</div>
                     <div class="book-detail-actions">
-                        <a href="mailto:kpuritan.phb@gmail.com?subject=구매 문의: ${title}" class="book-buy-btn" style="padding: 1.2rem 3rem; font-size: 1.1rem;">
-                            구매 문의하기
+                        <button onclick="requestPay('${title}', '${priceStr}')" class="book-buy-btn" style="padding: 1.2rem 3rem; font-size: 1.1rem; border:none; cursor:pointer;">
+                            바로 구매하기
+                        </button>
+                        <a href="mailto:kpuritan.phb@gmail.com?subject=구매 문의: ${title}" class="book-buy-btn" style="padding: 1.2rem 3rem; font-size: 1.1rem; background: transparent; border: 1px solid var(--secondary-color); color: var(--secondary-color);">
+                            메일 문의
                         </a>
                     </div>
                 </div>
             `;
+        }
+
+        function requestPay(title, priceStr) {
+            if (!window.IMP) return alert("결제 모듈을 불러오는 중입니다. 잠시 후 다시 시도해주세요.");
+
+            const IMP = window.IMP;
+            // 가맹점 식별코드 (사용자님 코드로 변경 예정)
+            IMP.init("imp67011510");
+
+            // 숫자만 추출
+            const amount = parseInt(priceStr.replace(/[^0-9]/g, '')) || 0;
+            if (amount <= 0) {
+                alert("가격을 확인할 수 없어 구매 문의로 연결됩니다.");
+                window.location.href = `mailto:kpuritan.phb@gmail.com?subject=구매 문의: ${title}`;
+                return;
+            }
+
+            if (!confirm(`'${title}'을(를) ${amount.toLocaleString()}원에 구매하시겠습니까?`)) return;
+
+            IMP.request_pay({
+                pg: "html5_inicis", // PG사 설정 (기본 KG이니시스)
+                pay_method: "card",
+                merchant_uid: `mid_${new Date().getTime()}`,
+                name: title,
+                amount: amount,
+                buyer_email: "",
+                buyer_name: "구매자",
+                buyer_tel: "010-0000-0000",
+            }, function (rsp) {
+                if (rsp.success) {
+                    alert('결제가 완료되었습니다! 배송지 확인을 위해 곧 연락드리겠습니다.');
+                    // 여기서 결제 성공 정보를 DB에 저장할 수도 있습니다.
+                } else {
+                    alert('결제에 실패하였습니다. 사유: ' + rsp.error_msg);
+                }
+            });
         }
 
         function renderMockBooks() {
