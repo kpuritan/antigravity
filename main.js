@@ -1382,7 +1382,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         </h4>
                         ${adminButtons}
                     </div>
-                    <div class="resource-body-modern">${linkedContent.trim() || (post.fileUrl ? '<span style="color:var(--secondary-color); font-size:0.9rem;"><i class="fas fa-info-circle"></i> 아래 첨부파일을 확인해주세요.</span>' : '<span style="color:#ccc; font-style:italic;">상세 내용 없음</span>')}</div>
+                    ${linkedContent.trim() || post.fileUrl ? `<div class="resource-body-modern">${linkedContent.trim() || (post.fileUrl ? '<span style="color:var(--secondary-color); font-size:0.9rem;"><i class="fas fa-info-circle"></i> 아래 첨부파일을 확인해주세요.</span>' : '')}</div>` : ''}
                     ${priceHtml}
                     ${isBookstore ? buyButtonHtml : fileLinkHtml}
                 </div>
