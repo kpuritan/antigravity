@@ -81,6 +81,28 @@
             color: #888;
             font-size: 1.2rem;
         }
+
+        /* Detail Long Image */
+        .book-detail-divider {
+            height: 1px;
+            background: #eee;
+            margin: 4rem 0;
+            width: 100%;
+        }
+
+        .book-detail-long-image {
+            width: 100%;
+            max-width: 900px;
+            margin: 0 auto 5rem;
+            text-align: center;
+        }
+
+        .book-detail-long-image img {
+            width: 100%;
+            height: auto;
+            border-radius: 8px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
+        }
     </style>
 </head>
 
@@ -141,6 +163,7 @@
             <div id="book-detail-content-area" class="book-detail-grid">
                 <!-- Injected via JS -->
             </div>
+            <div id="book-detail-extra"></div>
         </div>
     </main>
 
@@ -370,6 +393,21 @@
                     </div>
                 </div>
             `;
+
+            // Display uploaded long image in detail
+            const extraArea = document.getElementById('book-detail-extra');
+            if (extraArea) {
+                if (book.fileUrl && book.fileUrl.match(/\.(jpeg|jpg|gif|png|webp|svg)/i)) {
+                    extraArea.innerHTML = `
+                        <div class="book-detail-divider"></div>
+                        <div class="book-detail-long-image">
+                            <img src="${book.fileUrl}" alt="상세 설명">
+                        </div>
+                    `;
+                } else {
+                    extraArea.innerHTML = '';
+                }
+            }
         }
 
         function requestPay(title, priceStr) {
