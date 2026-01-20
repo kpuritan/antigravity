@@ -354,6 +354,24 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    // Logout Logic
+    const logoutBtn = document.getElementById('admin-logout-btn');
+    if (logoutBtn) {
+        logoutBtn.addEventListener('click', () => {
+            if (confirm('로그아웃 하시겠습니까?')) {
+                isAdmin = false;
+                const dashboard = document.getElementById('admin-dashboard');
+                const loginOpenBtn = document.getElementById('admin-access-btn');
+
+                if (dashboard) dashboard.classList.add('section-hidden');
+                if (loginOpenBtn) loginOpenBtn.innerHTML = '<i class="fas fa-user-lock"></i> <span>관리자</span>';
+
+                alert('로그아웃 되었습니다.');
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+        });
+    }
+
     // Admin Dashboard Logic: Populate Category Selects
     const populateSelect = (selectId, items) => {
         const select = document.getElementById(selectId);

@@ -380,10 +380,18 @@
         <!-- Admin Dashboard (Initially Hidden) -->
         <section id="admin-dashboard" class="admin-only section-hidden">
             <div class="admin-container">
-                <div class="section-title left">
-                    <h2>자료 관리 대시보드</h2>
-                    <p>새로운 자료(글, 동영상, 파일)를 카테고리에 맞춰 업로드하세요.</p>
-                    <p id="firebase-status" style="font-size: 0.9em; margin-top: 0.5rem;">연결 상태 확인 중...</p>
+                <div class="section-title left"
+                    style="display: flex; justify-content: space-between; align-items: flex-start; border-top: none;">
+                    <div>
+                        <h2 style="margin-bottom: 0.5rem;">자료 관리 대시보드</h2>
+                        <p>새로운 자료(글, 동영상, 파일)를 카테고리에 맞춰 업로드하세요.</p>
+                        <p id="firebase-status"
+                            style="font-size: 0.9em; margin-top: 0.5rem; color: var(--secondary-color);">연결 상태: 확인됨</p>
+                    </div>
+                    <button id="admin-logout-btn" class="cta-btn secondary"
+                        style="padding: 0.6rem 1.2rem; font-size: 0.9rem; border-color: #e74c3c; color: #e74c3c; background: transparent;">
+                        <i class="fas fa-sign-out-alt"></i> 로그아웃
+                    </button>
                 </div>
 
                 <!-- 관리자 메뉴 선택 (3단 분리 포털) -->
