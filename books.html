@@ -353,7 +353,10 @@
                     <div class="book-tag">PURITAN HERITAGE BOOKS</div>
                     <h1 class="book-detail-title">${cleanTitle}</h1>
                     <div class="book-detail-author">${author} 저</div>
-                    <div class="book-detail-price">${priceStr}</div>
+                    <div class="book-detail-price">
+                        ${priceStr}
+                        <span style="font-size: 0.9rem; font-weight: 500; color: #888; margin-left: 0.5rem;">(배송비 별도)</span>
+                    </div>
                     <div class="book-detail-description">${contentText.replace(/(https?:\/\/[^\s]+)/g, '').trim()}</div>
                     <div class="book-detail-actions">
                         <button onclick="requestPay('${title}', '${priceStr}')" class="book-buy-btn" style="padding: 1.2rem 3rem; font-size: 1.1rem; border:none; cursor:pointer;">

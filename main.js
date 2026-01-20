@@ -1314,7 +1314,9 @@ document.addEventListener('DOMContentLoaded', () => {
             const priceStr = post.price || (contentText.match(/(\d{1,3}(,\d{3})*원)/) ? contentText.match(/(\d{1,3}(,\d{3})*원)/)[0] : '가격 문의');
             const priceNum = parseInt(priceStr.replace(/[^0-9]/g, '')) || 0;
 
-            priceHtml = `<div class="book-price" style="font-size: 1.2rem; font-weight: 700; color: var(--secondary-color); margin-top: 10px;">${priceStr}</div>`;
+            priceHtml = `<div class="book-price" style="font-size: 1.2rem; font-weight: 700; color: var(--secondary-color); margin-top: 10px;">
+                ${priceStr} <span style="font-size: 0.8rem; font-weight: 400; color: #888; margin-left: 5px;">(배송비 별도)</span>
+            </div>`;
 
             if (priceNum > 0) {
                 buyButtonHtml = `
