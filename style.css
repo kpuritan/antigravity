@@ -64,6 +64,55 @@ header.scrolled .nav-container {
     padding: 0.6rem 2rem;
 }
 
+/* Ticker Banner Style */
+.ticker-banner {
+    background: var(--secondary-color);
+    color: white;
+    padding: 10px 0;
+    overflow: hidden;
+    white-space: nowrap;
+    position: relative;
+    z-index: 1000;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.1);
+}
+
+.ticker-track {
+    display: flex;
+    width: max-content;
+    animation: tickerMove 35s linear infinite;
+}
+
+.ticker-item {
+    padding-right: 120px;
+    font-weight: 500;
+    font-size: 1rem;
+    letter-spacing: 0.01em;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.ticker-item::before {
+    content: '•';
+    color: rgba(255, 255, 255, 0.5);
+    font-size: 1.2rem;
+}
+
+@keyframes tickerMove {
+    0% {
+        transform: translateX(0);
+    }
+
+    100% {
+        transform: translateX(-50%);
+    }
+}
+
+.ticker-banner:hover .ticker-track {
+    animation-play-state: paused;
+}
+
 .nav-container {
     max-width: 1400px;
     margin: 0 auto;
@@ -2601,6 +2650,7 @@ footer {
     /* 2줄 말줄임 */
     display: -webkit-box;
     -webkit-line-clamp: 2;
+    line-clamp: 2;
     -webkit-box-orient: vertical;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -2771,6 +2821,7 @@ footer {
     margin-bottom: 2rem;
     display: -webkit-box;
     -webkit-line-clamp: 4;
+    line-clamp: 4;
     -webkit-box-orient: vertical;
     overflow: hidden;
     text-overflow: ellipsis;
