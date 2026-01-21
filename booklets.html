@@ -363,6 +363,10 @@
             let thumbUrl = item.coverUrl || '';
             let fileHtml = '';
             if (item.fileUrl) {
+                // 다운로드 버튼은 형식이 무엇이든 항상 생성 (클래스는 기존 버튼 스타일 활용)
+                fileHtml = `<a href="${item.fileUrl}" target="_blank" download class="book-buy-btn" style="display:inline-block; text-decoration:none; text-align:center; background:#0a7c68; color:white; padding:12px 30px; border-radius:8px; font-weight:700;">
+                    <i class="fas fa-file-download"></i> 자료 파일 저장하기</a>`;
+
                 if (item.fileUrl.match(/\.(jpeg|jpg|gif|png|webp|svg)/i)) {
                     extraArea.innerHTML = `
                         <div class="book-detail-divider" style="height:1px; background:#eee; margin:4rem 0;"></div>
@@ -371,7 +375,6 @@
                         </div>
                     `;
                 } else {
-                    fileHtml = `<a href="${item.fileUrl}" target="_blank" class="book-buy-btn" style="display:inline-block; text-decoration:none; text-align:center;">자료 파일 다운로드</a>`;
                     extraArea.innerHTML = '';
                 }
             } else {
