@@ -81,6 +81,8 @@ header.scrolled .nav-container {
     border-top: 2px solid rgba(10, 255, 210, 0.3);
     border-bottom: 2px solid rgba(10, 255, 210, 0.3);
     box-shadow: 0 0 30px rgba(0, 255, 210, 0.1);
+    margin: 1rem 0 3rem 0;
+    /* Updated: Margin added to position better */
 }
 
 .ticker-track {
