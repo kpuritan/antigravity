@@ -16,17 +16,18 @@
 
     <style>
         .booklets-hero {
-            height: 40vh;
+            height: 50vh;
             position: relative;
-            background: linear-gradient(rgba(42, 45, 50, 0.5), rgba(42, 45, 50, 0.5)), url('images/puritan-study.png');
+            background: linear-gradient(rgba(42, 45, 50, 0.4), rgba(42, 45, 50, 0.4)), url('westminster_assembly_illustration_1768571596977.png');
             background-size: cover;
-            background-position: center;
+            background-position: center 30%;
+            background-attachment: fixed;
             display: flex;
             align-items: center;
             justify-content: center;
             text-align: center;
             color: white;
-            border-bottom: 5px solid #e67e22;
+            border-bottom: 5px solid #0a7c68;
         }
 
         .booklets-hero h1 {
@@ -34,11 +35,13 @@
             color: white;
             margin-bottom: 1rem;
             text-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+            text-transform: uppercase;
         }
 
         .booklets-hero p {
             font-size: 1.2rem;
             opacity: 0.9;
+            font-weight: 500;
         }
 
         .filter-container {
@@ -73,7 +76,7 @@
         }
 
         .tab-btn.active {
-            background: #e67e22;
+            background: #0a7c68;
             color: white;
         }
 
@@ -108,9 +111,9 @@
         }
 
         .sub-tab-btn.active {
-            border-color: #e67e22;
-            color: #e67e22;
-            background: rgba(230, 126, 34, 0.05);
+            border-color: #0a7c68;
+            color: #0a7c68;
+            background: rgba(10, 124, 104, 0.05);
         }
 
         @keyframes fadeIn {
@@ -129,7 +132,7 @@
             text-align: center;
             padding: 5rem;
             font-size: 1.5rem;
-            color: #e67e22;
+            color: #0a7c68;
         }
 
         .no-content {
@@ -139,7 +142,7 @@
         }
 
         .book-card-premium .book-tag {
-            background: #e67e22;
+            background: #0a7c68;
         }
     </style>
 </head>
@@ -356,7 +359,8 @@
             const detailArea = document.getElementById('book-detail-content-area');
             const extraArea = document.getElementById('book-detail-extra');
 
-            let thumbUrl = item.coverUrl || 'images/puritan-study.png';
+            let hasCover = !!item.coverUrl;
+            let thumbUrl = item.coverUrl || '';
             let fileHtml = '';
             if (item.fileUrl) {
                 if (item.fileUrl.match(/\.(jpeg|jpg|gif|png|webp|svg)/i)) {
@@ -375,10 +379,11 @@
             }
 
             detailArea.innerHTML = `
+                ${hasCover ? `
                 <div class="book-detail-image-wrapper">
                     <img src="${thumbUrl}" alt="${item.title}" onerror="this.src='images/puritan-study.png'">
-                </div>
-                <div class="book-detail-content">
+                </div>` : ''}
+                <div class="book-detail-content" ${!hasCover ? 'style="grid-column: 1 / -1; max-width: 800px; margin: 0 auto;"' : ''}>
                     <div class="book-tag">전도 소책자 | ${currentMainCat === '한국어' ? '한국어' : currentLang}</div>
                     <h1 class="book-detail-title">${item.title}</h1>
                     <div class="book-detail-description" style="white-space: pre-wrap; margin-top: 20px; line-height: 1.8;">${item.content || ''}</div>
