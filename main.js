@@ -1043,8 +1043,107 @@ document.addEventListener('DOMContentLoaded', () => {
             if (typeof isAdmin !== 'undefined' && isAdmin) {
                 adminHeader.style.display = 'block';
                 if (modalUploadForm) modalUploadForm.style.display = 'none';
-                if (toggleBtn) toggleBtn.textContent = '업로드 창 열기';
-                // ... Admin event listeners (simplified for stability) ...
+                if (toggleBtn) {
+                    toggleBtn.textContent = '업로드 창 열기';
+                    toggleBtn.onclick = (e) => {
+                        e.preventDefault();
+                        if (modalUploadForm.style.display === 'none') {
+                            modalUploadForm.style.display = 'block';
+                            toggleBtn.textContent = '업로드 창 닫기';
+                            const titleInput = document.getElementById('modal-post-title');
+                            if (titleInput) titleInput.focus();
+                        } else {
+                            modalUploadForm.style.display = 'none';
+                            toggleBtn.textContent = '업로드 창 열기';
+                        }
+                    };
+                }
+
+                // "이 폴더에 새 자료 추가" 텍스트 클릭 시에도 업로드 창 열기
+                const addText = adminHeader.querySelector('span');
+                if (addText) {
+                    addText.style.cursor = 'pointer';
+                    addText.onclick = () => {
+                        if (modalUploadForm && modalUploadForm.style.display === 'none') {
+                            modalUploadForm.style.display = 'block';
+                            if (toggleBtn) toggleBtn.textContent = '업로드 창 닫기';
+                            const titleInput = document.getElementById('modal-post-title');
+                            if (titleInput) titleInput.focus();
+                        }
+                    };
+                }
+
+                if (modalUploadForm) {
+                    modalUploadForm.onsubmit = async (e) => {
+                        e.preventDefault();
+                        const title = document.getElementById('modal-post-title').value.trim();
+                        const series = document.getElementById('modal-post-series').value.trim();
+                        const order = parseInt(document.getElementById('modal-post-order').value) || 0;
+                        const content = document.getElementById('modal-post-content').value;
+                        const fileEl = document.getElementById('modal-post-file');
+                        const file = fileEl ? fileEl.files[0] : null;
+
+                        if (!title) {
+                            alert("제목을 입력해 주세요.");
+                            return;
+                        }
+
+                        const submitBtn = modalUploadForm.querySelector('button[type="submit"]');
+                        const originalBtnText = submitBtn.innerHTML;
+                        const progressBar = document.getElementById('modal-upload-bar');
+                        const progressContainer = document.getElementById('modal-upload-progress');
+
+                        try {
+                            submitBtn.disabled = true;
+                            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+                            if (progressContainer) progressContainer.style.display = 'block';
+                            if (progressBar) progressBar.style.width = '0%';
+
+                            let fileUrl = "";
+                            if (file) {
+                                const storageRef = storage.ref(`files/${Date.now()}_${file.name}`);
+                                const uploadTask = storageRef.put(file);
+
+                                await new Promise((resolve, reject) => {
+                                    uploadTask.on('state_changed',
+                                        (snap) => {
+                                            const perc = (snap.bytesTransferred / snap.totalBytes) * 100;
+                                            if (progressBar) progressBar.style.width = perc + '%';
+                                        },
+                                        reject,
+                                        resolve
+                                    );
+                                });
+                                fileUrl = await storageRef.getDownloadURL();
+                            }
+
+                            await db.collection("posts").add({
+                                title,
+                                series,
+                                order,
+                                content,
+                                fileUrl,
+                                tags: [categoryName],
+                                createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                            });
+
+                            alert("자료가 등록되었습니다.");
+                            modalUploadForm.reset();
+                            modalUploadForm.style.display = 'none';
+                            if (toggleBtn) toggleBtn.textContent = '업로드 창 열기';
+
+                            // 다시 해당 카테고리 로드
+                            window.openResourceModal(categoryName, series || null);
+                        } catch (err) {
+                            console.error("Upload Error:", err);
+                            alert("업로드 실패: " + err.message);
+                        } finally {
+                            submitBtn.disabled = false;
+                            submitBtn.innerHTML = "게시하기";
+                            if (progressContainer) progressContainer.style.display = 'none';
+                        }
+                    };
+                }
             } else {
                 adminHeader.style.display = 'none';
             }
