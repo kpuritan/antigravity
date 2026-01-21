@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>전도 소책자 | 한국 청교도 연구소 PHB</title>
+    <meta name="description" content="다양한 언어로 제작된 전도 소책자 목록을 확인하세요.">
+
+    <link rel="stylesheet" href="style.css?v=103">
+    <link rel="icon" type="image/svg+xml" href="favicon.svg?v=2">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700;900&family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap"
+        rel="stylesheet">
+
+    <style>
+        .booklets-hero {
+            height: 40vh;
+            position: relative;
+            background: linear-gradient(rgba(42, 45, 50, 0.5), rgba(42, 45, 50, 0.5)), url('images/puritan-study.png');
+            background-size: cover;
+            background-position: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            color: white;
+            border-bottom: 5px solid #e67e22;
+        }
+
+        .booklets-hero h1 {
+            font-size: 3.5rem;
+            color: white;
+            margin-bottom: 1rem;
+            text-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+        }
+
+        .booklets-hero p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+
+        .filter-container {
+            max-width: 1200px;
+            margin: -30px auto 40px;
+            position: relative;
+            z-index: 10;
+            padding: 0 20px;
+        }
+
+        .main-tabs {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            background: white;
+            padding: 10px;
+            border-radius: 50px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            max-width: 400px;
+            margin: 0 auto;
+        }
+
+        .tab-btn {
+            padding: 10px 25px;
+            border: none;
+            background: transparent;
+            border-radius: 40px;
+            cursor: pointer;
+            font-weight: 700;
+            color: #666;
+            transition: all 0.3s;
+        }
+
+        .tab-btn.active {
+            background: #e67e22;
+            color: white;
+        }
+
+        .sub-tabs-wrapper {
+            display: none;
+            justify-content: center;
+            margin-top: 20px;
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        .sub-tabs-wrapper.show {
+            display: flex;
+        }
+
+        .sub-tabs {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .sub-tab-btn {
+            padding: 8px 20px;
+            border: 1px solid #ddd;
+            background: white;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: #888;
+            transition: all 0.2s;
+        }
+
+        .sub-tab-btn.active {
+            border-color: #e67e22;
+            color: #e67e22;
+            background: rgba(230, 126, 34, 0.05);
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .loading-spinner {
+            text-align: center;
+            padding: 5rem;
+            font-size: 1.5rem;
+            color: #e67e22;
+        }
+
+        .no-content {
+            text-align: center;
+            padding: 5rem;
+            color: #888;
+        }
+
+        .book-card-premium .book-tag {
+            background: #e67e22;
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        <div class="nav-container">
+            <a href="index.html" class="logo">
+                <span class="logo-eng">KPI</span>
+                <span class="logo-kor">한국 청교도 연구소</span>
+            </a>
+            <nav>
+                <ul>
+                    <li><a href="index.html#about">About</a></li>
+                    <li><a href="index.html#recent-updates">Resources</a></li>
+                    <li><a href="booklets.html" class="active">전도 소책자</a></li>
+                    <li class="dropdown">
+                        <a href="javascript:void(0)">퓨리탄헤리티지북스(PHB) <i class="fas fa-chevron-down"></i></a>
+                        <div class="dropdown-content" id="publisher-dropdown">
+                            <ul class="dropdown-list">
+                                <li><a href="books.html">도서 목록</a></li>
+                                <li><a href="mailto:kpuritan.phb@gmail.com">메일 문의</a></li>
+                            </ul>
+                        </div>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <main>
+        <section class="booklets-hero">
+            <div class="hero-content">
+                <h1>전도 소책자</h1>
+                <p>복음의 핵심을 담은 소책자들을 다양한 언어로 만나보세요.</p>
+            </div>
+        </section>
+
+        <div class="filter-container">
+            <div class="main-tabs">
+                <button class="tab-btn active" onclick="switchCategory('한국어')">한국어</button>
+                <button class="tab-btn" onclick="switchCategory('Foreign')">Foreign Language</button>
+            </div>
+
+            <div id="foreign-sub-tabs" class="sub-tabs-wrapper">
+                <div class="sub-tabs">
+                    <button class="sub-tab-btn active" onclick="switchLang('English')">English</button>
+                    <button class="sub-tab-btn" onclick="switchLang('Spanish')">Spanish</button>
+                    <button class="sub-tab-btn" onclick="switchLang('Japanese')">Japanese</button>
+                    <button class="sub-tab-btn" onclick="switchLang('Chinese')">Chinese</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="books-container" style="margin-top: 0;">
+            <div id="booklets-grid" class="books-grid">
+                <div class="loading-spinner">
+                    <i class="fas fa-spinner fa-spin"></i> 소책자 불러오는 중...
+                </div>
+            </div>
+        </div>
+
+        <div id="book-detail-container" class="book-detail-container" style="display: none;">
+            <a href="javascript:void(0)" class="back-to-list" onclick="closeDetail()">
+                <i class="fas fa-arrow-left"></i> 목록으로 돌아가기
+            </a>
+            <div id="book-detail-content-area" class="book-detail-grid"></div>
+            <div id="book-detail-extra"></div>
+        </div>
+    </main>
+
+    <footer>
+        <div class="footer-content">
+            <div class="footer-section">
+                <h4>Korea Puritan Institute</h4>
+                <p>한국 청교도 연구소는 청교도 신학과 개혁주의 신념을 연구하고 성경적인 자료를 제공합니다.</p>
+            </div>
+            <div class="footer-section">
+                <h4>Contact Us</h4>
+                <p>Email: kpuritan.phb@gmail.com</p>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2026 Korea Puritan Institute. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
+
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyCJbOaiElCypwgtPgbwdnudn3VC737fMrs",
+            authDomain: "kpuritan-home.firebaseapp.com",
+            projectId: "kpuritan-home",
+            storageBucket: "kpuritan-home.firebasestorage.app",
+            messagingSenderId: "1071220455502",
+            appId: "1:1071220455502:web:7f6f59b48c48a73437f8f0"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+
+        let currentMainCat = '한국어';
+        let currentLang = 'English';
+
+        const grid = document.getElementById('booklets-grid');
+        const detailContainer = document.getElementById('book-detail-container');
+        const gridContainer = document.querySelector('.books-container');
+        const hero = document.querySelector('.booklets-hero');
+        const filterContainer = document.querySelector('.filter-container');
+
+        async function loadData() {
+            grid.innerHTML = '<div class="loading-spinner"><i class="fas fa-spinner fa-spin"></i> 로딩 중...</div>';
+
+            const targetTag = currentMainCat === '한국어' ? '한국어' : currentLang;
+
+            try {
+                const snapshot = await db.collection("posts")
+                    .where("tags", "array-contains", "전도 소책자")
+                    .get();
+
+                let booklets = [];
+                snapshot.forEach(doc => {
+                    const data = doc.data();
+                    if (data.tags && data.tags.includes(targetTag)) {
+                        booklets.push({ id: doc.id, ...data });
+                    }
+                });
+
+                if (booklets.length === 0) {
+                    grid.innerHTML = `<div class="no-content">${targetTag} 자료가 아직 없습니다.</div>`;
+                    return;
+                }
+
+                booklets.sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0));
+
+                grid.innerHTML = '';
+                booklets.forEach(item => {
+                    const card = document.createElement('div');
+                    card.className = 'book-card-premium';
+                    card.style.cursor = 'pointer';
+
+                    let thumbUrl = item.coverUrl || 'images/puritan-study.png';
+                    if (!item.coverUrl && item.fileUrl && item.fileUrl.match(/\.(jpeg|jpg|gif|png|webp|svg)/i)) {
+                        thumbUrl = item.fileUrl;
+                    }
+
+                    card.innerHTML = `
+                        <div class="book-cover-wrapper">
+                            <img src="${thumbUrl}" alt="${item.title}" onerror="this.src='images/puritan-study.png'">
+                        </div>
+                        <div class="book-info">
+                            <div class="book-tag">${item.series || '전도 소책자'}</div>
+                            <h3 class="book-title">${item.title}</h3>
+                            <div class="book-description">${item.content ? item.content.substring(0, 100) + '...' : ''}</div>
+                            <div class="book-footer">
+                                <span class="book-buy-btn">자료 보기</span>
+                            </div>
+                        </div>
+                    `;
+                    card.onclick = () => openDetail(item);
+                    grid.appendChild(card);
+                });
+            } catch (e) {
+                console.error(e);
+                grid.innerHTML = '불러오기 실패';
+            }
+        }
+
+        function switchCategory(cat) {
+            currentMainCat = cat;
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.innerText.includes(cat));
+            });
+
+            const foreignTabs = document.getElementById('foreign-sub-tabs');
+            if (cat === 'Foreign') {
+                foreignTabs.classList.add('show');
+            } else {
+                foreignTabs.classList.remove('show');
+            }
+            loadData();
+        }
+
+        function switchLang(lang) {
+            currentLang = lang;
+            document.querySelectorAll('.sub-tab-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.innerText === lang);
+            });
+            loadData();
+        }
+
+        function openDetail(item) {
+            gridContainer.style.display = 'none';
+            filterContainer.style.display = 'none';
+            hero.style.display = 'none';
+            detailContainer.style.display = 'block';
+
+            const detailArea = document.getElementById('book-detail-content-area');
+            const extraArea = document.getElementById('book-detail-extra');
+
+            let thumbUrl = item.coverUrl || 'images/puritan-study.png';
+            let fileHtml = '';
+            if (item.fileUrl) {
+                if (item.fileUrl.match(/\.(jpeg|jpg|gif|png|webp|svg)/i)) {
+                    extraArea.innerHTML = `
+                        <div class="book-detail-divider" style="height:1px; background:#eee; margin:4rem 0;"></div>
+                        <div class="book-detail-long-image" style="text-align:center;">
+                            <img src="${item.fileUrl}" style="width:100%; max-width:900px; border-radius:8px; box-shadow:0 10px 40px rgba(0,0,0,0.1);">
+                        </div>
+                    `;
+                } else {
+                    fileHtml = `<a href="${item.fileUrl}" target="_blank" class="book-buy-btn" style="display:inline-block; text-decoration:none; text-align:center;">자료 파일 다운로드</a>`;
+                    extraArea.innerHTML = '';
+                }
+            } else {
+                extraArea.innerHTML = '';
+            }
+
+            detailArea.innerHTML = `
+                <div class="book-detail-image-wrapper">
+                    <img src="${thumbUrl}" alt="${item.title}" onerror="this.src='images/puritan-study.png'">
+                </div>
+                <div class="book-detail-content">
+                    <div class="book-tag">전도 소책자 | ${currentMainCat === '한국어' ? '한국어' : currentLang}</div>
+                    <h1 class="book-detail-title">${item.title}</h1>
+                    <div class="book-detail-description" style="white-space: pre-wrap; margin-top: 20px; line-height: 1.8;">${item.content || ''}</div>
+                    <div class="book-detail-actions" style="margin-top: 30px;">
+                        ${fileHtml}
+                    </div>
+                </div>
+            `;
+            window.scrollTo(0, 0);
+        }
+
+        function closeDetail() {
+            detailContainer.style.display = 'none';
+            gridContainer.style.display = 'block';
+            filterContainer.style.display = 'block';
+            hero.style.display = 'flex';
+        }
+
+        document.addEventListener('DOMContentLoaded', loadData);
+    </script>
+</body>
+
+</html>

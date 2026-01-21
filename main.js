@@ -1046,6 +1046,13 @@ document.addEventListener('DOMContentLoaded', () => {
             if (typeof isAdmin !== 'undefined' && isAdmin) {
                 adminHeader.style.display = 'block';
                 if (modalUploadForm) modalUploadForm.style.display = 'none';
+
+                // 전도 소책자일 경우 언어 선택창 표시
+                const langSelect = document.getElementById('modal-post-lang');
+                if (langSelect) {
+                    langSelect.style.display = (categoryName === '전도 소책자') ? 'block' : 'none';
+                }
+
                 if (toggleBtn) {
                     toggleBtn.textContent = '업로드 창 열기';
                     toggleBtn.onclick = (e) => {
@@ -1085,6 +1092,13 @@ document.addEventListener('DOMContentLoaded', () => {
                         const content = document.getElementById('modal-post-content').value;
                         const fileEl = document.getElementById('modal-post-file');
                         const file = fileEl ? fileEl.files[0] : null;
+
+                        // 언어 태그 처리
+                        let finalTags = [categoryName];
+                        if (categoryName === '전도 소책자') {
+                            const langValue = document.getElementById('modal-post-lang').value;
+                            if (langValue) finalTags.push(langValue);
+                        }
 
                         if (!title) {
                             alert("제목을 입력해 주세요.");
@@ -1126,7 +1140,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 order,
                                 content,
                                 fileUrl,
-                                tags: [categoryName],
+                                tags: finalTags,
                                 createdAt: firebase.firestore.FieldValue.serverTimestamp()
                             });
 

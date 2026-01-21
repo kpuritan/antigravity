@@ -68,7 +68,7 @@
                         </div>
                     </li>
                     <li><a href="javascript:void(0)" onclick="openResourceModal('강해설교')">강해설교</a></li>
-                    <li><a href="javascript:void(0)" onclick="openResourceModal('전도 소책자')">전도 소책자</a></li>
+                    <li><a href="booklets.html">전도 소책자</a></li>
                     <li class="dropdown">
                         <a href="javascript:void(0)">퓨리탄헤리티지북스(PHB) <i class="fas fa-chevron-down"></i></a>
                         <div class="dropdown-content" id="publisher-dropdown">
@@ -769,6 +769,13 @@
                         style="width:100%; margin-bottom:10px;">
                     <div style="display: flex; gap: 10px; margin-bottom: 10px;">
                         <input type="text" id="modal-post-series" placeholder="시리즈 이름 (자동 입력됨)" style="flex: 2;">
+                        <select id="modal-post-lang" style="flex: 1; display: none;">
+                            <option value="한국어">한국어</option>
+                            <option value="English">English</option>
+                            <option value="Spanish">Spanish</option>
+                            <option value="Japanese">Japanese</option>
+                            <option value="Chinese">Chinese</option>
+                        </select>
                         <input type="number" id="modal-post-order" value="0" style="flex: 1;" placeholder="순서">
                     </div>
                     <textarea id="modal-post-content" rows="3" placeholder="내용 또는 유튜브 링크"
