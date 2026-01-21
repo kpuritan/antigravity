@@ -75,11 +75,9 @@ header.scrolled .nav-container {
     padding: 20px 0;
     overflow: hidden;
     white-space: nowrap;
-    position: absolute;
-    bottom: 80px;
-    /* Positioned below hero content */
+    position: relative;
+    /* Changed from absolute */
     width: 100%;
-    z-index: 2000;
     border-top: 2px solid rgba(10, 255, 210, 0.3);
     border-bottom: 2px solid rgba(10, 255, 210, 0.3);
     box-shadow: 0 0 30px rgba(0, 255, 210, 0.1);
@@ -133,7 +131,6 @@ header.scrolled .nav-container {
 /* Mobile Ticker Adjustments */
 @media (max-width: 768px) {
     .ticker-banner {
-        bottom: 40px;
         padding: 12px 0;
     }
 
