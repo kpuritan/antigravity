@@ -1537,13 +1537,22 @@ document.addEventListener('DOMContentLoaded', () => {
             : `${post.title}`;
 
         let coverImgHtml = '';
-        if (post.coverUrl) {
+        let actualPreviewUrl = post.coverUrl;
+
+        // 커버 이미지가 없지만 첨부파일이 이미지인 경우 프리뷰로 사용
+        if (!actualPreviewUrl && post.fileUrl && post.fileUrl.match(/\.(jpeg|jpg|gif|png|webp|svg)/i)) {
+            actualPreviewUrl = post.fileUrl;
+        }
+
+        if (actualPreviewUrl) {
             coverImgHtml = `
                 <div class="resource-cover-modern" style="width: 100%; margin-bottom: 15px; border-radius: 8px; overflow: hidden; background: #f9f9f9; display: flex; justify-content: center; align-items: center; min-height: 200px;">
-                    <img src="${post.coverUrl}" alt="${post.title}" style="max-width: 100%; max-height: 400px; object-fit: contain; box-shadow: 0 5px 15px rgba(0,0,0,0.1);">
+                    <img src="${actualPreviewUrl}" alt="${post.title}" style="max-width: 100%; max-height: 400px; object-fit: contain; box-shadow: 0 5px 15px rgba(0,0,0,0.1);">
                 </div>
             `;
         }
+
+        const showInfoCircle = !actualPreviewUrl && post.fileUrl;
 
         li.innerHTML = `
             <div class="resource-card-modern ${isBookstore ? 'book-card' : ''}" style="margin-bottom: 20px;">
@@ -1561,7 +1570,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         ${authorHtml}
                         ${adminButtons}
                     </div>
-                    ${linkedContent.trim() || post.fileUrl ? `<div class="resource-body-modern">${linkedContent.trim() || (post.fileUrl ? '<span style="color:var(--secondary-color); font-size:0.9rem;"><i class="fas fa-info-circle"></i> 아래 첨부파일을 확인해주세요.</span>' : '')}</div>` : ''}
+                    ${linkedContent.trim() || post.fileUrl ? `<div class="resource-body-modern">${linkedContent.trim() || (showInfoCircle ? '<span style="color:var(--secondary-color); font-size:0.9rem;"><i class="fas fa-info-circle"></i> 아래 첨부파일을 확인해주세요.</span>' : '')}</div>` : ''}
                     ${priceHtml}
                     ${isBookstore ? buyButtonHtml : fileLinkHtml}
                 </div>

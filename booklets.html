@@ -255,6 +255,7 @@
         async function loadData() {
             grid.innerHTML = '<div class="loading-spinner"><i class="fas fa-spinner fa-spin"></i> 로딩 중...</div>';
 
+            const languages = ['English', 'Spanish', 'Japanese', 'Chinese'];
             const targetTag = currentMainCat === '한국어' ? '한국어' : currentLang;
 
             try {
@@ -265,8 +266,19 @@
                 let booklets = [];
                 snapshot.forEach(doc => {
                     const data = doc.data();
-                    if (data.tags && data.tags.includes(targetTag)) {
-                        booklets.push({ id: doc.id, ...data });
+                    const tags = data.tags || [];
+
+                    if (currentMainCat === '한국어') {
+                        // 한국어 탭에서는 '한국어' 태그가 있거나, 다른 외국어 태그가 아예 없는 경우(기본값) 포함
+                        const hasOtherLang = languages.some(lang => tags.includes(lang));
+                        if (tags.includes('한국어') || !hasOtherLang) {
+                            booklets.push({ id: doc.id, ...data });
+                        }
+                    } else {
+                        // 외국어 탭에서는 정확한 언어 태그 매칭
+                        if (tags.includes(currentLang)) {
+                            booklets.push({ id: doc.id, ...data });
+                        }
                     }
                 });
 
@@ -283,10 +295,12 @@
                     card.className = 'book-card-premium';
                     card.style.cursor = 'pointer';
 
-                    let thumbUrl = item.coverUrl || 'images/puritan-study.png';
-                    if (!item.coverUrl && item.fileUrl && item.fileUrl.match(/\.(jpeg|jpg|gif|png|webp|svg)/i)) {
+                    // 파일 자체가 이미지라면 프리뷰로 사용
+                    let thumbUrl = item.coverUrl;
+                    if (!thumbUrl && item.fileUrl && item.fileUrl.match(/\.(jpeg|jpg|gif|png|webp|svg)/i)) {
                         thumbUrl = item.fileUrl;
                     }
+                    if (!thumbUrl) thumbUrl = 'images/puritan-study.png';
 
                     card.innerHTML = `
                         <div class="book-cover-wrapper">
@@ -295,7 +309,7 @@
                         <div class="book-info">
                             <div class="book-tag">${item.series || '전도 소책자'}</div>
                             <h3 class="book-title">${item.title}</h3>
-                            <div class="book-description">${item.content ? item.content.substring(0, 100) + '...' : ''}</div>
+                            <div class="book-description">${item.content ? item.content.substring(0, 80) + '...' : ''}</div>
                             <div class="book-footer">
                                 <span class="book-buy-btn">자료 보기</span>
                             </div>
