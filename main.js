@@ -993,6 +993,9 @@ document.addEventListener('DOMContentLoaded', () => {
         if (titleElem) titleElem.textContent = `${categoryName} 자료 목록`;
         listContainer.innerHTML = '<li class="no-resource-msg">자료를 불러오는 중입니다...</li>';
 
+        const sortAlphaBtn = document.getElementById('sort-alpha-btn');
+        if (sortAlphaBtn) sortAlphaBtn.style.display = 'none';
+
         // Clean up previous Sortable
         if (window.currentSortable) {
             window.currentSortable.destroy();
