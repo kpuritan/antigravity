@@ -64,51 +64,52 @@ header.scrolled .nav-container {
     padding: 0.6rem 2rem;
 }
 
-/* Ticker Banner Style - Adjusted Position & Size */
+/* Ticker Banner Style - Premium LED Sign Aesthetic */
 .ticker-banner {
-    background: rgba(10, 124, 104, 0.7);
-    /* Slightly more transparent */
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    color: white;
-    padding: 25px 0;
-    /* Increase padding for larger font */
+    background: #000000;
+    background-image:
+        radial-gradient(rgba(10, 255, 210, 0.15) 1px, transparent 0);
+    background-size: 4px 4px;
+    /* Pixel matrix effect */
+    color: #0affd2;
+    padding: 20px 0;
     overflow: hidden;
     white-space: nowrap;
     position: absolute;
-    top: calc(85vh * 0.5 + 240px);
-    /* Positioned below hero buttons (approx 5cm/180px-200px down) */
+    bottom: 80px;
+    /* Positioned below hero content */
     width: 100%;
     z-index: 2000;
-    border-top: 1px solid rgba(255, 255, 255, 0.2);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+    border-top: 2px solid rgba(10, 255, 210, 0.3);
+    border-bottom: 2px solid rgba(10, 255, 210, 0.3);
+    box-shadow: 0 0 30px rgba(0, 255, 210, 0.1);
 }
 
 .ticker-track {
     display: flex;
     width: max-content;
-    animation: tickerMove 45s linear infinite;
-    /* Slightly slower for readability */
+    animation: tickerMove 60s linear infinite;
 }
 
 .ticker-item {
-    padding-right: 150px;
-    font-weight: 800;
-    /* Bolder */
+    padding-right: 180px;
+    font-weight: 900;
     font-size: 2.2rem;
-    /* 2x size (approx) */
-    letter-spacing: -0.01em;
+    letter-spacing: 0.05em;
+    /* LED character spacing */
     display: flex;
     align-items: center;
     gap: 30px;
-    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+    text-shadow: 0 0 10px rgba(10, 255, 210, 0.8), 0 0 20px rgba(10, 255, 210, 0.4);
+    font-family: 'Inter', sans-serif;
+    /* Cleaner for LED */
 }
 
 .ticker-item::before {
-    content: '•';
-    color: rgba(255, 255, 255, 0.5);
-    font-size: 1.2rem;
+    content: '▶';
+    color: #0affd2;
+    font-size: 1.5rem;
+    opacity: 0.8;
 }
 
 @keyframes tickerMove {
@@ -119,6 +120,10 @@ header.scrolled .nav-container {
     100% {
         transform: translateX(-50%);
     }
+}
+
+.ticker-banner:hover {
+    background: #050505;
 }
 
 .ticker-banner:hover .ticker-track {
