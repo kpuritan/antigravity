@@ -130,6 +130,24 @@ header.scrolled .nav-container {
     animation-play-state: paused;
 }
 
+/* Mobile Ticker Adjustments */
+@media (max-width: 768px) {
+    .ticker-banner {
+        bottom: 40px;
+        padding: 12px 0;
+    }
+
+    .ticker-item {
+        font-size: 1.2rem;
+        padding-right: 80px;
+        gap: 15px;
+    }
+
+    .ticker-item::before {
+        font-size: 1rem;
+    }
+}
+
 .nav-container {
     max-width: 1400px;
     margin: 0 auto;
