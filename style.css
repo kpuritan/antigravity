@@ -64,37 +64,45 @@ header.scrolled .nav-container {
     padding: 0.6rem 2rem;
 }
 
-/* Ticker Banner Style */
+/* Ticker Banner Style - Adjusted Position & Size */
 .ticker-banner {
-    background: rgba(10, 124, 104, 0.85);
-    /* Semi-transparent green */
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
+    background: rgba(10, 124, 104, 0.7);
+    /* Slightly more transparent */
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
     color: white;
-    padding: 11px 0;
+    padding: 25px 0;
+    /* Increase padding for larger font */
     overflow: hidden;
     white-space: nowrap;
-    position: relative;
+    position: absolute;
+    top: calc(85vh * 0.5 + 240px);
+    /* Positioned below hero buttons (approx 5cm/180px-200px down) */
+    width: 100%;
     z-index: 2000;
-    /* Just below header (2100) */
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+    border-top: 1px solid rgba(255, 255, 255, 0.2);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
 }
 
 .ticker-track {
     display: flex;
     width: max-content;
-    animation: tickerMove 35s linear infinite;
+    animation: tickerMove 45s linear infinite;
+    /* Slightly slower for readability */
 }
 
 .ticker-item {
-    padding-right: 120px;
-    font-weight: 500;
-    font-size: 1rem;
-    letter-spacing: 0.01em;
+    padding-right: 150px;
+    font-weight: 800;
+    /* Bolder */
+    font-size: 2.2rem;
+    /* 2x size (approx) */
+    letter-spacing: -0.01em;
     display: flex;
     align-items: center;
-    gap: 15px;
+    gap: 30px;
+    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
 }
 
 .ticker-item::before {
