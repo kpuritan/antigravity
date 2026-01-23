@@ -298,16 +298,23 @@
                     card.className = 'book-card-premium';
                     card.style.cursor = 'pointer';
 
-                    // 파일 자체가 이미지라면 프리뷰로 사용
+                    // 썸네일 결정 로직: 커버가 있으면 커버, 없으면 파일이 이미지일 경우 파일 사용
                     let thumbUrl = item.coverUrl;
-                    if (!thumbUrl && item.fileUrl && item.fileUrl.match(/\.(jpeg|jpg|gif|png|webp|svg)/i)) {
-                        thumbUrl = item.fileUrl;
+                    if (!thumbUrl && item.fileUrl) {
+                        // URL에 이미지 확장자가 포함되어 있는지 확인 (인코딩된 . 포함)
+                        const isImage = /(\.|%2E)(jpeg|jpg|gif|png|webp|svg)/i.test(item.fileUrl);
+                        if (isImage) {
+                            thumbUrl = item.fileUrl;
+                        }
                     }
-                    if (!thumbUrl) thumbUrl = 'images/puritan-study.png';
+
+                    // 썸네일이 여전히 없으면(또는 로딩 실패 대비) 기본 이미지 설정은 HTML onerror에서 처리하지만,
+                    // 초기 src가 없으면 안되므로 기본값 지정
+                    const finalSrc = thumbUrl || 'images/puritan-study.png';
 
                     card.innerHTML = `
                         <div class="book-cover-wrapper">
-                            <img src="${thumbUrl}" alt="${item.title}" onerror="this.src='images/puritan-study.png'">
+                            <img src="${finalSrc}" alt="${item.title}" onerror="this.onerror=null; this.src='images/puritan-study.png';">
                         </div>
                         <div class="book-info">
                             <div class="book-tag">${item.series || '전도 소책자'}</div>
