@@ -298,18 +298,13 @@
                     card.className = 'book-card-premium';
                     card.style.cursor = 'pointer';
 
-                    // 썸네일 결정 로직: 커버가 있으면 커버, 없으면 파일이 이미지일 경우 파일 사용
+                    // 썸네일 결정 로직: 커버가 있으면 커버, 없으면 파일 URL을 시도
                     let thumbUrl = item.coverUrl;
                     if (!thumbUrl && item.fileUrl) {
-                        // URL에 이미지 확장자가 포함되어 있는지 확인 (인코딩된 . 포함)
-                        const isImage = /(\.|%2E)(jpeg|jpg|gif|png|webp|svg)/i.test(item.fileUrl);
-                        if (isImage) {
-                            thumbUrl = item.fileUrl;
-                        }
+                        thumbUrl = item.fileUrl;
                     }
 
-                    // 썸네일이 여전히 없으면(또는 로딩 실패 대비) 기본 이미지 설정은 HTML onerror에서 처리하지만,
-                    // 초기 src가 없으면 안되므로 기본값 지정
+                    // 초기 src 지정
                     const finalSrc = thumbUrl || 'images/puritan-study.png';
 
                     card.innerHTML = `

@@ -796,7 +796,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
                     // Thumbnail determination
                     let adminThumb = post.coverUrl;
-                    if (!adminThumb && post.fileUrl && post.fileUrl.match(/\.(jpeg|jpg|gif|png|webp|svg)/i)) {
+                    if (!adminThumb && post.fileUrl) {
                         adminThumb = post.fileUrl;
                     }
 
