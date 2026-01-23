@@ -359,8 +359,13 @@
             const detailArea = document.getElementById('book-detail-content-area');
             const extraArea = document.getElementById('book-detail-extra');
 
-            let hasCover = !!item.coverUrl;
-            let thumbUrl = item.coverUrl || '';
+            // Cover Image Fallback Logic
+            let thumbUrl = item.coverUrl;
+            if (!thumbUrl && item.fileUrl && item.fileUrl.match(/\.(jpeg|jpg|gif|png|webp|svg)/i)) {
+                thumbUrl = item.fileUrl;
+            }
+            let hasCover = !!thumbUrl;
+            thumbUrl = thumbUrl || '';
             let fileHtml = '';
             if (item.fileUrl) {
                 // 다운로드 버튼은 형식이 무엇이든 항상 생성 (클래스는 기존 버튼 스타일 활용)

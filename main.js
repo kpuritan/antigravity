@@ -794,14 +794,28 @@ document.addEventListener('DOMContentLoaded', () => {
                     const hasFile = post.fileUrl ? true : false;
                     const hasCover = post.coverUrl ? true : false;
 
+                    // Thumbnail determination
+                    let adminThumb = post.coverUrl;
+                    if (!adminThumb && post.fileUrl && post.fileUrl.match(/\.(jpeg|jpg|gif|png|webp|svg)/i)) {
+                        adminThumb = post.fileUrl;
+                    }
+
                     li.innerHTML = `
-                        <div class="post-info">
-                            <strong>[${displayTags}]</strong> ${post.title} 
-                            <div style="display:inline-flex; gap:8px; margin-left:10px;">
-                                ${hasFile ? `<a href="${post.fileUrl}" target="_blank" style="color:var(--secondary-color);" title="첨부파일"><i class="fas fa-file-download"></i></a>` : ''}
-                                ${hasCover ? `<a href="${post.coverUrl}" target="_blank" style="color:#f39c12;" title="표지이미지"><i class="fas fa-image"></i></a>` : ''}
+                        <div class="post-info" style="display:flex; align-items:flex-start; gap:12px;">
+                            <div style="width:50px; height:70px; flex-shrink:0; background:#fafafa; border-radius:4px; overflow:hidden; border:1px solid #eee; display:flex; align-items:center; justify-content:center;">
+                                ${adminThumb
+                            ? `<img src="${adminThumb}" style="width:100%; height:100%; object-fit:cover;" onerror="this.style.display='none'">`
+                            : `<i class="fas ${hasFile ? 'fa-file-alt' : 'fa-image'}" style="color:#ddd; font-size:1.5rem;"></i>`
+                        }
                             </div>
-                            <br> <small>${date}</small>
+                            <div>
+                                <strong>[${displayTags}]</strong> ${post.title} 
+                                <div style="display:inline-flex; gap:8px; margin-left:10px;">
+                                    ${hasFile ? `<a href="${post.fileUrl}" target="_blank" style="color:var(--secondary-color);" title="첨부파일"><i class="fas fa-file-download"></i></a>` : ''}
+                                    ${hasCover ? `<a href="${post.coverUrl}" target="_blank" style="color:#f39c12;" title="표지이미지"><i class="fas fa-image"></i></a>` : ''}
+                                </div>
+                                <br> <small>${date}</small>
+                            </div>
                         </div>
                         <div class="post-actions">
                             <button class="action-btn edit" onclick="openEditModal('${id}')"><i class="fas fa-edit"></i></button>
