@@ -65,68 +65,62 @@ header.scrolled .nav-container {
 }
 
 /* Ticker Banner Style - Premium LED Sign Aesthetic */
+/* Ticker Banner Style - Ticket/Paper Aesthetic (Similar to Musical Gathering Image) */
 .ticker-banner {
-    background: #000000;
-    background-image:
-        radial-gradient(rgba(10, 255, 210, 0.15) 1px, transparent 0);
-    background-size: 4px 4px;
-    /* Pixel matrix effect */
-    color: #0affd2;
-    padding: 20px 0;
+    background: #fdfbf7; /* Bright Ivory/Paper Background */
+    color: #1a1a1a;
+    padding: 1.2rem 0;
     overflow: hidden;
     white-space: nowrap;
     position: absolute;
     bottom: 0;
     left: 0;
     z-index: 20;
-    /* Changed from absolute */
     width: 100%;
-    border-top: 2px solid rgba(10, 255, 210, 0.3);
-    border-bottom: 2px solid rgba(10, 255, 210, 0.3);
-    box-shadow: 0 0 30px rgba(0, 255, 210, 0.1);
-    margin: 0;
-    /* Updated: Stick to top hero image, space below */
+    
+    /* Ticket-like borders using double lines */
+    border-top: 3px solid #1a1a1a;
+    border-bottom: 3px solid #1a1a1a;
+    
+    /* Optional: Slight rotation if desired, but user said 'keep position', so we stick to horizontal but styled like a tape. */
+    box-shadow: 0 -5px 20px rgba(0,0,0,0.1);
 }
+
+/* Add a pseudo-element for the 'perforated' look or extra detail if needed, 
+   but for now, a clean double border matches the reference image's robust feel. */
 
 .ticker-track {
     display: flex;
     width: max-content;
-    animation: tickerMove 60s linear infinite;
+    animation: tickerMove 40s linear infinite; /* Slightly faster for readability */
 }
 
 .ticker-item {
+    font-family: 'Inter', 'Noto Sans KR', sans-serif;
+    font-weight: 800; /* Extra Bold */
+    font-size: 1.8rem;
+    color: #1a1a1a;
+    letter-spacing: -0.02em;
     padding-right: 180px;
-    font-weight: 900;
-    font-size: 2.2rem;
-    letter-spacing: 0.05em;
-    /* LED character spacing */
     display: flex;
     align-items: center;
     gap: 30px;
-    text-shadow: 0 0 10px rgba(10, 255, 210, 0.8), 0 0 20px rgba(10, 255, 210, 0.4);
-    font-family: 'Inter', sans-serif;
-    /* Cleaner for LED */
+    text-transform: uppercase;
+    /* Removed neon text-shadow */
 }
 
+/* Icon divider */
 .ticker-item::before {
-    content: '▶';
-    color: #0affd2;
+    content: '✦'; /* Star or Stamp-like icon */
+    color: #1a1a1a;
     font-size: 1.5rem;
-    opacity: 0.8;
+    opacity: 1;
+    /* Removed neon shadow */
 }
 
 @keyframes tickerMove {
-    0% {
-        transform: translateX(0);
-    }
-
-    100% {
-        transform: translateX(-50%);
-    }
-}
-
-.ticker-banner:hover {
-    background: #050505;
+    0% { transform: translateX(0); }
+    100% { transform: translateX(-50%); }
 }
 
 .ticker-banner:hover .ticker-track {
@@ -136,15 +130,17 @@ header.scrolled .nav-container {
 /* Mobile Ticker Adjustments */
 @media (max-width: 768px) {
     .ticker-banner {
-        padding: 12px 0;
+        padding: 1rem 0;
+        border-top-width: 2px;
+        border-bottom-width: 2px;
     }
 
     .ticker-item {
-        font-size: 1.2rem;
-        padding-right: 80px;
+        font-size: 1.1rem;
+        padding-right: 60px;
         gap: 15px;
     }
-
+    
     .ticker-item::before {
         font-size: 1rem;
     }
