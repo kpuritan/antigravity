@@ -428,17 +428,13 @@
             let fileHtml = '';
 
             if (item.fileUrl) {
-                // 다운로드 대신 뷰어 열기 (탭 타이틀 문제 해결용)
-                let cleanTitle = item.title;
-                // 제목 안정화 (따옴표 제거)
-                if (cleanTitle) cleanTitle = cleanTitle.replace(/"/g, '').replace(/'/g, '');
+                // [Revert] 사용자 요청: 뷰어 페이지 없이 직접 열기
+                // 메타데이터(Content-Disposition)가 수정되었으므로 브라우저가 직접 열 때도 파일명을 인식해야 함.
+                // 캐시 문제 해결을 위해 타임스탬프 추가
+                const fileUrlWithCacheBust = item.fileUrl + (item.fileUrl.includes('?') ? '&' : '?') + "v=" + new Date().getTime();
 
-                const safeTitle = encodeURIComponent(cleanTitle);
-                const safeUrl = encodeURIComponent(item.fileUrl);
-
-                // viewer.html로 이동 (새 탭) - 버튼 텍스트는 '자료 열기 (미리보기)'로 변경
-                fileHtml = `<a href="viewer.html?file=${safeUrl}&title=${safeTitle}" target="_blank" class="book-buy-btn" style="display:inline-block; text-decoration:none; text-align:center; background:#0a7c68; color:white; padding:12px 30px; border-radius:8px; font-weight:700;">
-                    <i class="fas fa-book-reader"></i> 자료 열기 (미리보기)</a>`;
+                fileHtml = `<a href="${fileUrlWithCacheBust}" target="_blank" class="book-buy-btn" style="display:inline-block; text-decoration:none; text-align:center; background:#0a7c68; color:white; padding:12px 30px; border-radius:8px; font-weight:700;">
+                    <i class="fas fa-file-pdf"></i> 자료 열기</a>`;
 
                 // 이미지 파일일 경우 하단에 표시 로직은 유지
                 if (item.fileUrl.match(/\.(jpeg|jpg|gif|png|webp|svg)/i)) {
