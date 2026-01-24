@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PDF Viewer</title>
+    <style>
+        body,
+        html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            overflow: hidden;
+            background: #333;
+        }
+
+        iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+
+        .loading {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: white;
+            font-family: sans-serif;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="loading">Loading PDF...</div>
+    <iframe id="pdf-frame" src=""></iframe>
+
+    <script>
+        // URL 파라미터 파싱
+        const urlParams = new URLSearchParams(window.location.search);
+        const fileUrl = urlParams.get('file');
+        const title = urlParams.get('title');
+
+        // 탭 제목(Title) 설정 - 이것이 사용자가 원하는 "깔끔한 이름"입니다.
+        if (title) {
+            document.title = title;
+        }
+
+        // iframe에 PDF 로드
+        if (fileUrl) {
+            const frame = document.getElementById('pdf-frame');
+            // 브라우저 기본 PDF 뷰어를 iframe 안에 가둡니다.
+            // 이렇게 하면 브라우저 탭 자체의 제목은 우리가 설정한 document.title이 유지됩니다.
+            frame.src = fileUrl;
+
+            frame.onload = function () {
+                document.querySelector('.loading').style.display = 'none';
+            };
+        } else {
+            document.body.innerHTML = '<div style="color:white; text-align:center; padding-top:50px;">Invalid Parameters</div>';
+        }
+    </script>
+</body>
+
+</html>
