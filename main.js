@@ -698,7 +698,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (file) {
                     if (statusText) statusText.textContent = '상세 파일 업로드 중...';
                     const storageRef = storage.ref(`files/${Date.now()}_${file.name}`);
-                    await storageRef.put(file);
+                    // RFC 5987 호환성을 위해 filename*=UTF-8''... 형식 사용 권장
+                    const metadata = {
+                        contentDisposition: "attachment; filename*=UTF-8''" + encodeURIComponent(file.name)
+                    };
+                    await storageRef.put(file, metadata);
                     fileUrl = await storageRef.getDownloadURL();
                 }
 

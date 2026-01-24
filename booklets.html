@@ -409,6 +409,64 @@
             loadData();
         }
 
+        async function handleFileDownload(url) {
+            // 버튼 텍스트 변경을 위한 요소 찾기 (클릭된 요소에서 찾거나, ID로 찾음)
+            // 여기서는 간단히 알림을 띄우거나, 버튼 상태를 바꿀 수 있음
+
+            try {
+                // 1. 원본 파일명 추출
+                // URL 디코딩
+                const decoded = decodeURIComponent(url);
+
+                // Firebase Storage URL에서 경로 마지막 부분 추출
+                // 예: .../o/files%2F1769179453056_FileName.pdf?alt=...
+                // 정규식으로 'files/' 또는 'covers/' 뒤의 숫자_ 패턴 제거
+
+                let filename = 'download.pdf';
+                // URL object로 파싱 시도
+                try {
+                    const urlObj = new URL(url);
+                    const pathname = urlObj.pathname; // /.../files%2F1769...
+                    const lastSegment = pathname.split('/').pop(); // files%2F1769...
+                    const decodedSegment = decodeURIComponent(lastSegment); // files/1769...
+
+                    // 파일명에서 경로 부분(files/) 제거 및 타임스탬프 제거
+                    // 타임스탬프는 보통 숫자 13자리 + '_'
+                    const nameParts = decodedSegment.split('/');
+                    let rawName = nameParts[nameParts.length - 1]; // 1769..._filename.pdf
+
+                    // 정규식: 시작부분의 숫자+언더스코어 제거
+                    filename = rawName.replace(/^\d+_/, '');
+                } catch (err) {
+                    console.warn("Filename parsing error", err);
+                }
+
+                console.log("Downloading as:", filename);
+
+                // 2. Fetch 및 Blob 다운로드
+                const response = await fetch(url);
+                if (!response.ok) throw new Error('Network response was not ok');
+
+                const blob = await response.blob();
+                const blobUrl = window.URL.createObjectURL(blob);
+
+                const a = document.createElement('a');
+                a.style.display = 'none';
+                a.href = blobUrl;
+                a.download = filename;
+                document.body.appendChild(a);
+                a.click();
+
+                window.URL.revokeObjectURL(blobUrl);
+                document.body.removeChild(a);
+
+            } catch (error) {
+                console.error("Download failed, falling back to direct link", error);
+                // 실패 시 원래대로 새 탭 열기 (브라우저 기본 동작)
+                window.open(url, '_blank');
+            }
+        }
+
         function openDetail(item) {
             gridContainer.style.display = 'none';
             filterContainer.style.display = 'none';
@@ -427,8 +485,8 @@
             thumbUrl = thumbUrl || '';
             let fileHtml = '';
             if (item.fileUrl) {
-                // 다운로드 버튼은 형식이 무엇이든 항상 생성 (클래스는 기존 버튼 스타일 활용)
-                fileHtml = `<a href="${item.fileUrl}" target="_blank" download class="book-buy-btn" style="display:inline-block; text-decoration:none; text-align:center; background:#0a7c68; color:white; padding:12px 30px; border-radius:8px; font-weight:700;">
+                // 다운로드 버튼
+                fileHtml = `<a href="${item.fileUrl}" class="book-buy-btn" style="display:inline-block; text-decoration:none; text-align:center; background:#0a7c68; color:white; padding:12px 30px; border-radius:8px; font-weight:700;">
                     <i class="fas fa-file-download"></i> 자료 파일 저장하기</a>`;
 
                 if (item.fileUrl.match(/\.(jpeg|jpg|gif|png|webp|svg)/i)) {
