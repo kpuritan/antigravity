@@ -296,23 +296,43 @@
                 }
                 booklets.sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0));
 
-                grid.innerHTML = '';
-                // PDF 렌더링 함수 (내부 정의)
-                async function renderPdfToImage(url, imgId) {
-                    try {
-                        const loadingTask = pdfjsLib.getDocument(url);
-                        const pdf = await loadingTask.promise;
-                        const page = await pdf.getPage(1);
-                        const viewport = page.getViewport({ scale: 0.8 });
-                        const canvas = document.createElement('canvas');
-                        const context = canvas.getContext('2d');
-                        canvas.height = viewport.height;
-                        canvas.width = viewport.width;
-                        await page.render({ canvasContext: context, viewport: viewport }).promise;
+                grid.innerHTML =                // PDF 렌더링 함수 (내부 정의)
+                    async function renderPdfToImage(url, imgId, containerId) {
                         const img = document.getElementById(imgId);
-                        if (img) img.src = canvas.toDataURL();
-                    } catch (e) { console.warn("PDF Thumb Error", e); }
-                }
+                        const container = document.getElementById(containerId);
+
+                        try {
+                            // PDF.js 시도
+                            const loadingTask = pdfjsLib.getDocument(url);
+                            const pdf = await loadingTask.promise;
+                            const page = await pdf.getPage(1);
+                            const viewport = page.getViewport({ scale: 0.8 });
+                            const canvas = document.createElement('canvas');
+                            const context = canvas.getContext('2d');
+                            canvas.height = viewport.height;
+                            canvas.width = viewport.width;
+
+                            await page.render({ canvasContext: context, viewport: viewport }).promise;
+
+                            if (img) {
+                                img.src = canvas.toDataURL();
+                                img.style.objectFit = 'contain';
+                            }
+                        } catch (e) {
+                            console.warn("PDF Thumb Error (CORS likely), falling back to embed:", e);
+                            // CORS 등으로 캔버스 변환 실패 시, embed 태그로 대체하여 브라우저 네이티브 뷰어 노출
+                            if (container) {
+                                container.innerHTML = `
+                                <embed src="${url}#toolbar=0&navpanes=0&scrollbar=0&view=FitH" 
+                                       type="application/pdf" 
+                                       style="width:100%; height:100%; pointer-events:none; border:none;">
+                            `;
+                                // embed는 object-fit이 안되므로 컨테이너 스타일 조정
+                                container.style.overflow = 'hidden';
+                                container.style.display = 'block';
+                            }
+                        }
+                    }
 
                 booklets.forEach(item => {
                     const card = document.createElement('div');
@@ -323,18 +343,20 @@
                     let isPdf = false;
 
                     if (!thumbUrl && item.fileUrl) {
-                        if (item.fileUrl.toLowerCase().includes('.pdf')) {
+                        // PDF 감지 강화 (인코딩된 .pdf 포함)
+                        if (/(?:\.|%2E)pdf($|\?|#)/i.test(item.fileUrl)) {
                             isPdf = true;
                         } else {
-                            thumbUrl = item.fileUrl;
+                            thumbUrl = item.fileUrl; // 이미지로 가정
                         }
                     }
 
                     const finalSrc = thumbUrl || 'images/puritan-study.png';
                     const imgId = `book-thumb-${item.id}`;
+                    const containerId = `book-cover-wrap-${item.id}`;
 
                     card.innerHTML = `
-                        <div class="book-cover-wrapper">
+                        <div id="${containerId}" class="book-cover-wrapper" style="position:relative;">
                             <img id="${imgId}" src="${finalSrc}" alt="${item.title}" onerror="this.onerror=null; this.src='images/puritan-study.png';">
                         </div>
                         <div class="book-info">
@@ -346,11 +368,14 @@
                             </div>
                         </div>
                     `;
-                    card.onclick = () => openDetail(item);
+                    card.onclick = (e) => {
+                        // embed 클릭 시 이벤트 전파가 막힐 수 있으므로 카드 전체 클릭 유지
+                        openDetail(item);
+                    };
                     grid.appendChild(card);
 
                     if (isPdf && !thumbUrl) {
-                        renderPdfToImage(item.fileUrl, imgId);
+                        renderPdfToImage(item.fileUrl, imgId, containerId);
                     }
                 });
             } catch (e) {
