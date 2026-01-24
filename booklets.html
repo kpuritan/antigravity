@@ -230,6 +230,11 @@
         </div>
     </footer>
 
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.min.js"></script>
+    <script>
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.worker.min.js';
+    </script>
+
     <!-- Firebase SDKs -->
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
@@ -289,27 +294,48 @@
                     grid.innerHTML = `<div class="no-content">${targetTag} 자료가 아직 없습니다.</div>`;
                     return;
                 }
-
                 booklets.sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0));
 
                 grid.innerHTML = '';
+                // PDF 렌더링 함수 (내부 정의)
+                async function renderPdfToImage(url, imgId) {
+                    try {
+                        const loadingTask = pdfjsLib.getDocument(url);
+                        const pdf = await loadingTask.promise;
+                        const page = await pdf.getPage(1);
+                        const viewport = page.getViewport({ scale: 0.8 });
+                        const canvas = document.createElement('canvas');
+                        const context = canvas.getContext('2d');
+                        canvas.height = viewport.height;
+                        canvas.width = viewport.width;
+                        await page.render({ canvasContext: context, viewport: viewport }).promise;
+                        const img = document.getElementById(imgId);
+                        if (img) img.src = canvas.toDataURL();
+                    } catch (e) { console.warn("PDF Thumb Error", e); }
+                }
+
                 booklets.forEach(item => {
                     const card = document.createElement('div');
                     card.className = 'book-card-premium';
                     card.style.cursor = 'pointer';
 
-                    // 썸네일 결정 로직: 커버가 있으면 커버, 없으면 파일 URL을 시도
                     let thumbUrl = item.coverUrl;
+                    let isPdf = false;
+
                     if (!thumbUrl && item.fileUrl) {
-                        thumbUrl = item.fileUrl;
+                        if (item.fileUrl.toLowerCase().includes('.pdf')) {
+                            isPdf = true;
+                        } else {
+                            thumbUrl = item.fileUrl;
+                        }
                     }
 
-                    // 초기 src 지정
                     const finalSrc = thumbUrl || 'images/puritan-study.png';
+                    const imgId = `book-thumb-${item.id}`;
 
                     card.innerHTML = `
                         <div class="book-cover-wrapper">
-                            <img src="${finalSrc}" alt="${item.title}" onerror="this.onerror=null; this.src='images/puritan-study.png';">
+                            <img id="${imgId}" src="${finalSrc}" alt="${item.title}" onerror="this.onerror=null; this.src='images/puritan-study.png';">
                         </div>
                         <div class="book-info">
                             <div class="book-tag">${item.series || '전도 소책자'}</div>
@@ -322,6 +348,10 @@
                     `;
                     card.onclick = () => openDetail(item);
                     grid.appendChild(card);
+
+                    if (isPdf && !thumbUrl) {
+                        renderPdfToImage(item.fileUrl, imgId);
+                    }
                 });
             } catch (e) {
                 console.error(e);
