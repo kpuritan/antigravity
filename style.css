@@ -167,9 +167,11 @@ header.scrolled .nav-container {
 .logo {
     display: flex;
     flex-direction: column;
+    align-items: flex-start;
+    /* Ensure left alignment */
     text-decoration: none;
-    line-height: 0.8;
-    /* Extremely tight to bind them together */
+    line-height: normal;
+    /* Reset tight line-height */
     flex-shrink: 0;
 }
 
@@ -180,6 +182,7 @@ header.scrolled .nav-container {
     color: var(--white);
     letter-spacing: -0.04em;
     display: block;
+    line-height: 1;
 }
 
 .logo-kor {
@@ -189,18 +192,18 @@ header.scrolled .nav-container {
     color: var(--white);
     letter-spacing: -0.02em;
     display: block;
-    margin-top: 5px;
-    /* Tiny gap for legibility */
+    margin-top: 2px;
 }
 
 .logo-since {
     font-family: 'Montserrat', sans-serif;
     font-size: 0.65rem;
-    font-weight: 500;
-    color: rgba(255, 255, 255, 0.7);
-    letter-spacing: 0.1em;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.6);
+    letter-spacing: 0.15em;
     display: block;
-    margin-top: 2px;
+    margin-top: 6px;
+    /* Increased spacing */
 }
 
 nav ul li a {
