@@ -304,12 +304,26 @@
                     const img = document.getElementById(imgId);
                     const container = document.getElementById(containerId);
 
+                    if (!img || !container) {
+                        console.warn('PDF 렌더링 대상 요소를 찾을 수 없습니다:', imgId, containerId);
+                        return;
+                    }
+
+                    // 로딩 상태 표시
+                    container.style.position = 'relative';
+                    const loadingDiv = document.createElement('div');
+                    loadingDiv.style.cssText = 'position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); color:#0a7c68;';
+                    loadingDiv.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+                    container.appendChild(loadingDiv);
+
                     try {
-                        // PDF.js 시도
+                        // PDF.js로 첫 페이지 렌더링
                         const loadingTask = pdfjsLib.getDocument(url);
                         const pdf = await loadingTask.promise;
                         const page = await pdf.getPage(1);
-                        const viewport = page.getViewport({ scale: 0.8 });
+
+                        // 적절한 스케일로 렌더링 (카드 크기에 맞게)
+                        const viewport = page.getViewport({ scale: 1.5 });
                         const canvas = document.createElement('canvas');
                         const context = canvas.getContext('2d');
                         canvas.height = viewport.height;
@@ -317,23 +331,34 @@
 
                         await page.render({ canvasContext: context, viewport: viewport }).promise;
 
-                        if (img) {
-                            img.src = canvas.toDataURL();
-                            img.style.objectFit = 'contain';
+                        // 이미지로 변환
+                        img.src = canvas.toDataURL('image/png');
+                        img.style.objectFit = 'cover';
+
+                        // 로딩 표시 제거
+                        if (loadingDiv.parentNode) {
+                            loadingDiv.remove();
                         }
+
+                        console.log('✅ PDF 썸네일 렌더링 성공:', url);
                     } catch (e) {
-                        console.warn("PDF Thumb Error (CORS likely), falling back to embed:", e);
-                        // CORS 등으로 캔버스 변환 실패 시, embed 태그로 대체하여 브라우저 네이티브 뷰어 노출
-                        if (container) {
-                            container.innerHTML = `
-                                <embed src="${url}#toolbar=0&navpanes=0&scrollbar=0&view=FitH" 
-                                       type="application/pdf" 
-                                       style="width:100%; height:100%; pointer-events:none; border:none;">
-                            `;
-                            // embed는 object-fit이 안되므로 컨테이너 스타일 조정
-                            container.style.overflow = 'hidden';
-                            container.style.display = 'block';
+                        console.warn("⚠️ PDF 썸네일 렌더링 실패 (CORS 또는 파일 문제):", e.message);
+
+                        // 로딩 표시 제거
+                        if (loadingDiv.parentNode) {
+                            loadingDiv.remove();
                         }
+
+                        // CORS 에러 시 PDF 아이콘 표시
+                        if (img) {
+                            img.style.display = 'none';
+                        }
+                        container.innerHTML = `
+                            <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; height:100%; background:#f5f5f5;">
+                                <i class="fas fa-file-pdf" style="font-size:4rem; color:#e74c3c; margin-bottom:10px;"></i>
+                                <span style="font-size:0.9rem; color:#666;">PDF 자료</span>
+                            </div>
+                        `;
                     }
                 }
 
@@ -342,25 +367,25 @@
                     card.className = 'book-card-premium';
                     card.style.cursor = 'pointer';
 
-                    let thumbUrl = item.coverUrl;
+                    // PDF 파일 감지 - coverUrl보다 fileUrl의 PDF 우선
                     let isPdf = false;
+                    let pdfUrl = null;
 
-                    if (!thumbUrl && item.fileUrl) {
-                        // PDF 감지 강화 (인코딩된 .pdf 포함)
-                        if (/(?:\.|%2E)pdf($|\?|#)/i.test(item.fileUrl)) {
-                            isPdf = true;
-                        } else {
-                            thumbUrl = item.fileUrl; // 이미지로 가정
-                        }
+                    if (item.fileUrl && /(?:\.|%2E)pdf($|\?|#)/i.test(item.fileUrl)) {
+                        isPdf = true;
+                        pdfUrl = item.fileUrl;
                     }
 
-                    const finalSrc = thumbUrl || 'images/puritan-study.png';
+                    // 썸네일 우선순위: 1) coverUrl, 2) PDF 첫 페이지, 3) 기본 이미지
+                    let thumbUrl = item.coverUrl || 'images/puritan-study.png';
                     const imgId = `book-thumb-${item.id}`;
                     const containerId = `book-cover-wrap-${item.id}`;
 
                     card.innerHTML = `
-                        <div id="${containerId}" class="book-cover-wrapper" style="position:relative;">
-                            <img id="${imgId}" src="${finalSrc}" alt="${item.title}" onerror="this.onerror=null; this.src='images/puritan-study.png';">
+                        <div id="${containerId}" class="book-cover-wrapper" style="position:relative; background:#f5f5f5;">
+                            <img id="${imgId}" src="${thumbUrl}" alt="${item.title}" 
+                                 style="width:100%; height:100%; object-fit:contain;" 
+                                 onerror="this.onerror=null; this.src='images/puritan-study.png';">
                         </div>
                         <div class="book-info">
                             <div class="book-tag">${item.series || '전도 소책자'}</div>
@@ -372,13 +397,13 @@
                         </div>
                     `;
                     card.onclick = (e) => {
-                        // embed 클릭 시 이벤트 전파가 막힐 수 있으므로 카드 전체 클릭 유지
                         openDetail(item);
                     };
                     grid.appendChild(card);
 
-                    if (isPdf && !thumbUrl) {
-                        renderPdfToImage(item.fileUrl, imgId, containerId);
+                    // coverUrl이 없고 PDF 파일인 경우 PDF 첫 페이지를 썸네일로 렌더링
+                    if (isPdf && !item.coverUrl && pdfUrl) {
+                        renderPdfToImage(pdfUrl, imgId, containerId);
                     }
                 });
             } catch (e) {
