@@ -2446,6 +2446,8 @@ footer {
         margin-top: 1rem;
         border-radius: 8px;
         z-index: 2050;
+        max-height: 60vh;
+        overflow-y: auto;
     }
 
     .dropdown.active .dropdown-content.mega-menu {
