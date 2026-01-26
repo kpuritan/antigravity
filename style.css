@@ -200,10 +200,10 @@ header.scrolled .nav-container {
     font-size: 0.65rem;
     font-weight: 600;
     color: rgba(255, 255, 255, 0.6);
-    letter-spacing: 0.15em;
+    letter-spacing: 0.12em;
     display: block;
-    margin-top: 6px;
-    /* Increased spacing */
+    margin-top: 3px;
+    margin-left: 2px;
 }
 
 nav ul li a {
