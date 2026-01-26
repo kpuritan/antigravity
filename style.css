@@ -2440,10 +2440,12 @@ footer {
         width: 100%;
         box-shadow: none;
         padding: 1rem;
-        background: rgba(255, 255, 255, 0.03);
+        background: rgba(42, 45, 50, 0.98);
+        backdrop-filter: blur(10px);
         display: none;
         margin-top: 1rem;
         border-radius: 8px;
+        z-index: 2050;
     }
 
     .dropdown.active .dropdown-content.mega-menu {
