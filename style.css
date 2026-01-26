@@ -680,6 +680,8 @@ nav ul li:hover a i {
     align-items: center;
     gap: 4rem;
     padding: 2rem 0;
+    flex-wrap: wrap;
+    /* Allow wrapping */
 }
 
 .about-text {
@@ -775,14 +777,12 @@ nav ul li:hover a i {
 
 .about-team .team-name {
     font-weight: 700;
-    /* Slightly reduced bold */
     color: #000;
     font-size: 1.15rem;
-    /* Slightly reduced to fit in one line */
     line-height: 1.4;
     text-shadow: 0 0 1px rgba(255, 255, 255, 0.8);
-    white-space: nowrap;
-    /* Prevent wrapping to next line */
+    word-break: keep-all;
+    /* Better for Korean */
 }
 
 .about-team .eng-team {
@@ -1118,6 +1118,38 @@ nav ul li:hover a i {
     color: var(--text-light);
     margin-bottom: 2rem;
     font-size: 0.95rem;
+}
+
+@media (max-width: 768px) {
+    .about-container {
+        flex-direction: column;
+        gap: 2rem;
+        align-items: stretch;
+    }
+
+    .about-modal-content {
+        padding: 2rem 1.2rem !important;
+        margin: 5% auto !important;
+        width: 94% !important;
+    }
+
+    .about-description-large {
+        font-size: 1.1rem !important;
+        margin: 1.5rem 0;
+    }
+
+    .about-text p {
+        font-size: 0.95rem;
+        line-height: 1.7;
+    }
+
+    .about-right {
+        padding: 1.5rem;
+    }
+
+    .about-team .team-name {
+        font-size: 1rem;
+    }
 }
 
 .close-btn {
