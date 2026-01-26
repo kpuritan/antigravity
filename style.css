@@ -70,7 +70,8 @@ header.scrolled .nav-container {
     background: #fdfbf7;
     /* Bright Ivory/Paper Background */
     color: #1a1a1a;
-    padding: 1.2rem 0;
+    padding: 0.8rem 0;
+    /* Height reduced from 1.2rem */
     overflow: hidden;
     white-space: nowrap;
     position: absolute;
@@ -101,7 +102,8 @@ header.scrolled .nav-container {
     font-family: 'Inter', 'Noto Sans KR', sans-serif;
     font-weight: 800;
     /* Extra Bold */
-    font-size: 1.8rem;
+    font-size: 1.4rem;
+    /* Font size reduced from 1.8rem */
     color: #1a1a1a;
     letter-spacing: -0.02em;
     padding-right: 180px;
@@ -914,6 +916,80 @@ nav ul li:hover a i {
 
 .inquiry-form button:hover {
     background-color: var(--secondary-color);
+}
+
+/* Newsletter Section Styles */
+.newsletter-section {
+    background: #fff;
+    padding: 3rem 2rem;
+    border-top: 1px solid #eee;
+    border-bottom: 5px solid var(--secondary-color);
+}
+
+.newsletter-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 3rem;
+}
+
+.newsletter-text h2 {
+    font-size: 1.8rem;
+    margin-bottom: 0.5rem;
+    letter-spacing: -0.05em;
+}
+
+.newsletter-text p {
+    color: var(--text-light);
+    font-size: 1rem;
+}
+
+.newsletter-form {
+    display: flex;
+    gap: 10px;
+    flex: 1;
+    max-width: 500px;
+}
+
+.newsletter-form input {
+    flex: 1;
+    padding: 1rem 1.5rem;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    font-size: 1rem;
+    background: #f9f9f9;
+}
+
+.newsletter-form button {
+    background: var(--primary-color);
+    color: white;
+    border: none;
+    padding: 0 2rem;
+    border-radius: 8px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: var(--transition);
+    white-space: nowrap;
+}
+
+.newsletter-form button:hover {
+    background: var(--secondary-color);
+    transform: translateY(-2px);
+}
+
+@media (max-width: 992px) {
+    .newsletter-container {
+        flex-direction: column;
+        text-align: center;
+        gap: 2rem;
+    }
+
+    .newsletter-form {
+        max-width: 100%;
+        width: 100%;
+    }
 }
 
 /* Modal Styles */
